@@ -27,7 +27,7 @@ body {
   color: #1faa59;
 }
 #chat {
-  height: 65vh;
+  height: 60vh;
   background: #fff;
   border-radius: 15px;
   padding: 10px;
@@ -41,6 +41,11 @@ body {
   border-radius: 20px;
   font-size: 1rem;
   transition: all 0.3s ease;
+}
+.bubble.old {
+  font-size: 0.8rem;
+  padding: 6px;
+  opacity: 0.8;
 }
 .bot {
   background: #f1f1f1;
@@ -82,8 +87,10 @@ button.sendBtn, button.micBtn, button.activateMic {
 button.sendBtn { background:#1faa59; color:white; }
 button.micBtn { background:#4CAF50; color:white; }
 button.activateMic { background:#1faaff; color:white; width:90%; margin:10px auto; display:block; }
-#mapContainer { display:none; }
-#map { height: 200px; margin-top:10px; border-radius:10px; }
+#mapContainer { display:none; margin-top:10px;}
+#map { height: 200px; border-radius:10px; }
+#ratingContainer { display:flex; justify-content:space-around; margin:10px 0; }
+button.ratingBtn { border-radius:50%; width:50px; height:50px; font-size:1.2rem; font-weight:bold; background:#1faa59; color:white; border:none; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -91,9 +98,11 @@ button.activateMic { background:#1faaff; color:white; width:90%; margin:10px aut
   <div id="title">🎤 CitizenVoice – Tu opinión importa</div>
   <button id="enableMic" class="activateMic">Activar voz y permisos de micrófono</button>
   <div id="chat"></div>
+
   <div id="mapContainer">
-    <p>Selecciona tu ubicación o escribe tu calle:</p>
+    <p>Indica tu ubicación escribiendo tu calle o lugar:</p>
     <input id="addressInput" type="text" placeholder="Escribe tu calle...">
+    <div id="suggestions"></div>
     <button id="sendLocation" class="sendBtn">Confirmar ubicación</button>
   </div>
 </div>
@@ -102,17 +111,23 @@ button.activateMic { background:#1faaff; color:white; width:90%; margin:10px aut
 <script>
 const chat = document.getElementById('chat');
 const enableMic = document.getElementById('enableMic');
-
 let speechAllowed=false;
+let area='', tipo='', descripcion='', puntuacion=0, lat=0, lon=0;
 
+// Activar voz
 enableMic.onclick = ()=>{
     speechAllowed=true;
     addBot("¡Micrófono activado! Ahora puedo hablarte.");
     enableMic.style.display='none';
 }
 
-// Funciones de conversación
+// Conversación
+function shrinkPreviousBubbles(){
+    document.querySelectorAll('.bubble:not(:last-child)').forEach(b => b.classList.add('old'));
+}
+
 function addBot(message){
+    shrinkPreviousBubbles();
     const div = document.createElement('div');
     div.className='bubble bot';
     div.innerText = message;
@@ -126,6 +141,7 @@ function addBot(message){
 }
 
 function addUser(message){
+    shrinkPreviousBubbles();
     const div = document.createElement('div');
     div.className='bubble user';
     div.innerText = message;
@@ -133,13 +149,10 @@ function addUser(message){
     chat.scrollTop = chat.scrollHeight;
 }
 
-// Variables
-let area='', tipo='', descripcion='', puntuacion=0, lat=0, lon=0;
-
 // Flujo
 function askArea(){
     addBot('¿Sobre qué área quieres opinar?');
-    ['Urbanismo','Limpieza','Movilidad','Seguridad','Parques','Otra'].forEach(a=>{
+    ['Social','Cultural','Zonas verdes','Trámites','Movilidad','Limpieza','Seguridad','Otra'].forEach(a=>{
         const btn = document.createElement('button');
         btn.className='option';
         btn.innerText=a;
@@ -201,36 +214,68 @@ function askDescripcion(){
 
 function askPuntuacion(){
     addBot('Valora el servicio (1 = Muy malo, 5 = Excelente)');
+    const ratingContainer = document.createElement('div');
+    ratingContainer.id='ratingContainer';
     for(let i=1;i<=5;i++){
         const btn = document.createElement('button');
-        btn.className='option';
+        btn.className='ratingBtn';
         btn.innerText=i;
         btn.onclick=()=>{
             addUser(i);
             puntuacion=i;
+            chat.removeChild(ratingContainer);
             askUbicacion();
         }
-        chat.appendChild(btn);
+        ratingContainer.appendChild(btn);
     }
+    chat.appendChild(ratingContainer);
 }
 
+// Ubicación con Nominatim
 function askUbicacion(){
-    addBot('Indica tu ubicación escribiendo tu calle.');
+    addBot('Indica tu ubicación escribiendo tu calle o lugar.');
     document.getElementById('mapContainer').style.display='block';
     const input = document.getElementById('addressInput');
+    const suggestions = document.getElementById('suggestions');
     const sendLoc = document.getElementById('sendLocation');
+
+    async function buscarDireccion(text){
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(text)}`);
+        const data = await res.json();
+        return data;
+    }
+
+    input.addEventListener('input', async ()=>{
+        if(input.value.length>2){
+            const resultados = await buscarDireccion(input.value);
+            suggestions.innerHTML='';
+            resultados.slice(0,5).forEach(lugar=>{
+                const div = document.createElement('div');
+                div.innerText=lugar.display_name;
+                div.style.padding='5px';
+                div.style.cursor='pointer';
+                div.onclick=()=>{
+                    input.value=lugar.display_name;
+                    lat=lugar.lat;
+                    lon=lugar.lon;
+                    suggestions.innerHTML='';
+                }
+                suggestions.appendChild(div);
+            });
+        } else suggestions.innerHTML='';
+    });
+
     sendLoc.onclick=()=>{
         if(input.value.trim()==='') return;
         addUser(input.value);
-        // Aquí se podría integrar autocomplete con Google Places API para sugerencias
-        // y luego obtener lat/lon reales
-        lat=0; lon=0;
+        document.getElementById('mapContainer').style.display='none';
         addBot('¡Gracias! Tu opinión ha sido registrada.');
         console.log({area,tipo,descripcion,puntuacion,lat,lon});
+        // Aquí se puede enviar a Google Sheets / Excel Online
     }
 }
 
-// Inicia flujo
+// Inicio
 askArea();
 </script>
 </body>
