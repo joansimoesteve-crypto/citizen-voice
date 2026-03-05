@@ -91,6 +91,8 @@ button.activateMic { background:#1faaff; color:white; width:90%; margin:10px aut
 #map { height: 200px; border-radius:10px; }
 #ratingContainer { display:flex; justify-content:space-around; margin:10px 0; }
 button.ratingBtn { border-radius:50%; width:50px; height:50px; font-size:1.2rem; font-weight:bold; background:#1faa59; color:white; border:none; cursor:pointer; }
+.suggestion { padding:5px; cursor:pointer; background:#e6f2e6; margin-bottom:2px; border-radius:5px;}
+.suggestion:hover { background:#cde6cd; }
 </style>
 </head>
 <body>
@@ -112,7 +114,7 @@ button.ratingBtn { border-radius:50%; width:50px; height:50px; font-size:1.2rem;
 const chat = document.getElementById('chat');
 const enableMic = document.getElementById('enableMic');
 let speechAllowed=false;
-let area='', tipo='', descripcion='', puntuacion=0, lat=0, lon=0;
+let area='', subarea='', tipo='', descripcion='', puntuacion=0, lat=0, lon=0;
 
 // Activar voz
 enableMic.onclick = ()=>{
@@ -124,6 +126,9 @@ enableMic.onclick = ()=>{
 // Conversación
 function shrinkPreviousBubbles(){
     document.querySelectorAll('.bubble:not(:last-child)').forEach(b => b.classList.add('old'));
+}
+function shrinkPreviousOptions(){
+    document.querySelectorAll('.option').forEach(o => o.disabled=true); // solo se reduce el seleccionado
 }
 
 function addBot(message){
@@ -152,17 +157,37 @@ function addUser(message){
 // Flujo
 function askArea(){
     addBot('¿Sobre qué área quieres opinar?');
-    ['Social','Cultural','Zonas verdes','Trámites','Movilidad','Limpieza','Seguridad','Otra'].forEach(a=>{
+    ['Movilidad','Limpieza','Urbanismo','Cultura','Seguridad','Tramitación','Otros'].forEach(a=>{
         const btn = document.createElement('button');
         btn.className='option';
         btn.innerText=a;
         btn.onclick=()=>{
             addUser(a);
             area=a;
-            askTipo();
+            shrinkPreviousOptions();
+            if(a==='Otros'){
+                askSubarea();
+            } else askTipo();
         }
         chat.appendChild(btn);
     });
+}
+function askSubarea(){
+    addBot('Por favor, especifica tu área:');
+    const input = document.createElement('input');
+    input.type='text';
+    input.placeholder='Escribe aquí...';
+    const send = document.createElement('button');
+    send.innerText='Enviar';
+    send.className='sendBtn';
+    send.onclick=()=>{
+        if(input.value.trim()==='') return;
+        addUser(input.value);
+        subarea=input.value;
+        askTipo();
+    }
+    chat.appendChild(input);
+    chat.appendChild(send);
 }
 
 function askTipo(){
@@ -174,6 +199,7 @@ function askTipo(){
         btn.onclick=()=>{
             addUser(t);
             tipo=t;
+            shrinkPreviousOptions();
             askDescripcion();
         }
         chat.appendChild(btn);
@@ -231,7 +257,7 @@ function askPuntuacion(){
     chat.appendChild(ratingContainer);
 }
 
-// Ubicación con Nominatim
+// Ubicación con Photon
 function askUbicacion(){
     addBot('Indica tu ubicación escribiendo tu calle o lugar.');
     document.getElementById('mapContainer').style.display='block';
@@ -239,25 +265,24 @@ function askUbicacion(){
     const suggestions = document.getElementById('suggestions');
     const sendLoc = document.getElementById('sendLocation');
 
-    async function buscarDireccion(text){
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(text)}`);
+    async function buscarDireccionPhoton(text){
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(text)}&limit=5`);
         const data = await res.json();
-        return data;
+        return data.features;
     }
 
     input.addEventListener('input', async ()=>{
         if(input.value.length>2){
-            const resultados = await buscarDireccion(input.value);
+            const resultados = await buscarDireccionPhoton(input.value);
             suggestions.innerHTML='';
-            resultados.slice(0,5).forEach(lugar=>{
+            resultados.forEach(lugar=>{
                 const div = document.createElement('div');
-                div.innerText=lugar.display_name;
-                div.style.padding='5px';
-                div.style.cursor='pointer';
+                div.innerText=lugar.properties.name + ', ' + (lugar.properties.city||'');
+                div.className='suggestion';
                 div.onclick=()=>{
-                    input.value=lugar.display_name;
-                    lat=lugar.lat;
-                    lon=lugar.lon;
+                    input.value=lugar.properties.name + ', ' + (lugar.properties.city||'');
+                    lat=lugar.geometry.coordinates[1];
+                    lon=lugar.geometry.coordinates[0];
                     suggestions.innerHTML='';
                 }
                 suggestions.appendChild(div);
@@ -270,7 +295,7 @@ function askUbicacion(){
         addUser(input.value);
         document.getElementById('mapContainer').style.display='none';
         addBot('¡Gracias! Tu opinión ha sido registrada.');
-        console.log({area,tipo,descripcion,puntuacion,lat,lon});
+        console.log({area,subarea,tipo,descripcion,puntuacion,lat,lon});
         // Aquí se puede enviar a Google Sheets / Excel Online
     }
 }
