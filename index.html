@@ -33,12 +33,14 @@ body {
   color: #4c914c;
 }
 #chat {
-  height: 60vh;
+  height: 70vh;
   background: #fff;
   border-radius: 15px;
   padding: 10px;
   overflow-y: auto;
   box-shadow: 0px 5px 15px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
 }
 .bubble {
   padding: 16px;
@@ -76,12 +78,6 @@ button.option {
   cursor: pointer;
   transition: all 0.3s ease;
 }
-button.option.old {
-  padding: 6px 0;
-  font-size: 0.8rem;
-  opacity: 0;
-  display: none;
-}
 input[type=text] {
   width: 70%;
   padding: 12px;
@@ -100,8 +96,13 @@ button.sendBtn, button.micBtn, button.activateMic {
 button.sendBtn { background:#1faa59; color:white; }
 button.micBtn { background:#4CAF50; color:white; }
 button.activateMic { background:#1faaff; color:white; width:90%; margin:10px auto; display:block; }
-#mapContainer { display:none; margin-top:10px;}
-#map { height: 200px; border-radius:10px; }
+#mapContainer {
+  display:none;
+  margin-top:10px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 10px;
+}
 #ratingContainer { display:flex; justify-content:space-around; margin:10px 0; }
 button.ratingBtn { border-radius:50%; width:50px; height:50px; font-size:1.2rem; font-weight:bold; background:#1faa59; color:white; border:none; cursor:pointer; }
 .suggestion { padding:5px; cursor:pointer; background:#e6f2e6; margin-bottom:2px; border-radius:5px;}
@@ -141,12 +142,12 @@ enableMic.onclick = ()=>{
 function shrinkPreviousBubbles(){
     document.querySelectorAll('.bubble:not(:last-child)').forEach(b => b.classList.add('old'));
 }
-function shrinkOptionsExceptSelected(selected){
+
+function removeOtherOptions(selected){
     document.querySelectorAll('.option').forEach(o => {
-        if(o!==selected){
-            o.classList.add('old');
-        }
+        if(o!==selected) o.remove(); // eliminar todos los no seleccionados
     });
+    selected.remove(); // eliminar el seleccionado también
 }
 
 function addBot(message){
@@ -182,7 +183,7 @@ function askArea(){
         btn.onclick=()=>{
             addUser(a);
             area=a;
-            shrinkOptionsExceptSelected(btn);
+            removeOtherOptions(btn);
             if(a==='Otros'){
                 askSubarea();
             } else askTipo();
@@ -190,6 +191,7 @@ function askArea(){
         chat.appendChild(btn);
     });
 }
+
 function askSubarea(){
     addBot('Por favor, especifica tu área:');
     const input = document.createElement('input');
@@ -217,7 +219,7 @@ function askTipo(){
         btn.onclick=()=>{
             addUser(t);
             tipo=t;
-            shrinkOptionsExceptSelected(btn);
+            removeOtherOptions(btn);
             askDescripcion();
         }
         chat.appendChild(btn);
@@ -278,7 +280,10 @@ function askPuntuacion(){
 // Ubicación con Photon
 function askUbicacion(){
     addBot('Indica tu ubicación escribiendo tu calle o lugar.');
-    document.getElementById('mapContainer').style.display='block';
+    const mapCont = document.getElementById('mapContainer');
+    mapCont.style.display='block';
+    chat.scrollTop = chat.scrollHeight; // subir scroll
+
     const input = document.getElementById('addressInput');
     const suggestions = document.getElementById('suggestions');
     const sendLoc = document.getElementById('sendLocation');
@@ -311,10 +316,9 @@ function askUbicacion(){
     sendLoc.onclick=()=>{
         if(input.value.trim()==='') return;
         addUser(input.value);
-        document.getElementById('mapContainer').style.display='none';
+        mapCont.style.display='none';
         addBot('¡Gracias! Tu opinión ha sido registrada.');
         console.log({area,subarea,tipo,descripcion,puntuacion,lat,lon});
-        // Aquí se puede enviar a Google Sheets / Excel Online
     }
 }
 
