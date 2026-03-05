@@ -23,8 +23,14 @@ body {
   text-align: center;
   font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   color: #1faa59;
+}
+#subtitle {
+  text-align: center;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  color: #4c914c;
 }
 #chat {
   height: 60vh;
@@ -68,6 +74,13 @@ button.option {
   border: none;
   font-weight: bold;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+button.option.old {
+  padding: 6px 0;
+  font-size: 0.8rem;
+  opacity: 0;
+  display: none;
 }
 input[type=text] {
   width: 70%;
@@ -98,6 +111,7 @@ button.ratingBtn { border-radius:50%; width:50px; height:50px; font-size:1.2rem;
 <body>
 <div id="container">
   <div id="title">🎤 CitizenVoice – Tu opinión importa</div>
+  <div id="subtitle">Déjala registrada en tan solo 30 segundos</div>
   <button id="enableMic" class="activateMic">Activar voz y permisos de micrófono</button>
   <div id="chat"></div>
 
@@ -127,8 +141,12 @@ enableMic.onclick = ()=>{
 function shrinkPreviousBubbles(){
     document.querySelectorAll('.bubble:not(:last-child)').forEach(b => b.classList.add('old'));
 }
-function shrinkPreviousOptions(){
-    document.querySelectorAll('.option').forEach(o => o.disabled=true); // solo se reduce el seleccionado
+function shrinkOptionsExceptSelected(selected){
+    document.querySelectorAll('.option').forEach(o => {
+        if(o!==selected){
+            o.classList.add('old');
+        }
+    });
 }
 
 function addBot(message){
@@ -164,7 +182,7 @@ function askArea(){
         btn.onclick=()=>{
             addUser(a);
             area=a;
-            shrinkPreviousOptions();
+            shrinkOptionsExceptSelected(btn);
             if(a==='Otros'){
                 askSubarea();
             } else askTipo();
@@ -199,7 +217,7 @@ function askTipo(){
         btn.onclick=()=>{
             addUser(t);
             tipo=t;
-            shrinkPreviousOptions();
+            shrinkOptionsExceptSelected(btn);
             askDescripcion();
         }
         chat.appendChild(btn);
