@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎤 CitizenVoice</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
@@ -26,7 +27,7 @@ body {
   color: #1faa59;
 }
 #chat {
-  height: 80vh;
+  height: 65vh;
   background: #fff;
   border-radius: 15px;
   padding: 10px;
@@ -49,48 +50,50 @@ body {
   margin-left: auto;
 }
 button.option {
+  display: block;
+  width: 90%;
+  max-width: 400px;
+  margin: 8px auto;
+  padding: 14px 0;
+  font-size: 1.1rem;
+  border-radius: 30px;
   background: #1faa59;
   color: white;
   border: none;
-  border-radius: 30px;
-  padding: 10px 20px;
-  margin: 3px;
-  cursor: pointer;
   font-weight: bold;
+  cursor: pointer;
 }
 input[type=text] {
   width: 70%;
-  padding: 8px;
+  padding: 10px;
   margin-right: 5px;
   border-radius: 10px;
   border: 1px solid #ccc;
 }
-button.sendBtn {
-  padding: 8px 12px;
+button.sendBtn, button.micBtn {
+  padding: 10px 15px;
   border-radius: 10px;
   border: none;
-  background: #1faa59;
-  color: white;
   font-weight: bold;
   cursor: pointer;
 }
-button.micBtn {
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: none;
-  background: #4CAF50;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
+button.sendBtn { background:#1faa59; color:white; }
+button.micBtn { background:#4CAF50; color:white; }
+#map { height: 200px; margin-top:10px; border-radius:10px; }
 </style>
 </head>
 <body>
 <div id="container">
   <div id="title">🎤 CitizenVoice – Tu opinión importa</div>
   <div id="chat"></div>
+  <div id="mapContainer" style="display:none;">
+    <p>Mueve el marcador hasta el lugar exacto:</p>
+    <div id="map"></div>
+    <button id="sendLocation" class="sendBtn">Confirmar ubicación</button>
+  </div>
 </div>
 
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 const chat = document.getElementById('chat');
 
@@ -115,9 +118,11 @@ function addUser(message){
     chat.scrollTop = chat.scrollHeight;
 }
 
-// Variables globales
+// Variables
 let area='', tipo='', descripcion='', puntuacion=0, lat=0, lon=0;
+let marker;
 
+// Flujo
 function askArea(){
     addBot('¿Sobre qué área quieres opinar?');
     ['Urbanismo','Limpieza','Movilidad','Seguridad','Parques','Otra'].forEach(a=>{
@@ -127,7 +132,7 @@ function askArea(){
         btn.onclick=()=>{
             addUser(a);
             area=a;
-            chat.innerHTML=''; 
+            chat.innerHTML='';
             askTipo();
         }
         chat.appendChild(btn);
@@ -199,25 +204,29 @@ function askPuntuacion(){
 }
 
 function askUbicacion(){
-    addBot('Detectando ubicación 📍...');
-    if(navigator.geolocation){
-        navigator.geolocation.getCurrentPosition((pos)=>{
-            lat=pos.coords.latitude;
-            lon=pos.coords.longitude;
-            addBot('¡Listo! Gracias por participar.');
-            console.log({area, tipo, descripcion, puntuacion, lat, lon});
-            // Aquí se puede enviar a Google Sheets / Excel Online
-        }, (err)=>{
-            addBot('No se pudo obtener ubicación: '+err.message, false);
-        });
-    } else {
-        addBot('Geolocalización no soportada', false);
+    addBot('Selecciona tu ubicación en el mapa 📍');
+    const mapContainer = document.getElementById('mapContainer');
+    mapContainer.style.display='block';
+    const mapDiv = document.getElementById('map');
+    const sendLoc = document.getElementById('sendLocation');
+    const map = L.map(mapDiv).setView([40.4168, -3.7038], 13); // ejemplo Madrid
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution:'&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    marker = L.marker([40.4168, -3.7038], {draggable:true}).addTo(map);
+    sendLoc.onclick = ()=>{
+        const pos = marker.getLatLng();
+        lat=pos.lat;
+        lon=pos.lng;
+        mapContainer.style.display='none';
+        addBot('¡Gracias! Tu opinión ha sido registrada.');
+        console.log({area, tipo, descripcion, puntuacion, lat, lon});
+        // Aquí se puede enviar a Google Sheets / Excel Online
     }
 }
 
-// Iniciar flujo
+// Inicia el flujo
 askArea();
-
 </script>
 </body>
 </html>
