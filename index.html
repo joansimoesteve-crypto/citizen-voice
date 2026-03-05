@@ -35,11 +35,12 @@ body {
   box-shadow: 0px 5px 15px rgba(0,0,0,0.2);
 }
 .bubble {
-  padding: 12px;
+  padding: 16px;
   margin: 5px 0;
   max-width: 75%;
   border-radius: 20px;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 .bot {
   background: #f1f1f1;
@@ -54,7 +55,7 @@ button.option {
   width: 90%;
   max-width: 400px;
   margin: 8px auto;
-  padding: 14px 0;
+  padding: 16px 0;
   font-size: 1.1rem;
   border-radius: 30px;
   background: #1faa59;
@@ -65,12 +66,13 @@ button.option {
 }
 input[type=text] {
   width: 70%;
-  padding: 10px;
+  padding: 12px;
   margin-right: 5px;
   border-radius: 10px;
   border: 1px solid #ccc;
+  font-size: 1rem;
 }
-button.sendBtn, button.micBtn {
+button.sendBtn, button.micBtn, button.activateMic {
   padding: 10px 15px;
   border-radius: 10px;
   border: none;
@@ -79,16 +81,19 @@ button.sendBtn, button.micBtn {
 }
 button.sendBtn { background:#1faa59; color:white; }
 button.micBtn { background:#4CAF50; color:white; }
+button.activateMic { background:#1faaff; color:white; width:90%; margin:10px auto; display:block; }
+#mapContainer { display:none; }
 #map { height: 200px; margin-top:10px; border-radius:10px; }
 </style>
 </head>
 <body>
 <div id="container">
   <div id="title">🎤 CitizenVoice – Tu opinión importa</div>
+  <button id="enableMic" class="activateMic">Activar voz y permisos de micrófono</button>
   <div id="chat"></div>
-  <div id="mapContainer" style="display:none;">
-    <p>Mueve el marcador hasta el lugar exacto:</p>
-    <div id="map"></div>
+  <div id="mapContainer">
+    <p>Selecciona tu ubicación o escribe tu calle:</p>
+    <input id="addressInput" type="text" placeholder="Escribe tu calle...">
     <button id="sendLocation" class="sendBtn">Confirmar ubicación</button>
   </div>
 </div>
@@ -96,14 +101,24 @@ button.micBtn { background:#4CAF50; color:white; }
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 const chat = document.getElementById('chat');
+const enableMic = document.getElementById('enableMic');
 
-function addBot(message, speak=true){
+let speechAllowed=false;
+
+enableMic.onclick = ()=>{
+    speechAllowed=true;
+    addBot("¡Micrófono activado! Ahora puedo hablarte.");
+    enableMic.style.display='none';
+}
+
+// Funciones de conversación
+function addBot(message){
     const div = document.createElement('div');
     div.className='bubble bot';
     div.innerText = message;
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-    if(speak){
+    if(speechAllowed){
         const utter = new SpeechSynthesisUtterance(message);
         utter.lang='es-ES';
         speechSynthesis.speak(utter);
@@ -120,7 +135,6 @@ function addUser(message){
 
 // Variables
 let area='', tipo='', descripcion='', puntuacion=0, lat=0, lon=0;
-let marker;
 
 // Flujo
 function askArea(){
@@ -132,7 +146,6 @@ function askArea(){
         btn.onclick=()=>{
             addUser(a);
             area=a;
-            chat.innerHTML='';
             askTipo();
         }
         chat.appendChild(btn);
@@ -148,7 +161,6 @@ function askTipo(){
         btn.onclick=()=>{
             addUser(t);
             tipo=t;
-            chat.innerHTML='';
             askDescripcion();
         }
         chat.appendChild(btn);
@@ -164,6 +176,7 @@ function askDescripcion(){
     mic.innerText='🎤';
     mic.className='micBtn';
     mic.onclick=()=>{
+        if(!speechAllowed){ alert("Pulsa 'Activar voz' primero"); return; }
         let recognition;
         if(window.SpeechRecognition || window.webkitSpeechRecognition){
             recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -179,7 +192,6 @@ function askDescripcion(){
         if(input.value.trim()==='') return;
         addUser(input.value);
         descripcion=input.value;
-        chat.innerHTML='';
         askPuntuacion();
     }
     chat.appendChild(input);
@@ -196,7 +208,6 @@ function askPuntuacion(){
         btn.onclick=()=>{
             addUser(i);
             puntuacion=i;
-            chat.innerHTML='';
             askUbicacion();
         }
         chat.appendChild(btn);
@@ -204,28 +215,22 @@ function askPuntuacion(){
 }
 
 function askUbicacion(){
-    addBot('Selecciona tu ubicación en el mapa 📍');
-    const mapContainer = document.getElementById('mapContainer');
-    mapContainer.style.display='block';
-    const mapDiv = document.getElementById('map');
+    addBot('Indica tu ubicación escribiendo tu calle.');
+    document.getElementById('mapContainer').style.display='block';
+    const input = document.getElementById('addressInput');
     const sendLoc = document.getElementById('sendLocation');
-    const map = L.map(mapDiv).setView([40.4168, -3.7038], 13); // ejemplo Madrid
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution:'&copy; OpenStreetMap contributors'
-    }).addTo(map);
-    marker = L.marker([40.4168, -3.7038], {draggable:true}).addTo(map);
-    sendLoc.onclick = ()=>{
-        const pos = marker.getLatLng();
-        lat=pos.lat;
-        lon=pos.lng;
-        mapContainer.style.display='none';
+    sendLoc.onclick=()=>{
+        if(input.value.trim()==='') return;
+        addUser(input.value);
+        // Aquí se podría integrar autocomplete con Google Places API para sugerencias
+        // y luego obtener lat/lon reales
+        lat=0; lon=0;
         addBot('¡Gracias! Tu opinión ha sido registrada.');
-        console.log({area, tipo, descripcion, puntuacion, lat, lon});
-        // Aquí se puede enviar a Google Sheets / Excel Online
+        console.log({area,tipo,descripcion,puntuacion,lat,lon});
     }
 }
 
-// Inicia el flujo
+// Inicia flujo
 askArea();
 </script>
 </body>
