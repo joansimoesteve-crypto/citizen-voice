@@ -2,520 +2,266 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CitizenVoice</title>
 
 <style>
 
 body{
-font-family:Arial, sans-serif;
-background:#e8f5e9;
-margin:0;
+font-family: Arial;
+background:#f2f6fa;
 display:flex;
 justify-content:center;
+align-items:center;
+height:100vh;
 }
 
-#container{
-max-width:520px;
-width:100%;
-padding:10px;
-}
-
-#title{
-font-size:26px;
-font-weight:bold;
-text-align:center;
-color:#1b5e20;
-}
-
-#subtitle{
-text-align:center;
-font-size:14px;
-margin-bottom:10px;
-}
-
-#chat{
+.container{
 background:white;
+width:420px;
+padding:25px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+
+h1{
+text-align:center;
+font-size:38px;
+font-weight:800;
+color:#1f4fbf;
+margin-bottom:20px;
+}
+
+.chat{
+background:#f7f7f7;
+padding:20px;
 border-radius:15px;
-padding:15px;
-height:70vh;
+height:200px;
 overflow-y:auto;
-box-shadow:0 4px 10px rgba(0,0,0,0.2);
-display:flex;
-flex-direction:column;
+margin-bottom:15px;
 }
 
 .bubble{
-padding:14px;
-margin:6px 0;
-border-radius:16px;
-max-width:75%;
-font-size:16px;
+background:white;
+padding:12px;
+border-radius:10px;
+margin-bottom:10px;
 }
 
-.bot{
-background:#f1f1f1;
-}
-
-.user{
-background:#1faa59;
-color:white;
-margin-left:auto;
-}
-
-.bubble.old{
-font-size:12px;
-opacity:0.8;
-}
-
-button.option{
-display:block;
-width:90%;
-margin:6px auto;
-padding:14px;
-font-size:16px;
-border:none;
-border-radius:25px;
-background:#1faa59;
-color:white;
-cursor:pointer;
-}
-
-.inputRow{
-display:flex;
-gap:6px;
-margin-top:8px;
-}
-
-.inputRow input{
-flex:1;
+input{
+width:100%;
 padding:10px;
-border-radius:10px;
-border:1px solid #ccc;
-}
-
-.micBtn{
-width:40px;
-height:40px;
-border-radius:50%;
-border:none;
-background:#43a047;
-color:white;
-font-size:18px;
-}
-
-.sendBtn{
-padding:0 14px;
-border-radius:10px;
-border:none;
-background:#1faa59;
-color:white;
-font-weight:bold;
-}
-
-.ratingContainer{
-display:flex;
-justify-content:space-around;
+border-radius:8px;
+border:1px solid #ddd;
 margin-top:10px;
 }
 
-.ratingBtn{
-width:45px;
-height:45px;
-border-radius:50%;
-background:#1faa59;
-border:none;
-color:white;
-font-size:18px;
+.controls{
+display:flex;
+gap:10px;
+margin-top:10px;
 }
 
-.suggestion{
-padding:5px;
-background:#e0f2f1;
-margin:2px 0;
+.btn{
+border:none;
+padding:10px 14px;
+border-radius:50px;
 cursor:pointer;
-border-radius:5px;
+font-size:14px;
+}
+
+.mic{
+background:#1f4fbf;
+color:white;
+}
+
+.send{
+background:#27ae60;
+color:white;
+}
+
+.location{
+background:#ff9800;
+color:white;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div id="container">
+<div class="container">
 
-<div id="title">CitizenVoice</div>
-<div id="subtitle">Deja tu opinión en solo 30 segundos</div>
+<h1>CitizenVoice</h1>
 
-<div id="chat"></div>
+<div class="chat" id="chat"></div>
+
+<div>
+
+<label><b>Valora el servicio al que te estás refiriendo</b></label>
+
+<input id="respuesta" placeholder="Escribe tu respuesta...">
+
+<div class="controls">
+
+<button class="btn mic" onclick="startVoice()">🎤</button>
+
+<button class="btn send" onclick="sendAnswer()">Enviar</button>
+
+<button class="btn location" onclick="getLocation()">📍</button>
+
+</div>
+
+</div>
 
 </div>
 
 <script>
 
-const chat=document.getElementById("chat")
+let preguntas = [
+"Hola. ¿Qué servicio municipal deseas valorar?",
+"¿Cómo valorarías el servicio del 1 al 5?",
+"Describe brevemente tu experiencia."
+];
 
-let area=""
-let subarea=""
-let tipo=""
-let descripcion=""
-let puntuacion=""
-let lat=""
-let lon=""
+let paso = 0;
+let respuestas = {};
 
-let speechAllowed=true
+let synth = window.speechSynthesis;
 
-function scrollChat(){
-chat.scrollTop=chat.scrollHeight
-}
+function hablar(texto){
 
-function shrinkBubbles(){
-document.querySelectorAll('.bubble').forEach(b=>{
-b.classList.add("old")
-})
-}
+let msg = new SpeechSynthesisUtterance(texto);
+msg.lang="es-ES";
 
-function addBot(text){
-
-shrinkBubbles()
-
-const div=document.createElement("div")
-div.className="bubble bot"
-div.innerText=text
-
-chat.appendChild(div)
-
-scrollChat()
-
-if(speechAllowed){
-const msg=new SpeechSynthesisUtterance(text)
-msg.lang="es-ES"
-speechSynthesis.speak(msg)
-}
+synth.speak(msg);
 
 }
 
-function addUser(text){
+function mostrarPregunta(){
 
-shrinkBubbles()
+let chat=document.getElementById("chat");
 
-const div=document.createElement("div")
-div.className="bubble user"
-div.innerText=text
+chat.innerHTML+=`<div class="bubble">${preguntas[paso]}</div>`;
 
-chat.appendChild(div)
-
-scrollChat()
+hablar(preguntas[paso]);
 
 }
 
-function removeOptions(){
-document.querySelectorAll(".option").forEach(b=>b.remove())
-}
+window.onload=mostrarPregunta;
 
-function askArea(){
+function sendAnswer(){
 
-addBot("¿Sobre qué área quieres opinar?")
+let input=document.getElementById("respuesta");
 
-const areas=[
-"Movilidad",
-"Limpieza",
-"Urbanismo",
-"Cultura",
-"Seguridad",
-"Tramitación",
-"Otros"
-]
+let valor=input.value;
 
-areas.forEach(a=>{
+if(valor==="") return;
 
-const btn=document.createElement("button")
-btn.className="option"
-btn.innerText=a
+respuestas[paso]=valor;
 
-btn.onclick=()=>{
+input.value="";
 
-area=a
+paso++;
 
-addUser(a)
+if(paso<preguntas.length){
 
-removeOptions()
+mostrarPregunta();
 
-if(a==="Otros") askSubarea()
-else askTipo()
+}else{
 
-}
+chat.innerHTML+=`<div class="bubble">Gracias por tu participación.</div>`;
 
-chat.appendChild(btn)
-
-})
-
-scrollChat()
-
-}
-
-function askSubarea(){
-
-addBot("Especifica el área")
-
-const input=document.createElement("input")
-
-const send=document.createElement("button")
-send.innerText="Enviar"
-send.className="sendBtn"
-
-send.onclick=()=>{
-
-subarea=input.value
-
-addUser(subarea)
-
-input.remove()
-send.remove()
-
-askTipo()
-
-}
-
-chat.appendChild(input)
-chat.appendChild(send)
-
-}
-
-function askTipo(){
-
-addBot("¿Es una incidencia o propuesta?")
-
-const opciones=["Incidencia","Propuesta"]
-
-opciones.forEach(t=>{
-
-const btn=document.createElement("button")
-btn.className="option"
-btn.innerText=t
-
-btn.onclick=()=>{
-
-tipo=t
-
-addUser(t)
-
-removeOptions()
-
-askDescripcion()
-
-}
-
-chat.appendChild(btn)
-
-})
-
-scrollChat()
-
-}
-
-function askDescripcion(){
-
-addBot("Describe tu mensaje. Puedes usar texto o voz.")
-
-const row=document.createElement("div")
-row.className="inputRow"
-
-const input=document.createElement("input")
-
-const mic=document.createElement("button")
-mic.innerText="🎤"
-mic.className="micBtn"
-
-mic.onclick=()=>{
-
-let recognition
-
-if(window.SpeechRecognition || window.webkitSpeechRecognition){
-
-recognition=new(window.SpeechRecognition||window.webkitSpeechRecognition)()
-
-recognition.lang="es-ES"
-
-recognition.onresult=e=>{
-input.value=e.results[0][0].transcript
-}
-
-recognition.start()
+registrar();
 
 }
 
 }
 
-const send=document.createElement("button")
-send.innerText="Enviar"
-send.className="sendBtn"
+function startVoice(){
 
-send.onclick=()=>{
+let recognition=new webkitSpeechRecognition();
 
-descripcion=input.value
+recognition.lang="es-ES";
 
-addUser(descripcion)
+recognition.onresult=function(event){
 
-row.remove()
+document.getElementById("respuesta").value=event.results[0][0].transcript;
 
-askPuntuacion()
+};
 
-}
-
-row.appendChild(input)
-row.appendChild(mic)
-row.appendChild(send)
-
-chat.appendChild(row)
-
-scrollChat()
+recognition.start();
 
 }
 
-function askPuntuacion(){
+function getLocation(){
 
-addBot("Valora el servicio de 1 a 5")
+navigator.geolocation.getCurrentPosition(function(pos){
 
-const div=document.createElement("div")
-div.className="ratingContainer"
+respuestas.lat=pos.coords.latitude;
 
-for(let i=1;i<=5;i++){
+respuestas.lon=pos.coords.longitude;
 
-const btn=document.createElement("button")
-btn.className="ratingBtn"
-btn.innerText=i
+alert("Ubicación registrada");
 
-btn.onclick=()=>{
-
-puntuacion=i
-
-addUser(i)
-
-div.remove()
-
-askUbicacion()
+});
 
 }
 
-div.appendChild(btn)
+function hash(str){
+
+let h=0;
+
+for(let i=0;i<str.length;i++){
+
+h=((h<<5)-h)+str.charCodeAt(i);
+
+h|=0;
 
 }
 
-chat.appendChild(div)
+return h;
 
 }
 
-function askUbicacion(){
+function registrar(){
 
-addBot("Indica la ubicación donde propones o señalas la incidencia.")
+let data={
 
-const input=document.createElement("input")
-input.placeholder="Escribe calle o lugar..."
+fecha:new Date(),
 
-const suggestions=document.createElement("div")
+servicio:respuestas[0],
 
-const send=document.createElement("button")
-send.innerText="Enviar ubicación"
-send.className="sendBtn"
+valoracion:respuestas[1],
 
-chat.appendChild(input)
-chat.appendChild(suggestions)
-chat.appendChild(send)
+descripcion:respuestas[2],
 
-scrollChat()
+lat:respuestas.lat,
 
-async function buscar(text){
+lon:respuestas.lon
 
-const res=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(text)}&limit=5`)
+};
 
-const data=await res.json()
+data.hash=hash(JSON.stringify(data));
 
-return data.features
+fetch("TU_WEBHOOK_POWER_AUTOMATE",{
 
-}
+method:"POST",
 
-input.addEventListener("input",async()=>{
+headers:{
 
-if(input.value.length<3)return
+"Content-Type":"application/json"
 
-const results=await buscar(input.value)
+},
 
-suggestions.innerHTML=""
+body:JSON.stringify(data)
 
-results.forEach(r=>{
-
-const div=document.createElement("div")
-
-div.className="suggestion"
-
-div.innerText=r.properties.name
-
-div.onclick=()=>{
-
-input.value=r.properties.name
-
-lat=r.geometry.coordinates[1]
-lon=r.geometry.coordinates[0]
-
-suggestions.innerHTML=""
+});
 
 }
-
-suggestions.appendChild(div)
-
-})
-
-})
-
-send.onclick=async()=>{
-
-addUser(input.value)
-
-input.remove()
-suggestions.remove()
-send.remove()
-
-const registro={
-area,
-subarea,
-tipo,
-descripcion,
-puntuacion,
-lat,
-lon,
-timestamp:Date.now()
-}
-
-const hash=await generarHash(JSON.stringify(registro))
-
-registro.hash=hash
-
-console.log("Registro verificado",registro)
-
-addBot("Tu opinión ha sido registrada correctamente. Gracias por participar.")
-
-}
-
-}
-
-async function generarHash(text){
-
-const msgUint8=new TextEncoder().encode(text)
-
-const hashBuffer=await crypto.subtle.digest("SHA-256",msgUint8)
-
-const hashArray=Array.from(new Uint8Array(hashBuffer))
-
-const hashHex=hashArray.map(b=>b.toString(16).padStart(2,"0")).join("")
-
-return hashHex
-
-}
-
-askArea()
 
 </script>
 
 </body>
+
 </html>
