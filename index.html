@@ -22,10 +22,15 @@ body{
   font-weight:bold;
   text-align:center;
   color:#2e7d32;
+  position:sticky;
+  top:0;
+  background:#f2f2f2;
+  z-index:10;
+  padding-bottom:10px;
 }
 .subtitle{
   text-align:center;
-  margin-bottom:20px;
+  margin-bottom:10px;
   color:#666;
 }
 .chat{
@@ -75,7 +80,7 @@ button:hover{
 }
 textarea{
   width:100%;
-  height:70px; /* más pequeño */
+  height:70px;
   padding:10px;
   font-size:16px;
   border-radius:10px;
@@ -120,7 +125,6 @@ input.location{
   <div id="inputArea">
     <button onclick="startSurvey()">Iniciar valoración</button>
   </div>
-
 </div>
 
 <script>
@@ -130,7 +134,7 @@ const chat=document.getElementById("chat");
 const inputArea=document.getElementById("inputArea");
 let synth=window.speechSynthesis;
 
-// Función voz
+// Voz del bot
 function speak(text){
   let msg=new SpeechSynthesisUtterance(text);
   msg.lang="es-ES";
@@ -145,7 +149,7 @@ function addBot(text){
   div.innerText=text;
   chat.appendChild(div);
   speak(text);
-  chat.scrollTop=chat.scrollHeight + 500; // scroll más agresivo
+  chat.scrollTop = chat.scrollHeight + 1000; // scroll más fuerte
 }
 
 // Burbuja usuario
@@ -154,7 +158,7 @@ function addUser(text){
   div.className="user";
   div.innerText=text;
   chat.appendChild(div);
-  chat.scrollTop=chat.scrollHeight + 500;
+  chat.scrollTop = chat.scrollHeight + 1000;
 }
 
 // Flujo
@@ -210,6 +214,7 @@ function next(){
         <option value="Estación de Tren"></option>
         <option value="Plaza España"></option>
         <option value="Polideportivo Municipal"></option>
+        <option value="Centro Comercial"></option>
       </datalist>
       <div class="controls">
         <button class="small" onclick="sendLocation()">📍 Enviar ubicación</button>
@@ -244,7 +249,7 @@ function sendDesc(){ let val=document.getElementById("desc").value; data.descrip
 function sendLocation(){ let val=document.getElementById("loc").value; data.ubicacion=val; addUser(val); next(); }
 function rate(val){ data.valoracion=val; addUser("Valoración: "+val); next(); }
 
-// Micrófono
+// Micrófono STT
 function startVoice(){
   let rec=new webkitSpeechRecognition();
   rec.lang="es-ES";
@@ -252,12 +257,11 @@ function startVoice(){
   rec.start();
 }
 
-// Botón inicial para iniciar encuesta y activar voz
+// Botón inicial
 function startSurvey(){
   inputArea.innerHTML="";
   next();
 }
-
 </script>
 </body>
 </html>
