@@ -5,116 +5,124 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CitizenVoice</title>
 
+<!-- Estilos -->
 <style>
-body{
+body {
   font-family: Arial;
-  background:#f2f2f2;
-  display:flex;
-  justify-content:center;
-  padding:20px;
+  background: #f2f2f2;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  margin: 0;
 }
-.container{
-  width:100%;
-  max-width:520px;
+.container {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
 }
-.title{
-  font-size:42px;
-  font-weight:bold;
-  text-align:center;
-  color:#2e7d32;
-  position:sticky;
-  top:0;
-  background:#f2f2f2;
-  z-index:10;
-  padding-bottom:10px;
+.title {
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
+  color: #2e7d32;
+  position: sticky;
+  top: 0;
+  background: #f2f2f2;
+  z-index: 10;
+  padding-bottom: 10px;
 }
-.subtitle{
-  text-align:center;
-  margin-bottom:10px;
-  color:#666;
+.subtitle {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #666;
 }
-.chat{
-  background:white;
-  padding:20px;
-  border-radius:20px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.1);
-  max-height:70vh;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
+.chat {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-height: 60vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-.bubble{
-  background:#f1f1f1;
-  padding:14px;
-  border-radius:12px;
-  margin:8px 0;
-  font-size:18px;
+.bubble {
+  background: #f1f1f1;
+  padding: 14px;
+  border-radius: 12px;
+  margin: 2px 0;
+  font-size: 18px;
 }
-.user{
-  background:#2e7d32;
-  color:white;
-  padding:10px;
-  border-radius:12px;
-  margin:6px 0;
-  align-self:flex-end;
-  font-size:14px;
-  display:inline-block;
+.user {
+  background: #2e7d32;
+  color: white;
+  padding: 10px;
+  border-radius: 12px;
+  margin: 2px 0;
+  align-self: flex-end;
+  font-size: 14px;
+  display: inline-block;
 }
-.buttons{
-  margin-top:10px;
+.buttons {
+  margin-top: 10px;
 }
-button{
-  display:block;
-  width:100%;
-  padding:14px;
-  margin:6px 0;
-  font-size:18px;
-  border:none;
-  border-radius:10px;
-  background:#2e7d32;
-  color:white;
-  cursor:pointer;
+button {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin: 6px 0;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  background: #2e7d32;
+  color: white;
+  cursor: pointer;
 }
-button:hover{
-  background:#1b5e20;
+button:hover {
+  background: #1b5e20;
 }
-textarea{
-  width:100%;
-  height:70px;
-  padding:10px;
-  font-size:16px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  background:#dcedc8;
+textarea {
+  width: 100%;
+  height: 70px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #dcedc8;
 }
-input.location{
-  width:100%;
-  padding:10px;
-  font-size:16px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  background:#c8e6c9;
+input.location {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #c8e6c9;
 }
-.controls{
-  display:flex;
-  gap:8px;
-  margin-top:6px;
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
 }
-.small{
-  padding:10px;
-  font-size:14px;
+.small {
+  padding: 10px;
+  font-size: 14px;
 }
-.rating{
-  display:flex;
-  justify-content:space-between;
-  margin-top:10px;
+.rating {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
 }
-.rating button{
-  width:18%;
+.rating button {
+  width: 18%;
 }
 </style>
-</head>
 
+<!-- Google Maps Places API (Autocomplete) -->
+<script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&libraries=places"></script>
+
+</head>
 <body>
 <div class="container">
   <div class="title">CitizenVoice</div>
@@ -128,47 +136,47 @@ input.location{
 </div>
 
 <script>
-let step=0;
-let data={};
-const chat=document.getElementById("chat");
-const inputArea=document.getElementById("inputArea");
-let synth=window.speechSynthesis;
+let step = 0;
+let data = {};
+const chat = document.getElementById("chat");
+const inputArea = document.getElementById("inputArea");
+let synth = window.speechSynthesis;
 
-// Voz del bot
+// Función voz del bot
 function speak(text){
-  let msg=new SpeechSynthesisUtterance(text);
-  msg.lang="es-ES";
+  let msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "es-ES";
   speechSynthesis.cancel();
   speechSynthesis.speak(msg);
 }
 
 // Burbuja bot
 function addBot(text){
-  let div=document.createElement("div");
-  div.className="bubble";
-  div.innerText=text;
+  let div = document.createElement("div");
+  div.className = "bubble";
+  div.innerText = text;
   chat.appendChild(div);
   speak(text);
-  chat.scrollTop = chat.scrollHeight + 1000; // scroll más fuerte
+  chat.scrollTop = chat.scrollHeight + 1000; // scroll fuerte
 }
 
 // Burbuja usuario
 function addUser(text){
-  let div=document.createElement("div");
-  div.className="user";
-  div.innerText=text;
+  let div = document.createElement("div");
+  div.className = "user";
+  div.innerText = text;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight + 1000;
 }
 
-// Flujo
+// Flujo del bot
 function next(){
   step++;
-  inputArea.innerHTML="";
+  inputArea.innerHTML = "";
 
   if(step==1){
     addBot("¿Sobre qué área quieres opinar?");
-    inputArea.innerHTML=`
+    inputArea.innerHTML = `
       <div class="buttons">
         <button onclick="selectArea('Movilidad')">Movilidad</button>
         <button onclick="selectArea('Limpieza')">Limpieza</button>
@@ -183,7 +191,7 @@ function next(){
 
   if(step==2){
     addBot("¿Es una incidencia o una propuesta?");
-    inputArea.innerHTML=`
+    inputArea.innerHTML = `
       <div class="buttons">
         <button onclick="selectType('Incidencia')">Incidencia</button>
         <button onclick="selectType('Propuesta')">Propuesta</button>
@@ -193,7 +201,7 @@ function next(){
 
   if(step==3){
     addBot("Describe la incidencia o propuesta");
-    inputArea.innerHTML=`
+    inputArea.innerHTML = `
       <textarea id="desc" placeholder="Escribe o usa el micrófono"></textarea>
       <div class="controls">
         <button class="small" onclick="startVoice()">🎤</button>
@@ -203,28 +211,24 @@ function next(){
   }
 
   if(step==4){
-    addBot("Indica la ubicación (elige de las opciones o escribe la calle)");
-    inputArea.innerHTML=`
-      <input class="location" list="lugares" id="loc" placeholder="Ej: Calle Mayor 12">
-      <datalist id="lugares">
-        <option value="Calle Mayor"></option>
-        <option value="Parque Central"></option>
-        <option value="Ayuntamiento"></option>
-        <option value="Biblioteca Municipal"></option>
-        <option value="Estación de Tren"></option>
-        <option value="Plaza España"></option>
-        <option value="Polideportivo Municipal"></option>
-        <option value="Centro Comercial"></option>
-      </datalist>
+    addBot("Indica la ubicación de la incidencia o propuesta");
+    inputArea.innerHTML = `
+      <input id="loc" class="location" placeholder="Escribe la calle" type="text">
       <div class="controls">
         <button class="small" onclick="sendLocation()">📍 Enviar ubicación</button>
       </div>
     `;
+    // Inicializar autocomplete de Google Places
+    let input = document.getElementById("loc");
+    let autocomplete = new google.maps.places.Autocomplete(input, {
+      types: ['geocode'],
+      componentRestrictions: {country: 'es'}
+    });
   }
 
   if(step==5){
     addBot("Valora el servicio al que te estás refiriendo");
-    inputArea.innerHTML=`
+    inputArea.innerHTML = `
       <div class="rating">
         <button onclick="rate(1)">1</button>
         <button onclick="rate(2)">2</button>
@@ -238,22 +242,34 @@ function next(){
   if(step==6){
     addBot("Gracias. Tu opinión ha sido registrada.");
     inputArea.innerHTML="";
-    console.log(data);
+    console.log("Datos registrados:", data);
   }
 }
 
-// Selecciones
-function selectArea(val){ data.area=val; addUser(val); next(); }
-function selectType(val){ data.tipo=val; addUser(val); next(); }
-function sendDesc(){ let val=document.getElementById("desc").value; data.descripcion=val; addUser(val); next(); }
-function sendLocation(){ let val=document.getElementById("loc").value; data.ubicacion=val; addUser(val); next(); }
-function rate(val){ data.valoracion=val; addUser("Valoración: "+val); next(); }
+// Funciones de selección
+function selectArea(val){ data.area = val; addUser(val); next(); }
+function selectType(val){ data.tipo = val; addUser(val); next(); }
+function sendDesc(){ 
+  let val = document.getElementById("desc").value; 
+  data.descripcion = val; 
+  addUser(val); 
+  next(); 
+}
+function sendLocation(){ 
+  let val = document.getElementById("loc").value; 
+  data.ubicacion = val; 
+  addUser(val); 
+  next(); 
+}
+function rate(val){ data.valoracion = val; addUser("Valoración: "+val); next(); }
 
-// Micrófono STT
+// Función micrófono
 function startVoice(){
-  let rec=new webkitSpeechRecognition();
-  rec.lang="es-ES";
-  rec.onresult=function(e){ document.getElementById("desc").value=e.results[0][0].transcript; }
+  let rec = new webkitSpeechRecognition();
+  rec.lang = "es-ES";
+  rec.onresult = function(e){ 
+    document.getElementById("desc").value = e.results[0][0].transcript; 
+  }
   rec.start();
 }
 
@@ -262,6 +278,7 @@ function startSurvey(){
   inputArea.innerHTML="";
   next();
 }
+
 </script>
 </body>
 </html>
