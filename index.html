@@ -3,327 +3,519 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎤 CitizenVoice</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<title>CitizenVoice</title>
+
 <style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #e6f2e6;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
+
+body{
+font-family:Arial, sans-serif;
+background:#e8f5e9;
+margin:0;
+display:flex;
+justify-content:center;
 }
-#container {
-  width: 100%;
-  max-width: 500px;
-  margin-top: 20px;
+
+#container{
+max-width:520px;
+width:100%;
+padding:10px;
 }
-#title {
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #1faa59;
+
+#title{
+font-size:26px;
+font-weight:bold;
+text-align:center;
+color:#1b5e20;
 }
-#subtitle {
-  text-align: center;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
-  color: #4c914c;
+
+#subtitle{
+text-align:center;
+font-size:14px;
+margin-bottom:10px;
 }
-#chat {
-  height: 70vh;
-  background: #fff;
-  border-radius: 15px;
-  padding: 10px;
-  overflow-y: auto;
-  box-shadow: 0px 5px 15px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
+
+#chat{
+background:white;
+border-radius:15px;
+padding:15px;
+height:70vh;
+overflow-y:auto;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+display:flex;
+flex-direction:column;
 }
-.bubble {
-  padding: 16px;
-  margin: 5px 0;
-  max-width: 75%;
-  border-radius: 20px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
+
+.bubble{
+padding:14px;
+margin:6px 0;
+border-radius:16px;
+max-width:75%;
+font-size:16px;
 }
-.bubble.old {
-  font-size: 0.8rem;
-  padding: 6px;
-  opacity: 0.8;
+
+.bot{
+background:#f1f1f1;
 }
-.bot {
-  background: #f1f1f1;
+
+.user{
+background:#1faa59;
+color:white;
+margin-left:auto;
 }
-.user {
-  background: #1faa59;
-  color: white;
-  margin-left: auto;
+
+.bubble.old{
+font-size:12px;
+opacity:0.8;
 }
-button.option {
-  display: block;
-  width: 90%;
-  max-width: 400px;
-  margin: 8px auto;
-  padding: 16px 0;
-  font-size: 1.1rem;
-  border-radius: 30px;
-  background: #1faa59;
-  color: white;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
+
+button.option{
+display:block;
+width:90%;
+margin:6px auto;
+padding:14px;
+font-size:16px;
+border:none;
+border-radius:25px;
+background:#1faa59;
+color:white;
+cursor:pointer;
 }
-input[type=text] {
-  width: 70%;
-  padding: 12px;
-  margin-right: 5px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
+
+.inputRow{
+display:flex;
+gap:6px;
+margin-top:8px;
 }
-button.sendBtn, button.micBtn, button.activateMic {
-  padding: 10px 15px;
-  border-radius: 10px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
+
+.inputRow input{
+flex:1;
+padding:10px;
+border-radius:10px;
+border:1px solid #ccc;
 }
-button.sendBtn { background:#1faa59; color:white; }
-button.micBtn { background:#4CAF50; color:white; }
-button.activateMic { background:#1faaff; color:white; width:90%; margin:10px auto; display:block; }
-#mapContainer {
-  display:none;
-  margin-top:10px;
-  padding: 10px;
-  background: #f9f9f9;
-  border-radius: 10px;
+
+.micBtn{
+width:40px;
+height:40px;
+border-radius:50%;
+border:none;
+background:#43a047;
+color:white;
+font-size:18px;
 }
-#ratingContainer { display:flex; justify-content:space-around; margin:10px 0; }
-button.ratingBtn { border-radius:50%; width:50px; height:50px; font-size:1.2rem; font-weight:bold; background:#1faa59; color:white; border:none; cursor:pointer; }
-.suggestion { padding:5px; cursor:pointer; background:#e6f2e6; margin-bottom:2px; border-radius:5px;}
-.suggestion:hover { background:#cde6cd; }
+
+.sendBtn{
+padding:0 14px;
+border-radius:10px;
+border:none;
+background:#1faa59;
+color:white;
+font-weight:bold;
+}
+
+.ratingContainer{
+display:flex;
+justify-content:space-around;
+margin-top:10px;
+}
+
+.ratingBtn{
+width:45px;
+height:45px;
+border-radius:50%;
+background:#1faa59;
+border:none;
+color:white;
+font-size:18px;
+}
+
+.suggestion{
+padding:5px;
+background:#e0f2f1;
+margin:2px 0;
+cursor:pointer;
+border-radius:5px;
+}
+
 </style>
 </head>
-<body>
-<div id="container">
-  <div id="title">🎤 CitizenVoice – Tu opinión importa</div>
-  <div id="subtitle">Déjala registrada en tan solo 30 segundos</div>
-  <button id="enableMic" class="activateMic">Activar voz y permisos de micrófono</button>
-  <div id="chat"></div>
 
-  <div id="mapContainer">
-    <p>Indica tu ubicación escribiendo tu calle o lugar:</p>
-    <input id="addressInput" type="text" placeholder="Escribe tu calle...">
-    <div id="suggestions"></div>
-    <button id="sendLocation" class="sendBtn">Confirmar ubicación</button>
-  </div>
+<body>
+
+<div id="container">
+
+<div id="title">CitizenVoice</div>
+<div id="subtitle">Deja tu opinión en solo 30 segundos</div>
+
+<div id="chat"></div>
+
 </div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-const chat = document.getElementById('chat');
-const enableMic = document.getElementById('enableMic');
-let speechAllowed=false;
-let area='', subarea='', tipo='', descripcion='', puntuacion=0, lat=0, lon=0;
 
-// Activar voz
-enableMic.onclick = ()=>{
-    speechAllowed=true;
-    addBot("¡Micrófono activado! Ahora puedo hablarte.");
-    enableMic.style.display='none';
+const chat=document.getElementById("chat")
+
+let area=""
+let subarea=""
+let tipo=""
+let descripcion=""
+let puntuacion=""
+let lat=""
+let lon=""
+
+let speechAllowed=true
+
+function scrollChat(){
+chat.scrollTop=chat.scrollHeight
 }
 
-// Conversación
-function shrinkPreviousBubbles(){
-    document.querySelectorAll('.bubble:not(:last-child)').forEach(b => b.classList.add('old'));
+function shrinkBubbles(){
+document.querySelectorAll('.bubble').forEach(b=>{
+b.classList.add("old")
+})
 }
 
-function removeOtherOptions(selected){
-    document.querySelectorAll('.option').forEach(o => {
-        if(o!==selected) o.remove(); // eliminar todos los no seleccionados
-    });
-    selected.remove(); // eliminar el seleccionado también
+function addBot(text){
+
+shrinkBubbles()
+
+const div=document.createElement("div")
+div.className="bubble bot"
+div.innerText=text
+
+chat.appendChild(div)
+
+scrollChat()
+
+if(speechAllowed){
+const msg=new SpeechSynthesisUtterance(text)
+msg.lang="es-ES"
+speechSynthesis.speak(msg)
 }
 
-function addBot(message){
-    shrinkPreviousBubbles();
-    const div = document.createElement('div');
-    div.className='bubble bot';
-    div.innerText = message;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-    if(speechAllowed){
-        const utter = new SpeechSynthesisUtterance(message);
-        utter.lang='es-ES';
-        speechSynthesis.speak(utter);
-    }
 }
 
-function addUser(message){
-    shrinkPreviousBubbles();
-    const div = document.createElement('div');
-    div.className='bubble user';
-    div.innerText = message;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
+function addUser(text){
+
+shrinkBubbles()
+
+const div=document.createElement("div")
+div.className="bubble user"
+div.innerText=text
+
+chat.appendChild(div)
+
+scrollChat()
+
 }
 
-// Flujo
+function removeOptions(){
+document.querySelectorAll(".option").forEach(b=>b.remove())
+}
+
 function askArea(){
-    addBot('¿Sobre qué área quieres opinar?');
-    ['Movilidad','Limpieza','Urbanismo','Cultura','Seguridad','Tramitación','Otros'].forEach(a=>{
-        const btn = document.createElement('button');
-        btn.className='option';
-        btn.innerText=a;
-        btn.onclick=()=>{
-            addUser(a);
-            area=a;
-            removeOtherOptions(btn);
-            if(a==='Otros'){
-                askSubarea();
-            } else askTipo();
-        }
-        chat.appendChild(btn);
-    });
+
+addBot("¿Sobre qué área quieres opinar?")
+
+const areas=[
+"Movilidad",
+"Limpieza",
+"Urbanismo",
+"Cultura",
+"Seguridad",
+"Tramitación",
+"Otros"
+]
+
+areas.forEach(a=>{
+
+const btn=document.createElement("button")
+btn.className="option"
+btn.innerText=a
+
+btn.onclick=()=>{
+
+area=a
+
+addUser(a)
+
+removeOptions()
+
+if(a==="Otros") askSubarea()
+else askTipo()
+
+}
+
+chat.appendChild(btn)
+
+})
+
+scrollChat()
+
 }
 
 function askSubarea(){
-    addBot('Por favor, especifica tu área:');
-    const input = document.createElement('input');
-    input.type='text';
-    input.placeholder='Escribe aquí...';
-    const send = document.createElement('button');
-    send.innerText='Enviar';
-    send.className='sendBtn';
-    send.onclick=()=>{
-        if(input.value.trim()==='') return;
-        addUser(input.value);
-        subarea=input.value;
-        askTipo();
-    }
-    chat.appendChild(input);
-    chat.appendChild(send);
+
+addBot("Especifica el área")
+
+const input=document.createElement("input")
+
+const send=document.createElement("button")
+send.innerText="Enviar"
+send.className="sendBtn"
+
+send.onclick=()=>{
+
+subarea=input.value
+
+addUser(subarea)
+
+input.remove()
+send.remove()
+
+askTipo()
+
+}
+
+chat.appendChild(input)
+chat.appendChild(send)
+
 }
 
 function askTipo(){
-    addBot('¿Es una incidencia o propuesta?');
-    ['Incidencia','Propuesta'].forEach(t=>{
-        const btn = document.createElement('button');
-        btn.className='option';
-        btn.innerText=t;
-        btn.onclick=()=>{
-            addUser(t);
-            tipo=t;
-            removeOtherOptions(btn);
-            askDescripcion();
-        }
-        chat.appendChild(btn);
-    });
+
+addBot("¿Es una incidencia o propuesta?")
+
+const opciones=["Incidencia","Propuesta"]
+
+opciones.forEach(t=>{
+
+const btn=document.createElement("button")
+btn.className="option"
+btn.innerText=t
+
+btn.onclick=()=>{
+
+tipo=t
+
+addUser(t)
+
+removeOptions()
+
+askDescripcion()
+
+}
+
+chat.appendChild(btn)
+
+})
+
+scrollChat()
+
 }
 
 function askDescripcion(){
-    addBot('Describe tu mensaje usando voz o texto.');
-    const input = document.createElement('input');
-    input.type='text';
-    input.placeholder='Escribe aquí o pulsa 🎤';
-    const mic = document.createElement('button');
-    mic.innerText='🎤';
-    mic.className='micBtn';
-    mic.onclick=()=>{
-        if(!speechAllowed){ alert("Pulsa 'Activar voz' primero"); return; }
-        let recognition;
-        if(window.SpeechRecognition || window.webkitSpeechRecognition){
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang='es-ES';
-            recognition.onresult = (e) => { input.value = e.results[0][0].transcript; }
-            recognition.start();
-        } else { alert("Tu navegador no soporta reconocimiento de voz"); }
-    }
-    const send = document.createElement('button');
-    send.innerText='Enviar';
-    send.className='sendBtn';
-    send.onclick=()=>{
-        if(input.value.trim()==='') return;
-        addUser(input.value);
-        descripcion=input.value;
-        askPuntuacion();
-    }
-    chat.appendChild(input);
-    chat.appendChild(mic);
-    chat.appendChild(send);
+
+addBot("Describe tu mensaje. Puedes usar texto o voz.")
+
+const row=document.createElement("div")
+row.className="inputRow"
+
+const input=document.createElement("input")
+
+const mic=document.createElement("button")
+mic.innerText="🎤"
+mic.className="micBtn"
+
+mic.onclick=()=>{
+
+let recognition
+
+if(window.SpeechRecognition || window.webkitSpeechRecognition){
+
+recognition=new(window.SpeechRecognition||window.webkitSpeechRecognition)()
+
+recognition.lang="es-ES"
+
+recognition.onresult=e=>{
+input.value=e.results[0][0].transcript
+}
+
+recognition.start()
+
+}
+
+}
+
+const send=document.createElement("button")
+send.innerText="Enviar"
+send.className="sendBtn"
+
+send.onclick=()=>{
+
+descripcion=input.value
+
+addUser(descripcion)
+
+row.remove()
+
+askPuntuacion()
+
+}
+
+row.appendChild(input)
+row.appendChild(mic)
+row.appendChild(send)
+
+chat.appendChild(row)
+
+scrollChat()
+
 }
 
 function askPuntuacion(){
-    addBot('Valora el servicio (1 = Muy malo, 5 = Excelente)');
-    const ratingContainer = document.createElement('div');
-    ratingContainer.id='ratingContainer';
-    for(let i=1;i<=5;i++){
-        const btn = document.createElement('button');
-        btn.className='ratingBtn';
-        btn.innerText=i;
-        btn.onclick=()=>{
-            addUser(i);
-            puntuacion=i;
-            chat.removeChild(ratingContainer);
-            askUbicacion();
-        }
-        ratingContainer.appendChild(btn);
-    }
-    chat.appendChild(ratingContainer);
+
+addBot("Valora el servicio de 1 a 5")
+
+const div=document.createElement("div")
+div.className="ratingContainer"
+
+for(let i=1;i<=5;i++){
+
+const btn=document.createElement("button")
+btn.className="ratingBtn"
+btn.innerText=i
+
+btn.onclick=()=>{
+
+puntuacion=i
+
+addUser(i)
+
+div.remove()
+
+askUbicacion()
+
 }
 
-// Ubicación con Photon
+div.appendChild(btn)
+
+}
+
+chat.appendChild(div)
+
+}
+
 function askUbicacion(){
-    addBot('Indica tu ubicación escribiendo tu calle o lugar.');
-    const mapCont = document.getElementById('mapContainer');
-    mapCont.style.display='block';
-    chat.scrollTop = chat.scrollHeight; // subir scroll
 
-    const input = document.getElementById('addressInput');
-    const suggestions = document.getElementById('suggestions');
-    const sendLoc = document.getElementById('sendLocation');
+addBot("Indica la ubicación donde propones o señalas la incidencia.")
 
-    async function buscarDireccionPhoton(text){
-        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(text)}&limit=5`);
-        const data = await res.json();
-        return data.features;
-    }
+const input=document.createElement("input")
+input.placeholder="Escribe calle o lugar..."
 
-    input.addEventListener('input', async ()=>{
-        if(input.value.length>2){
-            const resultados = await buscarDireccionPhoton(input.value);
-            suggestions.innerHTML='';
-            resultados.forEach(lugar=>{
-                const div = document.createElement('div');
-                div.innerText=lugar.properties.name + ', ' + (lugar.properties.city||'');
-                div.className='suggestion';
-                div.onclick=()=>{
-                    input.value=lugar.properties.name + ', ' + (lugar.properties.city||'');
-                    lat=lugar.geometry.coordinates[1];
-                    lon=lugar.geometry.coordinates[0];
-                    suggestions.innerHTML='';
-                }
-                suggestions.appendChild(div);
-            });
-        } else suggestions.innerHTML='';
-    });
+const suggestions=document.createElement("div")
 
-    sendLoc.onclick=()=>{
-        if(input.value.trim()==='') return;
-        addUser(input.value);
-        mapCont.style.display='none';
-        addBot('¡Gracias! Tu opinión ha sido registrada.');
-        console.log({area,subarea,tipo,descripcion,puntuacion,lat,lon});
-    }
+const send=document.createElement("button")
+send.innerText="Enviar ubicación"
+send.className="sendBtn"
+
+chat.appendChild(input)
+chat.appendChild(suggestions)
+chat.appendChild(send)
+
+scrollChat()
+
+async function buscar(text){
+
+const res=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(text)}&limit=5`)
+
+const data=await res.json()
+
+return data.features
+
 }
 
-// Inicio
-askArea();
+input.addEventListener("input",async()=>{
+
+if(input.value.length<3)return
+
+const results=await buscar(input.value)
+
+suggestions.innerHTML=""
+
+results.forEach(r=>{
+
+const div=document.createElement("div")
+
+div.className="suggestion"
+
+div.innerText=r.properties.name
+
+div.onclick=()=>{
+
+input.value=r.properties.name
+
+lat=r.geometry.coordinates[1]
+lon=r.geometry.coordinates[0]
+
+suggestions.innerHTML=""
+
+}
+
+suggestions.appendChild(div)
+
+})
+
+})
+
+send.onclick=async()=>{
+
+addUser(input.value)
+
+input.remove()
+suggestions.remove()
+send.remove()
+
+const registro={
+area,
+subarea,
+tipo,
+descripcion,
+puntuacion,
+lat,
+lon,
+timestamp:Date.now()
+}
+
+const hash=await generarHash(JSON.stringify(registro))
+
+registro.hash=hash
+
+console.log("Registro verificado",registro)
+
+addBot("Tu opinión ha sido registrada correctamente. Gracias por participar.")
+
+}
+
+}
+
+async function generarHash(text){
+
+const msgUint8=new TextEncoder().encode(text)
+
+const hashBuffer=await crypto.subtle.digest("SHA-256",msgUint8)
+
+const hashArray=Array.from(new Uint8Array(hashBuffer))
+
+const hashHex=hashArray.map(b=>b.toString(16).padStart(2,"0")).join("")
+
+return hashHex
+
+}
+
+askArea()
+
 </script>
+
 </body>
 </html>
