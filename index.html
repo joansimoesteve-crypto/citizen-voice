@@ -1,347 +1,256 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>CitizenVoice</title>
 
 <style>
-
 body{
-font-family: Arial;
-background:#f2f2f2;
-display:flex;
-justify-content:center;
-padding:20px;
+  font-family: Arial;
+  background:#f2f2f2;
+  display:flex;
+  justify-content:center;
+  padding:20px;
 }
-
 .container{
-width:100%;
-max-width:520px;
+  width:100%;
+  max-width:520px;
 }
-
 .title{
-font-size:36px;
-font-weight:bold;
-text-align:center;
-color:#2e7d32;
+  font-size:42px;
+  font-weight:bold;
+  text-align:center;
+  color:#2e7d32;
 }
-
 .subtitle{
-text-align:center;
-margin-bottom:20px;
-color:#666;
+  text-align:center;
+  margin-bottom:20px;
+  color:#666;
 }
-
 .chat{
-background:white;
-padding:20px;
-border-radius:20px;
-box-shadow:0 4px 12px rgba(0,0,0,0.1);
-max-height:70vh;
-overflow-y:auto;
+  background:white;
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+  max-height:70vh;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
 }
-
-.bot{
-background:#f1f1f1;
-padding:14px;
-border-radius:12px;
-margin:8px 0;
-font-size:18px;
+.bubble{
+  background:#f1f1f1;
+  padding:14px;
+  border-radius:12px;
+  margin:8px 0;
+  font-size:18px;
 }
-
 .user{
-background:#2e7d32;
-color:white;
-padding:10px;
-border-radius:12px;
-margin:6px 0;
-align-self:flex-end;
-font-size:14px;
-display:inline-block;
+  background:#2e7d32;
+  color:white;
+  padding:10px;
+  border-radius:12px;
+  margin:6px 0;
+  align-self:flex-end;
+  font-size:14px;
+  display:inline-block;
 }
-
 .buttons{
-margin-top:10px;
+  margin-top:10px;
 }
-
 button{
-display:block;
-width:100%;
-padding:14px;
-margin:6px 0;
-font-size:18px;
-border:none;
-border-radius:10px;
-background:#2e7d32;
-color:white;
-cursor:pointer;
+  display:block;
+  width:100%;
+  padding:14px;
+  margin:6px 0;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  background:#2e7d32;
+  color:white;
+  cursor:pointer;
 }
-
 button:hover{
-background:#1b5e20;
+  background:#1b5e20;
 }
-
 textarea{
-width:100%;
-height:90px;
-padding:10px;
-font-size:16px;
-border-radius:10px;
-border:1px solid #ccc;
+  width:100%;
+  height:100px;
+  padding:10px;
+  font-size:16px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  background:#dcedc8;
 }
-
+input.location{
+  width:100%;
+  padding:12px;
+  font-size:16px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  background:#c8e6c9;
+}
 .controls{
-display:flex;
-gap:8px;
-margin-top:6px;
+  display:flex;
+  gap:8px;
+  margin-top:6px;
 }
-
 .small{
-padding:10px;
-font-size:14px;
+  padding:10px;
+  font-size:14px;
 }
-
 .rating{
-display:flex;
-justify-content:space-between;
-margin-top:10px;
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
 }
-
 .rating button{
-width:18%;
+  width:18%;
 }
-
 </style>
 </head>
 
 <body>
-
 <div class="container">
+  <div class="title">CitizenVoice</div>
+  <div class="subtitle">Deja tu opinión en solo 30 segundos</div>
 
-<div class="title">CitizenVoice</div>
-<div class="subtitle">Deja tu opinión en solo 30 segundos</div>
-
-<div class="chat" id="chat"></div>
-
-<div id="inputArea"></div>
-
+  <div class="chat" id="chat"></div>
+  <div id="inputArea"></div>
 </div>
 
 <script>
+let step=0;
+let data={};
+const chat=document.getElementById("chat");
+const inputArea=document.getElementById("inputArea");
+let synth=window.speechSynthesis;
 
-let step=0
-let data={}
-
-const chat=document.getElementById("chat")
-const inputArea=document.getElementById("inputArea")
-
+// Función de voz
 function speak(text){
-
-let msg=new SpeechSynthesisUtterance(text)
-msg.lang="es-ES"
-speechSynthesis.speak(msg)
-
+  let msg=new SpeechSynthesisUtterance(text);
+  msg.lang="es-ES";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(msg);
 }
 
+// Añadir burbuja de bot
 function addBot(text){
-
-let div=document.createElement("div")
-div.className="bot"
-div.innerText=text
-chat.appendChild(div)
-
-speak(text)
-
-chat.scrollTop=chat.scrollHeight
-
+  let div=document.createElement("div");
+  div.className="bubble";
+  div.innerText=text;
+  chat.appendChild(div);
+  speak(text);
+  chat.scrollTop=chat.scrollHeight;
 }
 
+// Añadir burbuja usuario
 function addUser(text){
-
-let div=document.createElement("div")
-div.className="user"
-div.innerText=text
-chat.appendChild(div)
-
-chat.scrollTop=chat.scrollHeight
-
+  let div=document.createElement("div");
+  div.className="user";
+  div.innerText=text;
+  chat.appendChild(div);
+  chat.scrollTop=chat.scrollHeight;
 }
 
+// Flujo conversacional
 function next(){
+  step++;
+  inputArea.innerHTML="";
 
-step++
+  if(step==1){
+    addBot("¿Sobre qué área quieres opinar?");
+    inputArea.innerHTML=`
+      <div class="buttons">
+        <button onclick="selectArea('Movilidad')">Movilidad</button>
+        <button onclick="selectArea('Limpieza')">Limpieza</button>
+        <button onclick="selectArea('Urbanismo')">Urbanismo</button>
+        <button onclick="selectArea('Cultura')">Cultura</button>
+        <button onclick="selectArea('Seguridad')">Seguridad</button>
+        <button onclick="selectArea('Tramitación')">Tramitación</button>
+        <button onclick="selectArea('Otros')">Otros</button>
+      </div>
+    `;
+  }
 
-if(step==1){
+  if(step==2){
+    addBot("¿Es una incidencia o una propuesta?");
+    inputArea.innerHTML=`
+      <div class="buttons">
+        <button onclick="selectType('Incidencia')">Incidencia</button>
+        <button onclick="selectType('Propuesta')">Propuesta</button>
+      </div>
+    `;
+  }
 
-addBot("¿Sobre qué área quieres opinar?")
+  if(step==3){
+    addBot("Describe la incidencia o propuesta");
+    inputArea.innerHTML=`
+      <textarea id="desc" placeholder="Escribe o usa el micrófono"></textarea>
+      <div class="controls">
+        <button class="small" onclick="startVoice()">🎤</button>
+        <button class="small" onclick="sendDesc()">Enviar</button>
+      </div>
+    `;
+  }
 
-inputArea.innerHTML=`
+  if(step==4){
+    addBot("Indica la ubicación (puedes elegir de las opciones o escribirla)");
+    inputArea.innerHTML=`
+      <input class="location" list="lugares" id="loc" placeholder="Ej: Calle Mayor 12">
+      <datalist id="lugares">
+        <option value="Calle Mayor"></option>
+        <option value="Parque Central"></option>
+        <option value="Ayuntamiento"></option>
+        <option value="Biblioteca Municipal"></option>
+        <option value="Estación de Tren"></option>
+      </datalist>
+      <div class="controls">
+        <button class="small" onclick="sendLocation()">📍 Enviar ubicación</button>
+      </div>
+    `;
+  }
 
-<div class="buttons">
+  if(step==5){
+    addBot("Valora el servicio al que te estás refiriendo");
+    inputArea.innerHTML=`
+      <div class="rating">
+        <button onclick="rate(1)">1</button>
+        <button onclick="rate(2)">2</button>
+        <button onclick="rate(3)">3</button>
+        <button onclick="rate(4)">4</button>
+        <button onclick="rate(5)">5</button>
+      </div>
+    `;
+  }
 
-<button onclick="selectArea('Movilidad')">Movilidad</button>
-<button onclick="selectArea('Limpieza')">Limpieza</button>
-<button onclick="selectArea('Urbanismo')">Urbanismo</button>
-<button onclick="selectArea('Cultura')">Cultura</button>
-<button onclick="selectArea('Seguridad')">Seguridad</button>
-<button onclick="selectArea('Tramitación')">Tramitación</button>
-<button onclick="selectArea('Otros')">Otros</button>
-
-</div>
-
-`
-
+  if(step==6){
+    addBot("Gracias. Tu opinión ha sido registrada.");
+    inputArea.innerHTML="";
+    console.log(data);
+  }
 }
 
-if(step==2){
+// Funciones de selección
+function selectArea(val){ data.area=val; addUser(val); next(); }
+function selectType(val){ data.tipo=val; addUser(val); next(); }
+function sendDesc(){ let val=document.getElementById("desc").value; data.descripcion=val; addUser(val); next(); }
+function sendLocation(){ let val=document.getElementById("loc").value; data.ubicacion=val; addUser(val); next(); }
+function rate(val){ data.valoracion=val; addUser("Valoración: "+val); next(); }
 
-addBot("¿Es una incidencia o una propuesta?")
-
-inputArea.innerHTML=`
-
-<div class="buttons">
-
-<button onclick="selectType('Incidencia')">Incidencia</button>
-<button onclick="selectType('Propuesta')">Propuesta</button>
-
-</div>
-
-`
-
-}
-
-if(step==3){
-
-addBot("Describe la incidencia o propuesta")
-
-inputArea.innerHTML=`
-
-<textarea id="desc"></textarea>
-
-<div class="controls">
-
-<button class="small" onclick="startVoice()">🎤</button>
-<button class="small" onclick="sendDesc()">Enviar</button>
-
-</div>
-
-`
-
-}
-
-if(step==4){
-
-addBot("Indica la ubicación")
-
-inputArea.innerHTML=`
-
-<input id="loc" placeholder="Escribe calle o lugar" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc">
-
-<div class="controls">
-
-<button class="small" onclick="sendLocation()">📍 Enviar ubicación</button>
-
-</div>
-
-`
-
-}
-
-if(step==5){
-
-addBot("Valora el servicio al que te estás refiriendo")
-
-inputArea.innerHTML=`
-
-<div class="rating">
-
-<button onclick="rate(1)">1</button>
-<button onclick="rate(2)">2</button>
-<button onclick="rate(3)">3</button>
-<button onclick="rate(4)">4</button>
-<button onclick="rate(5)">5</button>
-
-</div>
-
-`
-
-}
-
-if(step==6){
-
-addBot("Gracias. Tu opinión ha sido registrada.")
-
-inputArea.innerHTML=""
-
-console.log(data)
-
-}
-
-}
-
-function selectArea(val){
-
-data.area=val
-addUser(val)
-next()
-
-}
-
-function selectType(val){
-
-data.tipo=val
-addUser(val)
-next()
-
-}
-
-function sendDesc(){
-
-let val=document.getElementById("desc").value
-data.descripcion=val
-addUser(val)
-next()
-
-}
-
-function sendLocation(){
-
-let val=document.getElementById("loc").value
-data.ubicacion=val
-addUser(val)
-next()
-
-}
-
-function rate(val){
-
-data.valoracion=val
-addUser("Valoración: "+val)
-next()
-
-}
-
+// Micrófono STT
 function startVoice(){
-
-let rec=new webkitSpeechRecognition()
-rec.lang="es-ES"
-
-rec.onresult=function(e){
-
-document.getElementById("desc").value=e.results[0][0].transcript
-
+  let rec=new webkitSpeechRecognition();
+  rec.lang="es-ES";
+  rec.onresult=function(e){ document.getElementById("desc").value=e.results[0][0].transcript; }
+  rec.start();
 }
 
-rec.start()
-
+// Inicialización
+window.onload=function(){
+  addBot("CitizenVoice. Deja tu opinión en solo 30 segundos");
+  setTimeout(next,1200); // pasa a primera pregunta automáticamente
 }
-
-next()
-
 </script>
-
 </body>
 </html>
