@@ -75,7 +75,7 @@ button:hover{
 }
 textarea{
   width:100%;
-  height:100px;
+  height:70px; /* más pequeño */
   padding:10px;
   font-size:16px;
   border-radius:10px;
@@ -84,7 +84,7 @@ textarea{
 }
 input.location{
   width:100%;
-  padding:12px;
+  padding:10px;
   font-size:16px;
   border-radius:10px;
   border:1px solid #ccc;
@@ -116,7 +116,11 @@ input.location{
   <div class="subtitle">Deja tu opinión en solo 30 segundos</div>
 
   <div class="chat" id="chat"></div>
-  <div id="inputArea"></div>
+
+  <div id="inputArea">
+    <button onclick="startSurvey()">Iniciar valoración</button>
+  </div>
+
 </div>
 
 <script>
@@ -126,7 +130,7 @@ const chat=document.getElementById("chat");
 const inputArea=document.getElementById("inputArea");
 let synth=window.speechSynthesis;
 
-// Función de voz
+// Función voz
 function speak(text){
   let msg=new SpeechSynthesisUtterance(text);
   msg.lang="es-ES";
@@ -134,26 +138,26 @@ function speak(text){
   speechSynthesis.speak(msg);
 }
 
-// Añadir burbuja de bot
+// Burbuja bot
 function addBot(text){
   let div=document.createElement("div");
   div.className="bubble";
   div.innerText=text;
   chat.appendChild(div);
   speak(text);
-  chat.scrollTop=chat.scrollHeight;
+  chat.scrollTop=chat.scrollHeight + 500; // scroll más agresivo
 }
 
-// Añadir burbuja usuario
+// Burbuja usuario
 function addUser(text){
   let div=document.createElement("div");
   div.className="user";
   div.innerText=text;
   chat.appendChild(div);
-  chat.scrollTop=chat.scrollHeight;
+  chat.scrollTop=chat.scrollHeight + 500;
 }
 
-// Flujo conversacional
+// Flujo
 function next(){
   step++;
   inputArea.innerHTML="";
@@ -195,7 +199,7 @@ function next(){
   }
 
   if(step==4){
-    addBot("Indica la ubicación (puedes elegir de las opciones o escribirla)");
+    addBot("Indica la ubicación (elige de las opciones o escribe la calle)");
     inputArea.innerHTML=`
       <input class="location" list="lugares" id="loc" placeholder="Ej: Calle Mayor 12">
       <datalist id="lugares">
@@ -204,6 +208,8 @@ function next(){
         <option value="Ayuntamiento"></option>
         <option value="Biblioteca Municipal"></option>
         <option value="Estación de Tren"></option>
+        <option value="Plaza España"></option>
+        <option value="Polideportivo Municipal"></option>
       </datalist>
       <div class="controls">
         <button class="small" onclick="sendLocation()">📍 Enviar ubicación</button>
@@ -231,14 +237,14 @@ function next(){
   }
 }
 
-// Funciones de selección
+// Selecciones
 function selectArea(val){ data.area=val; addUser(val); next(); }
 function selectType(val){ data.tipo=val; addUser(val); next(); }
 function sendDesc(){ let val=document.getElementById("desc").value; data.descripcion=val; addUser(val); next(); }
 function sendLocation(){ let val=document.getElementById("loc").value; data.ubicacion=val; addUser(val); next(); }
 function rate(val){ data.valoracion=val; addUser("Valoración: "+val); next(); }
 
-// Micrófono STT
+// Micrófono
 function startVoice(){
   let rec=new webkitSpeechRecognition();
   rec.lang="es-ES";
@@ -246,11 +252,12 @@ function startVoice(){
   rec.start();
 }
 
-// Inicialización
-window.onload=function(){
-  addBot("CitizenVoice. Deja tu opinión en solo 30 segundos");
-  setTimeout(next,1200); // pasa a primera pregunta automáticamente
+// Botón inicial para iniciar encuesta y activar voz
+function startSurvey(){
+  inputArea.innerHTML="";
+  next();
 }
+
 </script>
 </body>
 </html>
