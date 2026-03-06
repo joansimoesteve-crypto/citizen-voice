@@ -8,34 +8,36 @@
 
 body{
 font-family: Arial;
-background:#f2f6fa;
+background:#f4f7fb;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
+margin:0;
 }
 
 .container{
-background:white;
 width:420px;
-padding:25px;
+background:white;
 border-radius:20px;
-box-shadow:0 10px 30px rgba(0,0,0,0.15);
+padding:20px;
+box-shadow:0 10px 25px rgba(0,0,0,0.15);
 }
 
 h1{
 text-align:center;
-font-size:38px;
-font-weight:800;
-color:#1f4fbf;
-margin-bottom:20px;
+font-size:42px;
+font-weight:900;
+color:#2c5cff;
+margin-bottom:10px;
+letter-spacing:1px;
 }
 
 .chat{
-background:#f7f7f7;
-padding:20px;
-border-radius:15px;
-height:200px;
+background:#f8f8f8;
+border-radius:12px;
+padding:15px;
+height:220px;
 overflow-y:auto;
 margin-bottom:15px;
 }
@@ -47,41 +49,49 @@ border-radius:10px;
 margin-bottom:10px;
 }
 
+.inputArea{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
 input{
-width:100%;
 padding:10px;
 border-radius:8px;
 border:1px solid #ddd;
-margin-top:10px;
 }
 
-.controls{
+.buttons{
 display:flex;
 gap:10px;
-margin-top:10px;
 }
 
-.btn{
+button{
 border:none;
-padding:10px 14px;
 border-radius:50px;
 cursor:pointer;
+padding:10px 14px;
 font-size:14px;
 }
 
 .mic{
-background:#1f4fbf;
+background:#2c5cff;
 color:white;
 }
 
 .send{
-background:#27ae60;
+background:#28a745;
 color:white;
 }
 
 .location{
 background:#ff9800;
 color:white;
+}
+
+.small{
+padding:6px 10px;
+font-size:12px;
 }
 
 </style>
@@ -94,21 +104,21 @@ color:white;
 
 <h1>CitizenVoice</h1>
 
-<div class="chat" id="chat"></div>
+<div id="chat" class="chat"></div>
 
-<div>
+<div class="inputArea">
 
 <label><b>Valora el servicio al que te estás refiriendo</b></label>
 
 <input id="respuesta" placeholder="Escribe tu respuesta...">
 
-<div class="controls">
+<div class="buttons">
 
-<button class="btn mic" onclick="startVoice()">🎤</button>
+<button id="micBtn" class="mic" onclick="startVoice()">🎤</button>
 
-<button class="btn send" onclick="sendAnswer()">Enviar</button>
+<button id="sendBtn" class="send" onclick="sendAnswer()">Enviar</button>
 
-<button class="btn location" onclick="getLocation()">📍</button>
+<button id="locBtn" class="location" onclick="getLocation()">📍</button>
 
 </div>
 
@@ -118,23 +128,24 @@ color:white;
 
 <script>
 
-let preguntas = [
-"Hola. ¿Qué servicio municipal deseas valorar?",
+let preguntas=[
+"Hola, gracias por participar. ¿Qué servicio municipal deseas valorar?",
 "¿Cómo valorarías el servicio del 1 al 5?",
 "Describe brevemente tu experiencia."
 ];
 
-let paso = 0;
-let respuestas = {};
+let paso=0;
 
-let synth = window.speechSynthesis;
+let synth=window.speechSynthesis;
 
-function hablar(texto){
+function speak(text){
 
-let msg = new SpeechSynthesisUtterance(texto);
+let msg=new SpeechSynthesisUtterance(text);
+
 msg.lang="es-ES";
 
-synth.speak(msg);
+speechSynthesis.cancel();
+speechSynthesis.speak(msg);
 
 }
 
@@ -144,37 +155,46 @@ let chat=document.getElementById("chat");
 
 chat.innerHTML+=`<div class="bubble">${preguntas[paso]}</div>`;
 
-hablar(preguntas[paso]);
+chat.scrollTop=chat.scrollHeight;
+
+speak(preguntas[paso]);
 
 }
 
-window.onload=mostrarPregunta;
+window.onload=function(){
+
+setTimeout(mostrarPregunta,500);
+
+}
 
 function sendAnswer(){
 
 let input=document.getElementById("respuesta");
 
-let valor=input.value;
+if(input.value==="") return;
 
-if(valor==="") return;
+let chat=document.getElementById("chat");
 
-respuestas[paso]=valor;
+chat.innerHTML+=`<div class="bubble">${input.value}</div>`;
 
 input.value="";
 
 paso++;
 
+document.getElementById("micBtn").classList.add("small");
+document.getElementById("sendBtn").classList.add("small");
+
 if(paso<preguntas.length){
 
-mostrarPregunta();
+setTimeout(mostrarPregunta,500);
 
 }else{
 
 chat.innerHTML+=`<div class="bubble">Gracias por tu participación.</div>`;
 
-registrar();
-
 }
+
+chat.scrollTop=chat.scrollHeight;
 
 }
 
@@ -184,9 +204,9 @@ let recognition=new webkitSpeechRecognition();
 
 recognition.lang="es-ES";
 
-recognition.onresult=function(event){
+recognition.onresult=function(e){
 
-document.getElementById("respuesta").value=event.results[0][0].transcript;
+document.getElementById("respuesta").value=e.results[0][0].transcript;
 
 };
 
@@ -198,63 +218,11 @@ function getLocation(){
 
 navigator.geolocation.getCurrentPosition(function(pos){
 
-respuestas.lat=pos.coords.latitude;
+let chat=document.getElementById("chat");
 
-respuestas.lon=pos.coords.longitude;
+chat.innerHTML+=`<div class="bubble">Ubicación registrada ✔</div>`;
 
-alert("Ubicación registrada");
-
-});
-
-}
-
-function hash(str){
-
-let h=0;
-
-for(let i=0;i<str.length;i++){
-
-h=((h<<5)-h)+str.charCodeAt(i);
-
-h|=0;
-
-}
-
-return h;
-
-}
-
-function registrar(){
-
-let data={
-
-fecha:new Date(),
-
-servicio:respuestas[0],
-
-valoracion:respuestas[1],
-
-descripcion:respuestas[2],
-
-lat:respuestas.lat,
-
-lon:respuestas.lon
-
-};
-
-data.hash=hash(JSON.stringify(data));
-
-fetch("TU_WEBHOOK_POWER_AUTOMATE",{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify(data)
+chat.scrollTop=chat.scrollHeight+200;
 
 });
 
@@ -263,5 +231,4 @@ body:JSON.stringify(data)
 </script>
 
 </body>
-
 </html>
