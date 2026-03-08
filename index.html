@@ -4,139 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CitizenVoice</title>
-
 <style>
-*{box-sizing:border-box;}
-body{
-  font-family:Arial;
-  background:#f2f2f2;
-  display:flex;
-  justify-content:center;
-  padding:20px;
-  margin:0;
-}
-.container{
-  width:100%;
-  max-width:520px;
-}
-.title{
-  font-size:52px;
-  font-weight:bold;
-  text-align:center;
-  color:#2e7d32;
-  margin-bottom:5px;
-}
-.subtitle{
-  text-align:center;
-  color:#666;
-  margin-bottom:15px;
-}
-.chat{
-  background:white;
-  padding:20px;
-  border-radius:20px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.1);
-  max-height:70vh;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-}
-.bubble{
-  background:#f1f1f1;
-  padding:14px;
-  border-radius:12px;
-  margin:3px 0;
-  font-size:18px;
-  max-width:85%;
-}
-.user{
-  background:#2e7d32;
-  color:white;
-  padding:6px 10px;
-  border-radius:10px;
-  margin:3px 0;
-  align-self:flex-end;
-  font-size:13px;
-  max-width:70%;
-}
-.inputArea{
-  margin-top:10px;
-  width:100%;
-}
-button{
-  width:100%;
-  padding:12px;
-  margin:5px 0;
-  font-size:17px;
-  border:none;
-  border-radius:10px;
-  background:#2e7d32;
-  color:white;
-  cursor:pointer;
-}
-button:hover{
-  background:#1b5e20;
-}
-textarea{
-  width:100%;
-  max-width:100%;
-  height:65px;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  background:#dcedc8;
-  font-size:15px;
-}
-input{
-  width:100%;
-  max-width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  background:#c8e6c9;
-  font-size:15px;
-}
-.controls{
-  display:flex;
-  gap:8px;
-  margin-top:6px;
-}
-.small{
-  flex:1;
-  padding:10px;
-  font-size:14px;
-  border:none;
-  border-radius:10px;
-  background:#2e7d32;
-  color:white;
-}
-.rating{
-  display:flex;
-  justify-content:space-between;
-  margin-top:10px;
-}
-.rating button{
-  width:18%;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  background:#2e7d32;
-  color:white;
-}
+body { font-family: Arial; background:#f2f2f2; display:flex; justify-content:center; padding:20px; margin:0;}
+.container{ width:100%; max-width:520px;}
+.title{ font-size:52px; font-weight:bold; text-align:center; color:#2e7d32; margin-bottom:5px;}
+.subtitle{ text-align:center; color:#666; margin-bottom:15px;}
+.chat{ background:white; padding:20px; border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:70vh; overflow-y:auto; display:flex; flex-direction:column;}
+.bubble{ background:#f1f1f1; padding:14px; border-radius:12px; margin:3px 0; font-size:18px; max-width:85%;}
+.user{ background:#2e7d32; color:white; padding:6px 10px; border-radius:10px; margin:3px 0; align-self:flex-end; font-size:12px; max-width:70%;}
+.inputArea{ margin-top:10px; width:100%;}
+button{ width:100%; padding:12px; margin:5px 0; font-size:17px; border:none; border-radius:10px; background:#2e7d32; color:white; cursor:pointer;}
+button:hover{ background:#1b5e20;}
+textarea{ width:100%; max-width:100%; height:65px; padding:10px; border-radius:10px; border:1px solid #ccc; background:#dcedc8; font-size:15px;}
+input{ width:100%; max-width:100%; padding:10px; border-radius:10px; border:1px solid #ccc; background:#c8e6c9; font-size:15px;}
+.controls{ display:flex; gap:8px; margin-top:6px;}
+.small{ flex:1; padding:10px; font-size:14px; border:none; border-radius:10px; background:#2e7d32; color:white;}
+.rating{ display:flex; justify-content:space-between; margin-top:10px;}
+.rating button{ width:18%; padding:10px; border:none; border-radius:10px; background:#2e7d32; color:white;}
 </style>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&libraries=places"></script>
+
 </head>
 <body>
 <div class="container">
+  <div class="title">CitizenVoice</div>
+  <div class="subtitle">Deja tu opinión en solo 30 segundos</div>
 
-<div class="title">CitizenVoice</div>
-<div class="subtitle">Deja tu opinión en solo 30 segundos</div>
+  <div class="chat" id="chat"></div>
 
-<div class="chat" id="chat"></div>
-
-<div class="inputArea" id="inputArea">
-<button onclick="startSurvey()">Iniciar valoración</button>
-</div>
-
+  <div class="inputArea" id="inputArea">
+    <button onclick="startSurvey()">Iniciar valoración</button>
+  </div>
 </div>
 
 <script>
@@ -145,177 +45,118 @@ let data={};
 const chat=document.getElementById("chat");
 const inputArea=document.getElementById("inputArea");
 
-// Función scroll más agresivo
-function scrollBottom(){
-  setTimeout(()=>{
-    chat.scrollTop = chat.scrollHeight + 500;
-  },200)
-}
+// Función scroll
+function scrollBottom(){ setTimeout(()=>{ chat.scrollTop = chat.scrollHeight + 500; },200) }
 
-// Función voz
-function speak(text){
-  let msg=new SpeechSynthesisUtterance(text);
-  msg.lang="es-ES";
-  speechSynthesis.cancel();
+// Voz
+function speak(text){ 
+  let msg=new SpeechSynthesisUtterance(text); 
+  msg.lang="es-ES"; 
+  speechSynthesis.cancel(); 
   speechSynthesis.speak(msg);
 }
 
 // Burbuja bot
-function addBot(text){
-  let div=document.createElement("div");
-  div.className="bubble";
-  div.innerText=text;
-  chat.appendChild(div);
-  speak(text);
-  scrollBottom();
-}
+function addBot(text){ let div=document.createElement("div"); div.className="bubble"; div.innerText=text; chat.appendChild(div); speak(text); scrollBottom(); }
 
-// Burbuja usuario más pequeña
-function addUser(text){
-  let div=document.createElement("div");
-  div.className="user";
-  div.innerText=text;
-  chat.appendChild(div);
-  div.style.fontSize="12px"; // más pequeño
-  scrollBottom();
-}
+// Burbuja usuario
+function addUser(text){ let div=document.createElement("div"); div.className="user"; div.innerText=text; div.style.fontSize="12px"; chat.appendChild(div); scrollBottom(); }
 
-// Flujo bot
+// Flujo
 function next(){
   step++;
   inputArea.innerHTML="";
-
   if(step==1){
     addBot("¿Sobre qué área quieres opinar?");
-    inputArea.innerHTML=`
-      <div class="buttons">
-        <button onclick="selectArea('Movilidad')">Movilidad</button>
-        <button onclick="selectArea('Limpieza')">Limpieza</button>
-        <button onclick="selectArea('Urbanismo')">Urbanismo</button>
-        <button onclick="selectArea('Cultura')">Cultura</button>
-        <button onclick="selectArea('Seguridad')">Seguridad</button>
-        <button onclick="selectArea('Tramitación')">Tramitación</button>
-        <button onclick="selectArea('Otros')">Otros</button>
-      </div>
-    `;
+    inputArea.innerHTML=`<div class="buttons">
+      <button onclick="selectArea('Movilidad')">Movilidad</button>
+      <button onclick="selectArea('Limpieza')">Limpieza</button>
+      <button onclick="selectArea('Urbanismo')">Urbanismo</button>
+      <button onclick="selectArea('Cultura')">Cultura</button>
+      <button onclick="selectArea('Seguridad')">Seguridad</button>
+      <button onclick="selectArea('Tramitación')">Tramitación</button>
+      <button onclick="selectArea('Otros')">Otros</button>
+    </div>`;
   }
-
   if(step==2){
     addBot("¿Es una incidencia o una propuesta?");
-    inputArea.innerHTML=`
-      <div class="buttons">
-        <button onclick="selectType('Incidencia')">Incidencia</button>
-        <button onclick="selectType('Propuesta')">Propuesta</button>
-      </div>
-    `;
+    inputArea.innerHTML=`<div class="buttons">
+      <button onclick="selectType('Incidencia')">Incidencia</button>
+      <button onclick="selectType('Propuesta')">Propuesta</button>
+    </div>`;
   }
-
   if(step==3){
     addBot("Describe la incidencia o propuesta");
-    inputArea.innerHTML=`
-      <textarea id="desc" placeholder="Escribe o usa el micrófono"></textarea>
+    inputArea.innerHTML=`<textarea id="desc" placeholder="Escribe o usa el micrófono"></textarea>
       <div class="controls">
         <button class="small" onclick="startVoice()">🎤</button>
         <button class="small" onclick="sendDesc()">Enviar</button>
-      </div>
-    `;
+      </div>`;
   }
-
   if(step==4){
     addBot("Indica la calle o lugar");
     inputArea.innerHTML=`
-      <input list="calles" id="loc" placeholder="Empieza a escribir la calle">
-      <datalist id="calles">
-        <option value="Calle Mayor">
-        <option value="Calle Real">
-        <option value="Calle Gran Via">
-        <option value="Calle Alcalá">
-        <option value="Calle Serrano">
-        <option value="Calle Atocha">
-        <option value="Avenida de la Constitución">
-        <option value="Avenida del Mediterráneo">
-        <option value="Plaza España">
-        <option value="Plaza Mayor">
-        <option value="Parque Central">
-        <option value="Biblioteca Municipal">
-        <option value="Centro de Salud">
-        <option value="Estación de tren">
-        <option value="Polideportivo Municipal">
-        <option value="Ayuntamiento">
-      </datalist>
+      <input id="loc" placeholder="Empieza a escribir la calle">
       <div class="controls">
         <button class="small" onclick="sendLocation()">📍 Enviar ubicación</button>
-        <button class="small" onclick="useGPS()">🛰️ Usar GPS</button>
+        <button class="small" onclick="useGPS()">🛰️ Localizar por GPS</button>
       </div>
     `;
+    // Autocomplete Google Places
+    let input = document.getElementById("loc");
+    new google.maps.places.Autocomplete(input, { types:['geocode'], componentRestrictions:{country:'es'} });
   }
-
   if(step==5){
     addBot("Valora el servicio al que te estás refiriendo");
-    inputArea.innerHTML=`
-      <div class="rating">
-        <button onclick="rate(1)">1</button>
-        <button onclick="rate(2)">2</button>
-        <button onclick="rate(3)">3</button>
-        <button onclick="rate(4)">4</button>
-        <button onclick="rate(5)">5</button>
-      </div>
-    `;
+    inputArea.innerHTML=`<div class="rating">
+      <button onclick="rate(1)">1</button>
+      <button onclick="rate(2)">2</button>
+      <button onclick="rate(3)">3</button>
+      <button onclick="rate(4)">4</button>
+      <button onclick="rate(5)">5</button>
+    </div>`;
   }
-
   if(step==6){
     addBot("Gracias. Tu opinión ha sido registrada.");
     inputArea.innerHTML="";
-    console.log(data);
+    console.log("Datos:",data);
   }
 }
 
-// Funciones selección
+// Funciones
 function selectArea(val){ data.area=val; addUser(val); next(); }
 function selectType(val){ data.tipo=val; addUser(val); next(); }
-function sendDesc(){ 
-  let val=document.getElementById("desc").value; 
-  data.descripcion=val; 
-  addUser(val); 
-  next(); 
-}
-function sendLocation(){ 
-  let val=document.getElementById("loc").value; 
-  data.ubicacion=val; 
-  addUser(val); 
-  next(); 
-}
+function sendDesc(){ let val=document.getElementById("desc").value; data.descripcion=val; addUser(val); next(); }
+function sendLocation(){ let val=document.getElementById("loc").value; data.ubicacion=val; addUser(val); next(); }
 function rate(val){ data.valoracion=val; addUser("Valoración: "+val); next(); }
 
-// Función micrófono
+// Micrófono
 function startVoice(){
-  let rec=new webkitSpeechRecognition();
-  rec.lang="es-ES";
-  rec.onresult=function(e){ 
-    document.getElementById("desc").value=e.results[0][0].transcript; 
+  if(!('webkitSpeechRecognition' in window)){
+    alert("Tu navegador no soporta reconocimiento de voz");
+    return;
   }
+  let rec = new webkitSpeechRecognition();
+  rec.lang="es-ES";
+  rec.onresult = function(e){ document.getElementById("desc").value = e.results[0][0].transcript; }
   rec.start();
 }
 
-// Función GPS
+// GPS
 function useGPS(){
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(function(pos){
       let coords="Lat: "+pos.coords.latitude.toFixed(5)+", Lng: "+pos.coords.longitude.toFixed(5);
       document.getElementById("loc").value=coords;
       data.ubicacion=coords;
+    },function(err){
+      alert("Activa la geolocalización en tu móvil para usar esta opción");
     });
-  }else{
-    alert("Tu navegador no soporta geolocalización");
-  }
+  } else { alert("Tu navegador no soporta geolocalización"); }
 }
 
 // Botón inicial
-function startSurvey(){
-  inputArea.innerHTML="";
-  next();
-}
+function startSurvey(){ inputArea.innerHTML=""; next(); }
 </script>
-
 </body>
 </html>
