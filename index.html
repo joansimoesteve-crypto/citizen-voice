@@ -4,26 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CitizenVoice</title>
-
 <style>
-body{font-family:Arial;background:#f2f2f2;display:flex;justify-content:center;padding:20px;margin:0;}
-.container{width:100%;max-width:520px;}
-.title{font-size:52px;font-weight:bold;text-align:center;color:#2e7d32;margin-bottom:5px;}
-.subtitle{text-align:center;color:#666;margin-bottom:15px;}
-.chat{background:white;padding:20px;border-radius:20px;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:70vh;overflow-y:auto;display:flex;flex-direction:column;}
-.bubble{background:#f1f1f1;padding:12px;border-radius:12px;margin:3px 0;font-size:18px;max-width:85%;transition:all 0.3s;}
-.user{background:#2e7d32;color:white;padding:6px 10px;border-radius:10px;margin:3px 0;align-self:flex-end;font-size:12px;max-width:70%;transition:all 0.3s;}
-textarea{width:100%;max-width:100%;height:60px;padding:10px;border-radius:10px;border:1px solid #ccc;background:#dcedc8;font-size:15px;}
-input{width:100%;max-width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;background:#c8e6c9;font-size:15px;}
-.controls{display:flex;gap:8px;margin-top:6px;}
-.small{flex:1;padding:10px;font-size:14px;border:none;border-radius:10px;background:#2e7d32;color:white;cursor:pointer;}
-button:hover{background:#1b5e20;}
-.rating{display:flex;justify-content:space-between;margin-top:10px;}
-.rating button{width:18%;padding:10px;border:none;border-radius:10px;background:#2e7d32;color:white;}
-#map{width:100%;height:200px;margin-top:10px;border-radius:10px;}
+body { font-family: Arial; background:#f2f2f2; display:flex; justify-content:center; padding:20px; margin:0;}
+.container{ width:100%; max-width:520px;}
+.title{ font-size:52px; font-weight:bold; text-align:center; color:#2e7d32; margin-bottom:5px;}
+.subtitle{ text-align:center; color:#666; margin-bottom:15px;}
+.chat{ background:white; padding:20px; border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:70vh; overflow-y:auto; display:flex; flex-direction:column;}
+.bubble{ background:#f1f1f1; padding:14px; border-radius:12px; margin:3px 0; font-size:18px; max-width:85%;}
+.user{ background:#2e7d32; color:white; padding:6px 10px; border-radius:10px; margin:3px 0; align-self:flex-end; font-size:12px; max-width:70%;}
+.inputArea{ margin-top:10px; width:100%;}
+button{ width:100%; padding:12px; margin:5px 0; font-size:17px; border:none; border-radius:10px; background:#2e7d32; color:white; cursor:pointer;}
+button:hover{ background:#1b5e20;}
+textarea{ width:100%; max-width:100%; height:65px; padding:10px; border-radius:10px; border:1px solid #ccc; background:#dcedc8; font-size:15px;}
+input{ width:100%; max-width:100%; padding:10px; border-radius:10px; border:1px solid #ccc; background:#c8e6c9; font-size:15px;}
+.controls{ display:flex; gap:8px; margin-top:6px;}
+.small{ flex:1; padding:10px; font-size:14px; border:none; border-radius:10px; background:#2e7d32; color:white;}
+.rating{ display:flex; justify-content:space-between; margin-top:10px;}
+.rating button{ width:18%; padding:10px; border:none; border-radius:10px; background:#2e7d32; color:white;}
 </style>
 
+<!-- Google Maps API -->
 <script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&libraries=places"></script>
+
 </head>
 <body>
 <div class="container">
@@ -31,6 +33,7 @@ button:hover{background:#1b5e20;}
   <div class="subtitle">Deja tu opinión en solo 30 segundos</div>
 
   <div class="chat" id="chat"></div>
+
   <div class="inputArea" id="inputArea">
     <button onclick="startSurvey()">Iniciar valoración</button>
   </div>
@@ -42,45 +45,24 @@ let data={};
 const chat=document.getElementById("chat");
 const inputArea=document.getElementById("inputArea");
 
-// Reducir tamaño de los mensajes anteriores
-function shrinkMessages(){
-  const msgs = chat.children;
-  for(let i=0;i<msgs.length;i++){
-    msgs[i].style.fontSize="12px";
-    msgs[i].style.padding="6px";
-  }
-}
+// Función scroll
+function scrollBottom(){ setTimeout(()=>{ chat.scrollTop = chat.scrollHeight + 500; },200) }
 
 // Voz
-function speak(text){
-  let msg=new SpeechSynthesisUtterance(text);
-  msg.lang="es-ES";
-  speechSynthesis.cancel();
+function speak(text){ 
+  let msg=new SpeechSynthesisUtterance(text); 
+  msg.lang="es-ES"; 
+  speechSynthesis.cancel(); 
   speechSynthesis.speak(msg);
 }
 
 // Burbuja bot
-function addBot(text){ 
-  shrinkMessages();
-  let div=document.createElement("div"); 
-  div.className="bubble"; 
-  div.innerText=text; 
-  chat.appendChild(div); 
-  speak(text);
-  chat.scrollTop=chat.scrollHeight+500; 
-}
+function addBot(text){ let div=document.createElement("div"); div.className="bubble"; div.innerText=text; chat.appendChild(div); speak(text); scrollBottom(); }
 
 // Burbuja usuario
-function addUser(text){ 
-  shrinkMessages();
-  let div=document.createElement("div"); 
-  div.className="user"; 
-  div.innerText=text; 
-  chat.appendChild(div); 
-  chat.scrollTop=chat.scrollHeight+500;
-}
+function addUser(text){ let div=document.createElement("div"); div.className="user"; div.innerText=text; div.style.fontSize="12px"; chat.appendChild(div); scrollBottom(); }
 
-// Flujo del bot
+// Flujo
 function next(){
   step++;
   inputArea.innerHTML="";
@@ -112,28 +94,17 @@ function next(){
       </div>`;
   }
   if(step==4){
-    addBot("Indica la calle o lugar (opcionalmente usa el GPS)");
+    addBot("Indica la calle o lugar");
     inputArea.innerHTML=`
-      <input id="loc" placeholder="Escribe la calle/lugar">
+      <input id="loc" placeholder="Empieza a escribir la calle">
       <div class="controls">
         <button class="small" onclick="sendLocation()">📍 Enviar ubicación</button>
         <button class="small" onclick="useGPS()">🛰️ Localizar por GPS</button>
       </div>
-      <div id="map"></div>
     `;
     // Autocomplete Google Places
-    let input=document.getElementById("loc");
-    new google.maps.places.Autocomplete(input,{types:['geocode'],componentRestrictions:{country:'es'}});
-    // Mini-mapa
-    let map=new google.maps.Map(document.getElementById("map"),{center:{lat:40.4168,lng:-3.7038},zoom:13});
-    let marker=new google.maps.Marker({position:map.getCenter(),map:map,draggable:true});
-    marker.addListener('dragend',()=>{ 
-      data.ubicacion=marker.getPosition().lat().toFixed(5)+","+marker.getPosition().lng().toFixed(5);
-    });
-    map.addListener('click',(e)=>{
-      marker.setPosition(e.latLng);
-      data.ubicacion=e.latLng.lat().toFixed(5)+","+e.latLng.lng().toFixed(5);
-    });
+    let input = document.getElementById("loc");
+    new google.maps.places.Autocomplete(input, { types:['geocode'], componentRestrictions:{country:'es'} });
   }
   if(step==5){
     addBot("Valora el servicio al que te estás refiriendo");
@@ -148,11 +119,11 @@ function next(){
   if(step==6){
     addBot("Gracias. Tu opinión ha sido registrada.");
     inputArea.innerHTML="";
-    console.log("Datos finales:",data);
+    console.log("Datos:",data);
   }
 }
 
-// Funciones de selección
+// Funciones
 function selectArea(val){ data.area=val; addUser(val); next(); }
 function selectType(val){ data.tipo=val; addUser(val); next(); }
 function sendDesc(){ let val=document.getElementById("desc").value; data.descripcion=val; addUser(val); next(); }
@@ -161,9 +132,13 @@ function rate(val){ data.valoracion=val; addUser("Valoración: "+val); next(); }
 
 // Micrófono
 function startVoice(){
-  if(!('webkitSpeechRecognition' in window)){ alert("Tu navegador no soporta reconocimiento de voz"); return; }
-  let rec=new webkitSpeechRecognition(); rec.lang="es-ES";
-  rec.onresult=function(e){ document.getElementById("desc").value=e.results[0][0].transcript; }
+  if(!('webkitSpeechRecognition' in window)){
+    alert("Tu navegador no soporta reconocimiento de voz");
+    return;
+  }
+  let rec = new webkitSpeechRecognition();
+  rec.lang="es-ES";
+  rec.onresult = function(e){ document.getElementById("desc").value = e.results[0][0].transcript; }
   rec.start();
 }
 
@@ -171,16 +146,16 @@ function startVoice(){
 function useGPS(){
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(function(pos){
-      let coords="Lat:"+pos.coords.latitude.toFixed(5)+",Lng:"+pos.coords.longitude.toFixed(5);
+      let coords="Lat: "+pos.coords.latitude.toFixed(5)+", Lng: "+pos.coords.longitude.toFixed(5);
       document.getElementById("loc").value=coords;
       data.ubicacion=coords;
-      // actualizar marcador si existe
-      if(window.mapMarker){ window.mapMarker.setPosition({lat:pos.coords.latitude,lng:pos.coords.longitude}); }
-    },function(err){ alert("Activa la geolocalización para usar esta opción"); });
+    },function(err){
+      alert("Activa la geolocalización en tu móvil para usar esta opción");
+    });
   } else { alert("Tu navegador no soporta geolocalización"); }
 }
 
-// Iniciar encuesta
+// Botón inicial
 function startSurvey(){ inputArea.innerHTML=""; next(); }
 </script>
 </body>
