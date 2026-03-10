@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>CitizenVoice</title>
 
 <style>
@@ -23,7 +22,7 @@ max-width:520px;
 }
 
 .title{
-font-size:50px;
+font-size:52px;
 font-weight:bold;
 text-align:center;
 color:#2e7d32;
@@ -50,32 +49,52 @@ flex-direction:column;
 background:#f1f1f1;
 padding:14px;
 border-radius:12px;
-margin:5px 0;
+margin:4px 0;
 font-size:18px;
-max-width:90%;
+max-width:85%;
 }
 
 .user{
 background:#2e7d32;
 color:white;
-padding:5px 8px;
+padding:4px 8px;
 border-radius:8px;
 margin:3px 0;
 align-self:flex-end;
-font-size:12px;
-opacity:0.9;
+font-size:11px;
+opacity:0.85;
 max-width:70%;
 }
 
-.options{
-margin-top:8px;
+.inputBox{
+width:80%;
+margin-top:6px;
+}
+
+textarea{
+width:100%;
+height:55px;
+border-radius:10px;
+padding:8px;
+background:#dcedc8;
+border:1px solid #ccc;
+font-size:14px;
+}
+
+input{
+width:100%;
+padding:8px;
+border-radius:10px;
+background:#c8e6c9;
+border:1px solid #ccc;
+font-size:14px;
 }
 
 button{
 width:100%;
-padding:12px;
+padding:11px;
 margin:4px 0;
-font-size:17px;
+font-size:16px;
 border:none;
 border-radius:10px;
 background:#2e7d32;
@@ -83,21 +102,14 @@ color:white;
 cursor:pointer;
 }
 
-textarea{
-width:100%;
-height:60px;
-border-radius:10px;
-padding:8px;
-background:#dcedc8;
-border:1px solid #ccc;
+.controls{
+display:flex;
+gap:6px;
 }
 
-input{
-width:100%;
-padding:10px;
-border-radius:10px;
-background:#c8e6c9;
-border:1px solid #ccc;
+.small{
+flex:1;
+font-size:14px;
 }
 
 .suggestions{
@@ -107,20 +119,20 @@ margin-top:4px;
 }
 
 .suggestions div{
-padding:8px;
-cursor:pointer;
+padding:7px;
 border-bottom:1px solid #eee;
+cursor:pointer;
 }
 
 .suggestions div:hover{
 background:#eee;
 }
 
-.videoIntro{
+.intro{
 text-align:center;
 }
 
-video{
+video,img{
 width:100%;
 border-radius:15px;
 }
@@ -135,11 +147,9 @@ border-radius:15px;
 <div class="title">CitizenVoice</div>
 <div class="subtitle">La ciudad te escucha y actúa</div>
 
-<div id="intro" class="videoIntro">
+<div id="intro" class="intro">
 
-<video autoplay muted loop>
-<source src="bot.mp4" type="video/mp4">
-</video>
+<img src="bot.png">
 
 <button onclick="startChat()">Comenzar encuesta</button>
 
@@ -155,6 +165,15 @@ let step=0
 let data={}
 
 const chat=document.getElementById("chat")
+
+function speak(text){
+
+let msg=new SpeechSynthesisUtterance(text)
+msg.lang="es-ES"
+speechSynthesis.cancel()
+speechSynthesis.speak(msg)
+
+}
 
 function scrollBottom(){
 
@@ -174,6 +193,8 @@ div.className="bubble"
 div.innerText=text
 
 chat.appendChild(div)
+
+speak(text)
 
 scrollBottom()
 
@@ -196,7 +217,9 @@ function startChat(){
 document.getElementById("intro").style.display="none"
 chat.style.display="flex"
 
-next()
+addBot("Bienvenido. Puedes dejar una incidencia o propuesta en menos de treinta segundos.")
+
+setTimeout(next,1200)
 
 }
 
@@ -208,24 +231,15 @@ if(step==1){
 
 addBot("¿Sobre qué área quieres opinar?")
 
-let options=document.createElement("div")
-options.className="options"
-
-options.innerHTML=`
-
-<button onclick="selectArea('Movilidad')">Movilidad</button>
-<button onclick="selectArea('Limpieza')">Limpieza</button>
-<button onclick="selectArea('Urbanismo')">Urbanismo</button>
-<button onclick="selectArea('Cultura')">Cultura</button>
-<button onclick="selectArea('Seguridad')">Seguridad</button>
-<button onclick="selectArea('Tramitación')">Tramitación</button>
-<button onclick="selectArea('Otros')">Otros</button>
-
-`
-
-chat.appendChild(options)
-
-scrollBottom()
+createButtons([
+"Movilidad",
+"Limpieza",
+"Urbanismo",
+"Cultura",
+"Seguridad",
+"Tramitación",
+"Otros"
+],selectArea)
 
 }
 
@@ -233,18 +247,10 @@ if(step==2){
 
 addBot("¿Es una incidencia o una propuesta?")
 
-let options=document.createElement("div")
-
-options.innerHTML=`
-
-<button onclick="selectType('Incidencia')">Incidencia</button>
-<button onclick="selectType('Propuesta')">Propuesta</button>
-
-`
-
-chat.appendChild(options)
-
-scrollBottom()
+createButtons([
+"Incidencia",
+"Propuesta"
+],selectType)
 
 }
 
@@ -253,11 +259,16 @@ if(step==3){
 addBot("Describe la incidencia o propuesta")
 
 let div=document.createElement("div")
+div.className="inputBox"
 
 div.innerHTML=`
 
 <textarea id="desc"></textarea>
-<button onclick="sendDesc()">Enviar</button>
+
+<div class="controls">
+<button class="small" onclick="startVoice()">🎤</button>
+<button class="small" onclick="sendDesc()">Enviar</button>
+</div>
 
 `
 
@@ -272,6 +283,7 @@ if(step==4){
 addBot("Indica la calle o lugar")
 
 let div=document.createElement("div")
+div.className="inputBox"
 
 div.innerHTML=`
 
@@ -279,7 +291,7 @@ div.innerHTML=`
 
 <div id="suggestions" class="suggestions"></div>
 
-<button onclick="sendLocation()">Enviar</button>
+<button onclick="sendLocation()">Enviar ubicación</button>
 
 `
 
@@ -293,21 +305,7 @@ if(step==5){
 
 addBot("Valora el servicio")
 
-let div=document.createElement("div")
-
-div.innerHTML=`
-
-<button onclick="rate(1)">1</button>
-<button onclick="rate(2)">2</button>
-<button onclick="rate(3)">3</button>
-<button onclick="rate(4)">4</button>
-<button onclick="rate(5)">5</button>
-
-`
-
-chat.appendChild(div)
-
-scrollBottom()
+createButtons(["1","2","3","4","5"],rate)
 
 }
 
@@ -321,11 +319,87 @@ console.log(data)
 
 }
 
-function selectArea(val){data.area=val;addUser(val);next()}
-function selectType(val){data.tipo=val;addUser(val);next()}
-function sendDesc(){let val=document.getElementById("desc").value;data.desc=val;addUser(val);next()}
-function sendLocation(){let val=document.getElementById("loc").value;data.loc=val;addUser(val);next()}
-function rate(val){data.rate=val;addUser(val);next()}
+function createButtons(arr,callback){
+
+let div=document.createElement("div")
+
+arr.forEach(v=>{
+let b=document.createElement("button")
+b.innerText=v
+b.onclick=()=>callback(v)
+div.appendChild(b)
+})
+
+chat.appendChild(div)
+
+scrollBottom()
+
+}
+
+function selectArea(val){
+data.area=val
+addUser(val)
+next()
+}
+
+function selectType(val){
+data.tipo=val
+addUser(val)
+next()
+}
+
+function sendDesc(){
+
+let val=document.getElementById("desc").value
+
+data.desc=val
+
+addUser(val)
+
+next()
+
+}
+
+function sendLocation(){
+
+let val=document.getElementById("loc").value
+
+data.loc=val
+
+addUser(val)
+
+next()
+
+}
+
+function rate(val){
+
+data.rate=val
+
+addUser("Valoración "+val)
+
+next()
+
+}
+
+function startVoice(){
+
+if(!('webkitSpeechRecognition' in window)){
+alert("Tu navegador no soporta voz")
+return
+}
+
+let rec=new webkitSpeechRecognition()
+
+rec.lang="es-ES"
+
+rec.onresult=function(e){
+document.getElementById("desc").value=e.results[0][0].transcript
+}
+
+rec.start()
+
+}
 
 async function searchStreet(){
 
@@ -333,15 +407,17 @@ let q=document.getElementById("loc").value
 
 if(q.length<3)return
 
-let res=await fetch("https://nominatim.openstreetmap.org/search?format=json&q="+q)
+let url="https://nominatim.openstreetmap.org/search?format=json&q="+q+"&countrycodes=es"
 
-let data=await res.json()
+let res=await fetch(url)
+
+let places=await res.json()
 
 let box=document.getElementById("suggestions")
 
 box.innerHTML=""
 
-data.slice(0,5).forEach(place=>{
+places.slice(0,5).forEach(place=>{
 
 let div=document.createElement("div")
 
