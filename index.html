@@ -22,7 +22,7 @@ max-width:520px;
 }
 
 .title{
-font-size:52px;
+font-size:50px;
 font-weight:bold;
 text-align:center;
 color:#2e7d32;
@@ -57,42 +57,22 @@ max-width:85%;
 .user{
 background:#2e7d32;
 color:white;
-padding:4px 8px;
-border-radius:8px;
+padding:10px;
+border-radius:12px;
 margin:3px 0;
 align-self:flex-end;
+font-size:14px;
+max-width:85%;
+}
+
+.smallHistory{
 font-size:11px;
-opacity:0.85;
-max-width:70%;
-}
-
-.inputBox{
-width:80%;
-margin-top:6px;
-}
-
-textarea{
-width:100%;
-height:55px;
-border-radius:10px;
-padding:8px;
-background:#dcedc8;
-border:1px solid #ccc;
-font-size:14px;
-}
-
-input{
-width:100%;
-padding:8px;
-border-radius:10px;
-background:#c8e6c9;
-border:1px solid #ccc;
-font-size:14px;
+opacity:0.8;
 }
 
 button{
 width:100%;
-padding:11px;
+padding:12px;
 margin:4px 0;
 font-size:16px;
 border:none;
@@ -102,39 +82,30 @@ color:white;
 cursor:pointer;
 }
 
-.controls{
-display:flex;
-gap:6px;
+textarea,input{
+width:100%;
+padding:10px;
+border-radius:10px;
+border:1px solid #ccc;
+font-size:15px;
+background:#e8f5e9;
 }
 
-.small{
-flex:1;
-font-size:14px;
+.controls{
+display:flex;
+gap:8px;
 }
 
 .suggestions{
 background:white;
 border-radius:10px;
-margin-top:4px;
+margin-top:5px;
 }
 
 .suggestions div{
-padding:7px;
-border-bottom:1px solid #eee;
+padding:8px;
 cursor:pointer;
-}
-
-.suggestions div:hover{
-background:#eee;
-}
-
-.intro{
-text-align:center;
-}
-
-video,img{
-width:100%;
-border-radius:15px;
+border-bottom:1px solid #eee;
 }
 
 </style>
@@ -145,17 +116,20 @@ border-radius:15px;
 <div class="container">
 
 <div class="title">CitizenVoice</div>
-<div class="subtitle">La ciudad te escucha y actúa</div>
+<div class="subtitle">Tu opinión en solo 30 segundos</div>
 
-<div id="intro" class="intro">
+<div id="intro">
 
-<img src="bot.png">
+<p style="text-align:center;font-size:18px;">
+La ciudad te escucha.<br>
+¿Quieres dejar una incidencia o propuesta?
+</p>
 
-<button onclick="startChat()">Comenzar encuesta</button>
+<button onclick="startChat()">Comenzar</button>
 
 </div>
 
-<div class="chat" id="chat" style="display:none;"></div>
+<div id="chat" class="chat" style="display:none;"></div>
 
 </div>
 
@@ -163,53 +137,41 @@ border-radius:15px;
 
 let step=0
 let data={}
+let currentOptions=null
 
 const chat=document.getElementById("chat")
 
 function speak(text){
-
 let msg=new SpeechSynthesisUtterance(text)
 msg.lang="es-ES"
 speechSynthesis.cancel()
 speechSynthesis.speak(msg)
-
 }
 
 function scrollBottom(){
-
 setTimeout(()=>{
 chat.scrollTo({
-top:chat.scrollHeight+1000,
+top:chat.scrollHeight+500,
 behavior:"smooth"
 })
 },200)
-
 }
 
 function addBot(text){
-
 let div=document.createElement("div")
 div.className="bubble"
 div.innerText=text
-
 chat.appendChild(div)
-
 speak(text)
-
 scrollBottom()
-
 }
 
 function addUser(text){
-
 let div=document.createElement("div")
-div.className="user"
+div.className="user smallHistory"
 div.innerText=text
-
 chat.appendChild(div)
-
 scrollBottom()
-
 }
 
 function startChat(){
@@ -217,10 +179,14 @@ function startChat(){
 document.getElementById("intro").style.display="none"
 chat.style.display="flex"
 
-addBot("Bienvenido. Puedes dejar una incidencia o propuesta en menos de treinta segundos.")
+addBot("Bienvenido. Puedes dejar una incidencia o propuesta en solo treinta segundos.")
 
 setTimeout(next,1200)
 
+}
+
+function clearOptions(){
+if(currentOptions) currentOptions.remove()
 }
 
 function next(){
@@ -259,21 +225,21 @@ if(step==3){
 addBot("Describe la incidencia o propuesta")
 
 let div=document.createElement("div")
-div.className="inputBox"
 
 div.innerHTML=`
 
 <textarea id="desc"></textarea>
 
 <div class="controls">
-<button class="small" onclick="startVoice()">🎤</button>
-<button class="small" onclick="sendDesc()">Enviar</button>
+
+<button onclick="startVoice()">🎤</button>
+<button onclick="sendDesc()">Enviar</button>
+
 </div>
 
 `
 
 chat.appendChild(div)
-
 scrollBottom()
 
 }
@@ -283,11 +249,10 @@ if(step==4){
 addBot("Indica la calle o lugar")
 
 let div=document.createElement("div")
-div.className="inputBox"
 
 div.innerHTML=`
 
-<input id="loc" onkeyup="searchStreet()">
+<input id="loc" onkeyup="searchStreet()" placeholder="Escribe una calle">
 
 <div id="suggestions" class="suggestions"></div>
 
@@ -296,7 +261,6 @@ div.innerHTML=`
 `
 
 chat.appendChild(div)
-
 scrollBottom()
 
 }
@@ -313,7 +277,7 @@ if(step==6){
 
 addBot("Gracias. Tu opinión ha sido registrada.")
 
-console.log(data)
+sendToExcel()
 
 }
 
@@ -321,30 +285,36 @@ console.log(data)
 
 function createButtons(arr,callback){
 
+clearOptions()
+
 let div=document.createElement("div")
 
 arr.forEach(v=>{
 let b=document.createElement("button")
 b.innerText=v
-b.onclick=()=>callback(v)
+b.onclick=()=>{
+callback(v)
+clearOptions()
+}
 div.appendChild(b)
 })
 
 chat.appendChild(div)
+currentOptions=div
 
 scrollBottom()
 
 }
 
-function selectArea(val){
-data.area=val
-addUser(val)
+function selectArea(v){
+data.area=v
+addUser(v)
 next()
 }
 
-function selectType(val){
-data.tipo=val
-addUser(val)
+function selectType(v){
+data.tipo=v
+addUser(v)
 next()
 }
 
@@ -352,7 +322,7 @@ function sendDesc(){
 
 let val=document.getElementById("desc").value
 
-data.desc=val
+data.descripcion=val
 
 addUser(val)
 
@@ -364,7 +334,7 @@ function sendLocation(){
 
 let val=document.getElementById("loc").value
 
-data.loc=val
+data.ubicacion=val
 
 addUser(val)
 
@@ -372,11 +342,11 @@ next()
 
 }
 
-function rate(val){
+function rate(v){
 
-data.rate=val
+data.valoracion=v
 
-addUser("Valoración "+val)
+addUser("Valoración "+v)
 
 next()
 
@@ -407,29 +377,43 @@ let q=document.getElementById("loc").value
 
 if(q.length<3)return
 
-let url="https://nominatim.openstreetmap.org/search?format=json&q="+q+"&countrycodes=es"
+let url="https://photon.komoot.io/api/?q="+q+"&limit=5&lang=es"
 
 let res=await fetch(url)
 
-let places=await res.json()
+let data=await res.json()
 
 let box=document.getElementById("suggestions")
 
 box.innerHTML=""
 
-places.slice(0,5).forEach(place=>{
+data.features.forEach(place=>{
+
+let name=place.properties.name+", "+place.properties.city
 
 let div=document.createElement("div")
 
-div.innerText=place.display_name
+div.innerText=name
 
 div.onclick=()=>{
-document.getElementById("loc").value=place.display_name
+document.getElementById("loc").value=name
 box.innerHTML=""
 }
 
 box.appendChild(div)
 
+})
+
+}
+
+function sendToExcel(){
+
+fetch("TU_WEBHOOK_POWER_AUTOMATE",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(data)
 })
 
 }
