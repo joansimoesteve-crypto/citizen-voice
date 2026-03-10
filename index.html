@@ -1,129 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitizenVoice</title>
-
-<style>
-
-body{
-font-family:Arial;
-background:#f2f2f2;
-display:flex;
-justify-content:center;
-padding:20px;
-margin:0;
-}
-
-.container{
-width:100%;
-max-width:520px;
-}
-
-.title{
-font-size:48px;
-font-weight:bold;
-text-align:center;
-color:#2e7d32;
-}
-
-.subtitle{
-text-align:center;
-color:#666;
-margin-bottom:15px;
-}
-
-.chat{
-background:white;
-padding:20px;
-border-radius:20px;
-box-shadow:0 4px 12px rgba(0,0,0,0.1);
-max-height:70vh;
-overflow-y:auto;
-display:flex;
-flex-direction:column;
-}
-
-.bubble{
-background:#f1f1f1;
-padding:14px;
-border-radius:12px;
-margin:5px 0;
-font-size:17px;
-max-width:85%;
-}
-
-.user{
-background:#2e7d32;
-color:white;
-padding:14px;
-border-radius:12px;
-margin:4px 0;
-align-self:flex-end;
-max-width:85%;
-font-size:14px;
-}
-
-.history{
-font-size:11px;
-opacity:0.8;
-}
-
-button{
-width:100%;
-padding:12px;
-margin:5px 0;
-font-size:16px;
-border:none;
-border-radius:10px;
-background:#2e7d32;
-color:white;
-cursor:pointer;
-}
-
-textarea,input{
-width:100%;
-padding:10px;
-border-radius:10px;
-border:1px solid #ccc;
-background:#e8f5e9;
-font-size:15px;
-}
-
-.controls{
-display:flex;
-gap:8px;
-}
-
-.suggestions{
-background:white;
-border-radius:10px;
-margin-top:4px;
-}
-
-.suggestions div{
-padding:8px;
-border-bottom:1px solid #eee;
-cursor:pointer;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<div class="title">CitizenVoice</div>
-<div class="subtitle">Tu opinión en solo 30 segundos</div>
-
-<div id="chat" class="chat"></div>
-
-<button id="startBtn" onclick="startChat()">Empezar encuesta</button>
-
-</div>
-
 <script>
 
 let step=0
@@ -149,38 +23,27 @@ behavior:"smooth"
 }
 
 function addBot(text){
-
 let div=document.createElement("div")
 div.className="bubble"
 div.innerText=text
-
 chat.appendChild(div)
-
 speak(text)
-
 scrollBottom()
-
 }
 
 function addUser(text){
-
 let div=document.createElement("div")
 div.className="user history"
 div.innerText=text
-
 chat.appendChild(div)
-
 scrollBottom()
-
 }
 
 function startChat(){
 
 document.getElementById("startBtn").remove()
 
-addBot("Bienvenido. Puedes dejar una incidencia o propuesta en treinta segundos.")
-
-setTimeout(next,1000)
+next()
 
 }
 
@@ -390,7 +253,6 @@ box.innerHTML=""
 result.features.forEach(place=>{
 
 let name=place.properties.name || place.properties.street
-
 let city=place.properties.city || ""
 
 let label=name+" "+city
@@ -423,6 +285,3 @@ body:JSON.stringify(data)
 }
 
 </script>
-
-</body>
-</html>
