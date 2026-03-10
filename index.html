@@ -10,10 +10,8 @@ body { font-family: Arial; background:#f2f2f2; display:flex; justify-content:cen
 .title{ font-size:52px; font-weight:bold; text-align:center; color:#2e7d32; margin-bottom:5px;}
 .subtitle{ text-align:center; color:#666; margin-bottom:15px;}
 .chat{ background:white; padding:20px; border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:70vh; overflow-y:auto; display:flex; flex-direction:column;}
-.bubble{ background:#f1f1f1; padding:14px; border-radius:12px; margin:3px 0; font-size:18px; max-width:85%; display:flex; align-items:center;}
-.bubble-small{ background:#f1f1f1; padding:8px; border-radius:12px; margin:2px 0; font-size:14px; max-width:70%;}
+.bubble{ background:#f1f1f1; padding:14px; border-radius:12px; margin:3px 0; font-size:18px; max-width:85%; display:flex; align-items:center; min-height:50px;}
 .user{ background:#2e7d32; color:white; padding:14px; border-radius:12px; margin:3px 0; align-self:flex-end; font-size:14px; max-width:70%;}
-.user-small{ background:#2e7d32; color:white; padding:8px; border-radius:12px; margin:2px 0; align-self:flex-end; font-size:12px; max-width:50%;}
 .inputArea{ margin-top:10px; width:100%;}
 button{ width:100%; padding:12px; margin:5px 0; font-size:17px; border:none; border-radius:10px; background:#2e7d32; color:white; cursor:pointer;}
 button:hover{ background:#1b5e20;}
@@ -22,9 +20,8 @@ textarea,input{ width:100%; max-width:100%; padding:10px; border-radius:10px; bo
 .small{ flex:1; padding:10px; font-size:14px; border:none; border-radius:10px; background:#2e7d32; color:white;}
 .rating{ display:flex; justify-content:space-between; margin-top:10px;}
 .rating button{ width:18%; padding:10px; border:none; border-radius:10px; background:#2e7d32; color:white;}
-.bubble-avatar img{ width:40px; height:40px; border-radius:50%; margin-right:8px;}
+.bubble-avatar span{ display:block; }
 </style>
-<script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&libraries=places"></script>
 </head>
 <body>
 <div class="container">
@@ -44,10 +41,8 @@ let data={};
 const chat=document.getElementById("chat");
 const inputArea=document.getElementById("inputArea");
 
-// Scroll automático
 function scrollBottom(){ setTimeout(()=>{ chat.scrollTop = chat.scrollHeight + 500; },200); }
 
-// Voz del bot
 function speak(text){ 
   let msg=new SpeechSynthesisUtterance(text); 
   msg.lang="es-ES"; 
@@ -55,11 +50,11 @@ function speak(text){
   speechSynthesis.speak(msg);
 }
 
-// Bot con avatar digital
+// Bot con emoji
 function addBot(text){
   let div=document.createElement("div");
   div.className="bubble bubble-avatar";
-  div.innerHTML=`<img src="https://i.imgur.com/6Y6Y62G.png" alt="Bot"/> <span>${text}</span>`;
+  div.innerHTML=`<span style="font-size:30px; margin-right:8px;">😀</span> <span>${text}</span>`;
   chat.appendChild(div);
   speak(text);
   scrollBottom();
@@ -68,7 +63,7 @@ function addBot(text){
 // Usuario
 function addUser(text){
   let div=document.createElement("div");
-  div.className="user user-small";
+  div.className="user";
   div.innerText=text;
   chat.appendChild(div);
   scrollBottom();
@@ -85,21 +80,21 @@ function next(){
   if(step==1){
     addBot("¿Sobre qué área quieres opinar?");
     inputArea.innerHTML=`<div class="buttons">
-      <button onclick="selectArea('Movilidad')">Movilidad</button>
-      <button onclick="selectArea('Limpieza')">Limpieza</button>
-      <button onclick="selectArea('Urbanismo')">Urbanismo</button>
-      <button onclick="selectArea('Cultura')">Cultura</button>
-      <button onclick="selectArea('Seguridad')">Seguridad</button>
-      <button onclick="selectArea('Tramitación')">Tramitación</button>
-      <button onclick="selectArea('Otros')">Otros</button>
+      <button onclick="selectArea('Movilidad')" class="option">Movilidad</button>
+      <button onclick="selectArea('Limpieza')" class="option">Limpieza</button>
+      <button onclick="selectArea('Urbanismo')" class="option">Urbanismo</button>
+      <button onclick="selectArea('Cultura')" class="option">Cultura</button>
+      <button onclick="selectArea('Seguridad')" class="option">Seguridad</button>
+      <button onclick="selectArea('Tramitación')" class="option">Tramitación</button>
+      <button onclick="selectArea('Otros')" class="option">Otros</button>
     </div>`;
   }
 
   if(step==2){
     addBot("¿Es una incidencia o una propuesta?");
     inputArea.innerHTML=`<div class="buttons">
-      <button onclick="selectType('Incidencia')">Incidencia</button>
-      <button onclick="selectType('Propuesta')">Propuesta</button>
+      <button onclick="selectType('Incidencia')" class="option">Incidencia</button>
+      <button onclick="selectType('Propuesta')" class="option">Propuesta</button>
     </div>`;
   }
 
@@ -113,10 +108,9 @@ function next(){
   }
 
   if(step==4){
-    addBot("Indica calle, número y código postal o código de urna");
-    inputArea.innerHTML=`<input id="loc" placeholder="Calle, nº, CP o código urna"><button class="small" onclick="sendLocation()">Enviar</button>`;
-    let input = document.getElementById("loc");
-    new google.maps.places.Autocomplete(input, { types:['address'], componentRestrictions:{country:'es'} });
+    addBot("Indica calle, número, código postal o código de urna");
+    inputArea.innerHTML=`<input id="loc" placeholder="Calle, nº, CP o código urna">
+    <button class="small" onclick="sendLocation()">Enviar</button>`;
   }
 
   if(step==5){
@@ -133,26 +127,27 @@ function next(){
   if(step==6){
     addBot("Gracias. Tu opinión ha sido registrada.");
     inputArea.innerHTML="";
-    // Enviar directamente a Excel Online
+    // Enviar a Excel (endpoint Power Automate)
     fetch('https://YOUR_FLOW_ENDPOINT_HERE', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(data)
-    }).then(r=>r.json()).then(res=>console.log('Enviado a Excel:',res)).catch(e=>console.error(e));
-    console.log("Datos:",data);
+    }).then(r=>r.json()).then(res=>console.log('Enviado a Excel:',res))
+      .catch(e=>console.error(e));
+    console.log("Datos registrados:",data);
   }
 }
 
 // Callbacks
-function selectArea(val){ data.area=val; addUser(val); next(); }
-function selectType(val){ data.tipo=val; addUser(val); next(); }
+function selectArea(val){ data.area=val; addUser(val); clearOptions(); next(); }
+function selectType(val){ data.tipo=val; addUser(val); clearOptions(); next(); }
 function sendDesc(){ let val=document.getElementById("desc").value; data.descripcion=val; addUser(val); next(); }
 function sendLocation(){ let val=document.getElementById("loc").value; data.ubicacion=val; addUser(val); next(); }
 function rate(val){ data.valoracion=val; addUser("Valoración: "+val); next(); }
 
 // Voz
 function startVoice(){
-  if(!('webkitSpeechRecognition' in window)){ alert("Tu navegador no soporta reconocimiento de voz"); return; }
+  if(!('webkitSpeechRecognition' in window)){ alert("Voz no soportada"); return; }
   let rec=new webkitSpeechRecognition();
   rec.lang="es-ES";
   rec.onresult=function(e){ document.getElementById("desc").value=e.results[0][0].transcript; }
