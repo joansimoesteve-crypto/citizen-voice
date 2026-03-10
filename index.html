@@ -42,7 +42,7 @@ background:white;
 padding:20px;
 border-radius:16px;
 box-shadow:0 4px 10px rgba(0,0,0,0.1);
-max-height:70vh;
+height:70vh;
 overflow-y:auto;
 display:flex;
 flex-direction:column;
@@ -52,7 +52,7 @@ flex-direction:column;
 background:#f1f1f1;
 padding:14px;
 border-radius:12px;
-margin:5px 0;
+margin:6px 0;
 max-width:85%;
 }
 
@@ -61,10 +61,10 @@ background:#2e7d32;
 color:white;
 padding:12px;
 border-radius:12px;
-margin:5px 0;
+margin:6px 0;
 align-self:flex-end;
 max-width:85%;
-font-size:13px;
+font-size:12px;
 }
 
 button{
@@ -78,12 +78,12 @@ color:white;
 font-size:16px;
 }
 
-input, textarea{
+input,textarea{
 width:100%;
 padding:10px;
-margin-top:5px;
 border-radius:10px;
 border:1px solid #ccc;
+margin-top:6px;
 }
 
 .controls{
@@ -152,12 +152,12 @@ scroll()
 function scroll(){
 
 setTimeout(()=>{
-chat.scrollTop=chat.scrollHeight
+chat.scrollTop=chat.scrollHeight+500
 },200)
 
 }
 
-function clearButtons(){
+function clearOptions(){
 
 document.querySelectorAll(".option").forEach(b=>b.remove())
 
@@ -178,7 +178,7 @@ if(step==1){
 
 bot("¿Sobre qué área quieres opinar?")
 
-buttons([
+options([
 "Movilidad",
 "Limpieza",
 "Urbanismo",
@@ -194,7 +194,7 @@ if(step==2){
 
 bot("¿Es una incidencia o una propuesta?")
 
-buttons(["Incidencia","Propuesta"],tipo)
+options(["Incidencia","Propuesta"],tipo)
 
 }
 
@@ -203,6 +203,8 @@ if(step==3){
 bot("Describe la incidencia")
 
 let div=document.createElement("div")
+
+div.id="descBox"
 
 div.innerHTML=`
 
@@ -223,21 +225,17 @@ scroll()
 
 if(step==4){
 
-bot("Indica ubicación aproximada")
+bot("Indica dirección o código de urna")
 
 let div=document.createElement("div")
 
+div.id="locBox"
+
 div.innerHTML=`
 
-<input id="calle" placeholder="Calle">
+<input id="loc" placeholder="Ej: Calle Mayor 10 o URNA-03">
 
-<input id="numero" placeholder="Número">
-
-<input id="cp" placeholder="Código postal">
-
-<input id="urna" placeholder="ID urna (opcional)">
-
-<button onclick="sendLocation()">Enviar ubicación</button>
+<button onclick="sendLocation()">Enviar</button>
 
 `
 
@@ -251,7 +249,7 @@ if(step==5){
 
 bot("Valora el servicio")
 
-buttons(["1","2","3","4","5"],rate)
+options(["1","2","3","4","5"],rate)
 
 }
 
@@ -265,7 +263,7 @@ console.log(data)
 
 }
 
-function buttons(list,callback){
+function options(list,callback){
 
 list.forEach(v=>{
 
@@ -276,7 +274,7 @@ b.className="option"
 
 b.onclick=()=>{
 
-clearButtons()
+clearOptions()
 
 user(v)
 
@@ -314,6 +312,8 @@ data.descripcion=val
 
 user(val)
 
+document.getElementById("descBox").remove()
+
 step=4
 next()
 
@@ -321,17 +321,13 @@ next()
 
 function sendLocation(){
 
-let calle=document.getElementById("calle").value
-let numero=document.getElementById("numero").value
-let cp=document.getElementById("cp").value
-let urna=document.getElementById("urna").value
+let val=document.getElementById("loc").value
 
-data.calle=calle
-data.numero=numero
-data.cp=cp
-data.urna=urna
+data.ubicacion=val
 
-user(calle+" "+numero+" "+cp+" "+urna)
+user(val)
+
+document.getElementById("locBox").remove()
 
 step=5
 next()
