@@ -20,12 +20,12 @@ margin:0;
 }
 
 .container{
-width:100%;
 max-width:520px;
+width:100%;
 }
 
 .title{
-font-size:42px;
+font-size:40px;
 font-weight:bold;
 text-align:center;
 color:#2e7d32;
@@ -34,40 +34,106 @@ color:#2e7d32;
 .subtitle{
 text-align:center;
 color:#666;
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
+/* BOT */
+
+.bot-avatar{
+display:flex;
+justify-content:center;
+margin:10px 0 15px 0;
+}
+
+.head{
+
+width:110px;
+height:110px;
+background:#2e7d32;
+border-radius:50%;
+position:relative;
+
+}
+
+.eye{
+
+width:14px;
+height:14px;
+background:white;
+border-radius:50%;
+position:absolute;
+top:32px;
+
+}
+
+.eye.left{ left:28px; }
+.eye.right{ right:28px; }
+
+.mouth{
+
+width:34px;
+height:8px;
+background:white;
+border-radius:4px;
+position:absolute;
+bottom:28px;
+left:50%;
+transform:translateX(-50%);
+
+}
+
+.talking{
+animation:talk 0.25s infinite;
+}
+
+@keyframes talk{
+
+0%{height:8px}
+50%{height:20px}
+100%{height:8px}
+
+}
+
+/* CHAT */
+
 .chat{
+
 background:white;
 padding:20px;
 border-radius:16px;
 box-shadow:0 4px 10px rgba(0,0,0,0.1);
-height:70vh;
+height:65vh;
 overflow-y:auto;
 display:flex;
 flex-direction:column;
+
 }
 
 .bot{
+
 background:#f1f1f1;
 padding:14px;
 border-radius:12px;
 margin:6px 0;
 max-width:85%;
+
 }
 
 .user{
+
 background:#2e7d32;
 color:white;
-padding:12px;
+padding:10px;
 border-radius:12px;
 margin:6px 0;
 align-self:flex-end;
 max-width:85%;
 font-size:12px;
+
 }
 
 button{
+
 width:100%;
 padding:12px;
 margin:5px 0;
@@ -76,19 +142,24 @@ border-radius:10px;
 background:#2e7d32;
 color:white;
 font-size:16px;
+
 }
 
-input,textarea{
+textarea,input{
+
 width:100%;
 padding:10px;
 border-radius:10px;
 border:1px solid #ccc;
 margin-top:6px;
+
 }
 
 .controls{
+
 display:flex;
 gap:8px;
+
 }
 
 </style>
@@ -102,6 +173,18 @@ gap:8px;
 <div class="title">CitizenVoice</div>
 <div class="subtitle">Tu opinión en 30 segundos</div>
 
+<div class="bot-avatar">
+
+<div class="head">
+
+<div class="eye left"></div>
+<div class="eye right"></div>
+<div class="mouth" id="mouth"></div>
+
+</div>
+
+</div>
+
 <div id="chat" class="chat"></div>
 
 <button onclick="start()">Empezar encuesta</button>
@@ -114,14 +197,26 @@ let step=0
 let data={}
 const chat=document.getElementById("chat")
 
+/* BOT HABLA */
+
 function speak(text){
+
+let mouth=document.getElementById("mouth")
+mouth.classList.add("talking")
 
 let msg=new SpeechSynthesisUtterance(text)
 msg.lang="es-ES"
+
+msg.onend=()=>{
+mouth.classList.remove("talking")
+}
+
 speechSynthesis.cancel()
 speechSynthesis.speak(msg)
 
 }
+
+/* CHAT */
 
 function bot(text){
 
@@ -157,11 +252,15 @@ chat.scrollTop=chat.scrollHeight+500
 
 }
 
+/* LIMPIAR OPCIONES */
+
 function clearOptions(){
 
 document.querySelectorAll(".option").forEach(b=>b.remove())
 
 }
+
+/* INICIO */
 
 function start(){
 
@@ -171,6 +270,8 @@ step=1
 next()
 
 }
+
+/* PASOS */
 
 function next(){
 
@@ -200,7 +301,7 @@ options(["Incidencia","Propuesta"],tipo)
 
 if(step==3){
 
-bot("Describe la incidencia")
+bot("Describe la incidencia o propuesta")
 
 let div=document.createElement("div")
 
@@ -247,7 +348,7 @@ scroll()
 
 if(step==5){
 
-bot("Valora el servicio")
+bot("Valora el servicio de 1 a 5")
 
 options(["1","2","3","4","5"],rate)
 
@@ -255,13 +356,15 @@ options(["1","2","3","4","5"],rate)
 
 if(step==6){
 
-bot("Gracias. Opinión registrada.")
+bot("Gracias. Tu opinión ayuda a mejorar la ciudad.")
 
 console.log(data)
 
 }
 
 }
+
+/* BOTONES */
 
 function options(list,callback){
 
@@ -287,6 +390,8 @@ chat.appendChild(b)
 })
 
 }
+
+/* RESPUESTAS */
 
 function area(v){
 
@@ -344,6 +449,8 @@ step=6
 next()
 
 }
+
+/* VOZ */
 
 function voice(){
 
