@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 
 <meta charset="UTF-8">
@@ -16,15 +15,16 @@ background:#f2f2f2;
 display:flex;
 justify-content:center;
 padding:20px;
+margin:0;
 }
 
 .container{
 width:100%;
-max-width:500px;
+max-width:520px;
 }
 
 .title{
-font-size:42px;
+font-size:46px;
 font-weight:bold;
 text-align:center;
 color:#2e7d32;
@@ -33,41 +33,45 @@ color:#2e7d32;
 .subtitle{
 text-align:center;
 margin-bottom:15px;
+color:#666;
 }
 
 .chat{
 background:white;
 padding:20px;
-border-radius:15px;
-box-shadow:0 3px 10px rgba(0,0,0,0.1);
-max-height:65vh;
+border-radius:18px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+max-height:70vh;
 overflow-y:auto;
 display:flex;
 flex-direction:column;
 }
 
 .bubble{
-background:#eee;
-padding:12px;
-border-radius:10px;
-margin:5px 0;
+background:#f1f1f1;
+padding:14px;
+border-radius:12px;
+margin:4px 0;
+max-width:85%;
 }
 
 .user{
 background:#2e7d32;
 color:white;
-align-self:flex-end;
 padding:12px;
-border-radius:10px;
-margin:5px 0;
+border-radius:12px;
+margin:4px 0;
+align-self:flex-end;
+max-width:85%;
+font-size:13px;
 }
 
 button{
 width:100%;
 padding:12px;
-margin-top:6px;
+margin:5px 0;
 border:none;
-border-radius:8px;
+border-radius:10px;
 background:#2e7d32;
 color:white;
 font-size:16px;
@@ -76,12 +80,20 @@ font-size:16px;
 textarea,input{
 width:100%;
 padding:10px;
-margin-top:5px;
-border-radius:8px;
+border-radius:10px;
 border:1px solid #ccc;
+margin-top:5px;
+}
+
+.controls{
+display:flex;
+gap:6px;
 }
 
 </style>
+
+<!-- GOOGLE MAPS AUTOCOMPLETE -->
+<script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&libraries=places"></script>
 
 </head>
 
@@ -90,54 +102,66 @@ border:1px solid #ccc;
 <div class="container">
 
 <div class="title">CitizenVoice</div>
-
-<div class="subtitle">
-Tu opinión en 30 segundos
-</div>
+<div class="subtitle">Tu opinión en 30 segundos</div>
 
 <div id="chat" class="chat"></div>
 
-<button id="startBtn">Empezar encuesta</button>
+<button id="startBtn" onclick="startSurvey()">Empezar encuesta</button>
 
 </div>
 
 <script>
 
-let step = 0
-let data = {}
+let step=0
+let data={}
 
-const chat = document.getElementById("chat")
-const startBtn = document.getElementById("startBtn")
+const chat=document.getElementById("chat")
 
-startBtn.onclick = startChat
+function speak(text){
 
-function bot(text){
+let msg=new SpeechSynthesisUtterance(text)
+
+msg.lang="es-ES"
+
+speechSynthesis.cancel()
+
+speechSynthesis.speak(msg)
+
+}
+
+function addBot(text){
 
 let div=document.createElement("div")
+
 div.className="bubble"
+
 div.innerText=text
 
 chat.appendChild(div)
 
-chat.scrollTop = chat.scrollHeight
+speak(text)
+
+chat.scrollTop=chat.scrollHeight
 
 }
 
-function user(text){
+function addUser(text){
 
 let div=document.createElement("div")
+
 div.className="user"
+
 div.innerText=text
 
 chat.appendChild(div)
 
-chat.scrollTop = chat.scrollHeight
+chat.scrollTop=chat.scrollHeight
 
 }
 
-function startChat(){
+function startSurvey(){
 
-startBtn.style.display="none"
+document.getElementById("startBtn").remove()
 
 step=1
 
@@ -149,7 +173,7 @@ function next(){
 
 if(step==1){
 
-bot("¿Sobre qué área quieres opinar?")
+addBot("¿Sobre qué área quieres opinar?")
 
 createButtons([
 "Movilidad",
@@ -159,30 +183,35 @@ createButtons([
 "Seguridad",
 "Tramitación",
 "Otros"
-], areaSelected)
+],selectArea)
 
 }
 
 if(step==2){
 
-bot("¿Es una incidencia o una propuesta?")
+addBot("¿Es una incidencia o una propuesta?")
 
 createButtons([
 "Incidencia",
 "Propuesta"
-], typeSelected)
+],selectType)
 
 }
 
 if(step==3){
 
-bot("Describe la incidencia o propuesta")
+addBot("Describe la incidencia o propuesta")
 
 let div=document.createElement("div")
 
 div.innerHTML=`
+
 <textarea id="desc"></textarea>
+
+<div class="controls">
+<button onclick="startVoice()">🎤</button>
 <button onclick="sendDesc()">Enviar</button>
+</div>
 `
 
 chat.appendChild(div)
@@ -191,22 +220,35 @@ chat.appendChild(div)
 
 if(step==4){
 
-bot("Indica la calle o lugar")
+addBot("Indica la calle o lugar")
 
 let div=document.createElement("div")
 
 div.innerHTML=`
-<input id="loc">
-<button onclick="sendLoc()">Enviar ubicación</button>
+
+<input id="loc" placeholder="Empieza a escribir calle">
+
+<div class="controls">
+<button onclick="sendLocation()">Enviar</button>
+<button onclick="useGPS()">📍 GPS</button>
+</div>
+
 `
 
 chat.appendChild(div)
+
+let input=document.getElementById("loc")
+
+new google.maps.places.Autocomplete(input,{
+types:['geocode'],
+componentRestrictions:{country:'es'}
+})
 
 }
 
 if(step==5){
 
-bot("Valora el servicio")
+addBot("Valora el servicio")
 
 createButtons(["1","2","3","4","5"],rate)
 
@@ -214,7 +256,7 @@ createButtons(["1","2","3","4","5"],rate)
 
 if(step==6){
 
-bot("Gracias. Tu opinión ha sido registrada.")
+addBot("Gracias. Tu opinión ha sido registrada.")
 
 console.log(data)
 
@@ -232,7 +274,7 @@ b.innerText=v
 
 b.onclick=()=>{
 
-user(v)
+addUser(v)
 
 callback(v)
 
@@ -244,7 +286,7 @@ chat.appendChild(b)
 
 }
 
-function areaSelected(v){
+function selectArea(v){
 
 data.area=v
 
@@ -254,7 +296,7 @@ next()
 
 }
 
-function typeSelected(v){
+function selectType(v){
 
 data.tipo=v
 
@@ -270,7 +312,7 @@ let val=document.getElementById("desc").value
 
 data.descripcion=val
 
-user(val)
+addUser(val)
 
 step=4
 
@@ -278,13 +320,13 @@ next()
 
 }
 
-function sendLoc(){
+function sendLocation(){
 
 let val=document.getElementById("loc").value
 
 data.ubicacion=val
 
-user(val)
+addUser(val)
 
 step=5
 
@@ -296,7 +338,7 @@ function rate(v){
 
 data.valoracion=v
 
-user("Valoración "+v)
+addUser("Valoración "+v)
 
 step=6
 
@@ -304,8 +346,42 @@ next()
 
 }
 
+function startVoice(){
+
+if(!('webkitSpeechRecognition' in window)){
+alert("Tu navegador no soporta voz")
+return
+}
+
+let rec=new webkitSpeechRecognition()
+
+rec.lang="es-ES"
+
+rec.onresult=function(e){
+document.getElementById("desc").value=e.results[0][0].transcript
+}
+
+rec.start()
+
+}
+
+function useGPS(){
+
+if(navigator.geolocation){
+
+navigator.geolocation.getCurrentPosition(function(pos){
+
+let coords="Lat "+pos.coords.latitude.toFixed(5)+", Lng "+pos.coords.longitude.toFixed(5)
+
+document.getElementById("loc").value=coords
+
+})
+
+}
+
+}
+
 </script>
 
 </body>
-
 </html>
