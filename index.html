@@ -1,63 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CitizenVoice</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+display:flex;
+justify-content:center;
+padding:20px;
+}
+
+.container{
+width:100%;
+max-width:500px;
+}
+
+.title{
+font-size:42px;
+font-weight:bold;
+text-align:center;
+color:#2e7d32;
+}
+
+.subtitle{
+text-align:center;
+margin-bottom:15px;
+}
+
+.chat{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
+max-height:65vh;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+}
+
+.bubble{
+background:#eee;
+padding:12px;
+border-radius:10px;
+margin:5px 0;
+}
+
+.user{
+background:#2e7d32;
+color:white;
+align-self:flex-end;
+padding:12px;
+border-radius:10px;
+margin:5px 0;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:6px;
+border:none;
+border-radius:8px;
+background:#2e7d32;
+color:white;
+font-size:16px;
+}
+
+textarea,input{
+width:100%;
+padding:10px;
+margin-top:5px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="title">CitizenVoice</div>
+
+<div class="subtitle">
+Tu opinión en 30 segundos
+</div>
+
+<div id="chat" class="chat"></div>
+
+<button id="startBtn">Empezar encuesta</button>
+
+</div>
+
 <script>
 
-let step=0
-let data={}
-let currentOptions=null
+let step = 0
+let data = {}
 
-const chat=document.getElementById("chat")
+const chat = document.getElementById("chat")
+const startBtn = document.getElementById("startBtn")
 
-function speak(text){
-let msg=new SpeechSynthesisUtterance(text)
-msg.lang="es-ES"
-speechSynthesis.cancel()
-speechSynthesis.speak(msg)
-}
+startBtn.onclick = startChat
 
-function scrollBottom(){
-setTimeout(()=>{
-chat.scrollTo({
-top:chat.scrollHeight+500,
-behavior:"smooth"
-})
-},200)
-}
+function bot(text){
 
-function addBot(text){
 let div=document.createElement("div")
 div.className="bubble"
 div.innerText=text
+
 chat.appendChild(div)
-speak(text)
-scrollBottom()
+
+chat.scrollTop = chat.scrollHeight
+
 }
 
-function addUser(text){
+function user(text){
+
 let div=document.createElement("div")
-div.className="user history"
+div.className="user"
 div.innerText=text
+
 chat.appendChild(div)
-scrollBottom()
+
+chat.scrollTop = chat.scrollHeight
+
 }
 
 function startChat(){
 
-document.getElementById("startBtn").remove()
+startBtn.style.display="none"
+
+step=1
 
 next()
 
 }
 
-function clearOptions(){
-if(currentOptions) currentOptions.remove()
-}
-
 function next(){
-
-step++
 
 if(step==1){
 
-addBot("¿Sobre qué área quieres opinar?")
+bot("¿Sobre qué área quieres opinar?")
 
 createButtons([
 "Movilidad",
@@ -67,69 +159,54 @@ createButtons([
 "Seguridad",
 "Tramitación",
 "Otros"
-],selectArea)
+], areaSelected)
 
 }
 
 if(step==2){
 
-addBot("¿Es una incidencia o una propuesta?")
+bot("¿Es una incidencia o una propuesta?")
 
 createButtons([
 "Incidencia",
 "Propuesta"
-],selectType)
+], typeSelected)
 
 }
 
 if(step==3){
 
-addBot("Describe la incidencia o propuesta")
+bot("Describe la incidencia o propuesta")
 
 let div=document.createElement("div")
 
 div.innerHTML=`
-
 <textarea id="desc"></textarea>
-
-<div class="controls">
-<button onclick="startVoice()">🎤</button>
 <button onclick="sendDesc()">Enviar</button>
-</div>
-
 `
 
 chat.appendChild(div)
-
-scrollBottom()
 
 }
 
 if(step==4){
 
-addBot("Indica la calle o lugar")
+bot("Indica la calle o lugar")
 
 let div=document.createElement("div")
 
 div.innerHTML=`
-
-<input id="loc" onkeyup="searchStreet()" placeholder="Escribe una calle">
-
-<div id="suggestions" class="suggestions"></div>
-
-<button onclick="sendLocation()">Enviar ubicación</button>
-
+<input id="loc">
+<button onclick="sendLoc()">Enviar ubicación</button>
 `
 
 chat.appendChild(div)
-
-scrollBottom()
 
 }
 
 if(step==5){
 
-addBot("Valora el servicio")
+bot("Valora el servicio")
 
 createButtons(["1","2","3","4","5"],rate)
 
@@ -137,9 +214,9 @@ createButtons(["1","2","3","4","5"],rate)
 
 if(step==6){
 
-addBot("Gracias. Tu opinión ha sido registrada.")
+bot("Gracias. Tu opinión ha sido registrada.")
 
-sendToExcel()
+console.log(data)
 
 }
 
@@ -147,38 +224,44 @@ sendToExcel()
 
 function createButtons(arr,callback){
 
-clearOptions()
-
-let div=document.createElement("div")
-
 arr.forEach(v=>{
+
 let b=document.createElement("button")
+
 b.innerText=v
+
 b.onclick=()=>{
+
+user(v)
+
 callback(v)
-clearOptions()
+
 }
-div.appendChild(b)
+
+chat.appendChild(b)
+
 })
 
-chat.appendChild(div)
-
-currentOptions=div
-
-scrollBottom()
-
 }
 
-function selectArea(v){
+function areaSelected(v){
+
 data.area=v
-addUser(v)
+
+step=2
+
 next()
+
 }
 
-function selectType(v){
+function typeSelected(v){
+
 data.tipo=v
-addUser(v)
+
+step=3
+
 next()
+
 }
 
 function sendDesc(){
@@ -187,19 +270,23 @@ let val=document.getElementById("desc").value
 
 data.descripcion=val
 
-addUser(val)
+user(val)
+
+step=4
 
 next()
 
 }
 
-function sendLocation(){
+function sendLoc(){
 
 let val=document.getElementById("loc").value
 
 data.ubicacion=val
 
-addUser(val)
+user(val)
+
+step=5
 
 next()
 
@@ -209,79 +296,16 @@ function rate(v){
 
 data.valoracion=v
 
-addUser("Valoración "+v)
+user("Valoración "+v)
+
+step=6
 
 next()
 
 }
 
-function startVoice(){
-
-if(!('webkitSpeechRecognition' in window)){
-alert("Tu navegador no soporta voz")
-return
-}
-
-let rec=new webkitSpeechRecognition()
-
-rec.lang="es-ES"
-
-rec.onresult=function(e){
-document.getElementById("desc").value=e.results[0][0].transcript
-}
-
-rec.start()
-
-}
-
-async function searchStreet(){
-
-let q=document.getElementById("loc").value
-
-if(q.length<3)return
-
-let url="https://photon.komoot.io/api/?q="+q+"&limit=5"
-
-let res=await fetch(url)
-
-let result=await res.json()
-
-let box=document.getElementById("suggestions")
-
-box.innerHTML=""
-
-result.features.forEach(place=>{
-
-let name=place.properties.name || place.properties.street
-let city=place.properties.city || ""
-
-let label=name+" "+city
-
-let div=document.createElement("div")
-
-div.innerText=label
-
-div.onclick=()=>{
-document.getElementById("loc").value=label
-box.innerHTML=""
-}
-
-box.appendChild(div)
-
-})
-
-}
-
-function sendToExcel(){
-
-fetch("TU_WEBHOOK_POWER_AUTOMATE",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(data)
-})
-
-}
-
 </script>
+
+</body>
+
+</html>
