@@ -7,11 +7,11 @@
 <style>
 body {
   font-family: Arial;
-  background: #f2f2f2;
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-  margin: 0;
+  background:#f2f2f2;
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  margin:0;
 }
 .container{
   width:100%;
@@ -116,51 +116,17 @@ textarea,input{
   background:#2e7d32;
   color:white;
 }
-/* Bot avatar animado */
-.bot-avatar{
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  background:#2e7d32;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  margin-right:10px;
-  position:relative;
-}
-.bot-avatar .eye{
-  width:10px;
-  height:10px;
-  background:white;
-  border-radius:50%;
-  position:absolute;
-  top:20px;
-}
-.bot-avatar .eye.left{ left:15px; }
-.bot-avatar .eye.right{ right:15px; }
-.bot-avatar .mouth{
-  width:20px;
-  height:6px;
-  background:white;
-  border-radius:4px;
-  position:absolute;
-  bottom:15px;
-  left:50%;
-  transform:translateX(-50%);
-}
-.talking{
-  animation:talk 0.25s infinite;
-}
-@keyframes talk{
-  0%{height:6px}
-  50%{height:15px}
-  100%{height:6px}
-}
-/* Burbuja con avatar */
+/* Avatar fijo tipo asistente */
 .bubble-avatar{
   display:flex;
   align-items:flex-start;
   max-width:85%;
+}
+.bubble-avatar img{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  margin-right:10px;
 }
 </style>
 
@@ -188,23 +154,12 @@ const inputArea=document.getElementById("inputArea");
 
 function scrollBottom(){ setTimeout(()=>{ chat.scrollTop = chat.scrollHeight + 500; },200); }
 
-function speak(text){ 
-  const mouth = document.getElementById("mouth");
-  if(mouth) mouth.classList.add("talking");
-  let msg=new SpeechSynthesisUtterance(text); 
-  msg.lang="es-ES"; 
-  msg.onend=()=>{ if(mouth) mouth.classList.remove("talking"); };
-  speechSynthesis.cancel(); 
-  speechSynthesis.speak(msg);
-}
-
-// Bot con avatar animado
+// Bot con avatar fijo
 function addBot(text){
   let div=document.createElement("div");
   div.className="bubble bubble-avatar";
-  div.innerHTML=`<div class="bot-avatar"><div class="eye left"></div><div class="eye right"></div><div class="mouth" id="mouth"></div></div><span>${text}</span>`;
+  div.innerHTML=`<img src="https://i.imgur.com/6Y6Y62G.png" alt="Avatar"/> <span>${text}</span>`;
   chat.appendChild(div);
-  speak(text);
   scrollBottom();
 }
 
@@ -284,7 +239,7 @@ function next(){
     inputArea.innerHTML="";
     console.log("Datos:",data);
 
-    // Ejemplo de envío a Excel/Power Automate
+    // Enviar a Excel/Power Automate
     /*
     fetch('TU_FLOW_ENDPOINT', {
       method:'POST',
