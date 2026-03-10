@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>CitizenVoice</title>
 
 <style>
@@ -22,11 +23,10 @@ max-width:520px;
 }
 
 .title{
-font-size:52px;
+font-size:50px;
 font-weight:bold;
 text-align:center;
 color:#2e7d32;
-margin-bottom:5px;
 }
 
 .subtitle{
@@ -40,7 +40,7 @@ background:white;
 padding:20px;
 border-radius:20px;
 box-shadow:0 4px 12px rgba(0,0,0,0.1);
-max-height:65vh;
+max-height:70vh;
 overflow-y:auto;
 display:flex;
 flex-direction:column;
@@ -50,31 +50,31 @@ flex-direction:column;
 background:#f1f1f1;
 padding:14px;
 border-radius:12px;
-margin:3px 0;
+margin:5px 0;
 font-size:18px;
-max-width:85%;
+max-width:90%;
 }
 
 .user{
 background:#2e7d32;
 color:white;
-padding:6px 10px;
-border-radius:10px;
+padding:5px 8px;
+border-radius:8px;
 margin:3px 0;
 align-self:flex-end;
 font-size:12px;
+opacity:0.9;
 max-width:70%;
 }
 
-.inputArea{
-margin-top:10px;
-width:100%;
+.options{
+margin-top:8px;
 }
 
 button{
 width:100%;
 padding:12px;
-margin:5px 0;
+margin:4px 0;
 font-size:17px;
 border:none;
 border-radius:10px;
@@ -83,59 +83,49 @@ color:white;
 cursor:pointer;
 }
 
-button:hover{
-background:#1b5e20;
-}
-
 textarea{
 width:100%;
-height:65px;
-padding:10px;
+height:60px;
 border-radius:10px;
-border:1px solid #ccc;
+padding:8px;
 background:#dcedc8;
-font-size:15px;
+border:1px solid #ccc;
 }
 
 input{
 width:100%;
 padding:10px;
 border-radius:10px;
-border:1px solid #ccc;
 background:#c8e6c9;
-font-size:15px;
+border:1px solid #ccc;
 }
 
-.controls{
-display:flex;
-gap:8px;
-margin-top:6px;
-}
-
-.small{
-flex:1;
-padding:10px;
-font-size:14px;
-border:none;
+.suggestions{
+background:white;
 border-radius:10px;
-background:#2e7d32;
-color:white;
+margin-top:4px;
 }
 
-.rating{
-display:flex;
-justify-content:space-between;
-margin-top:10px;
+.suggestions div{
+padding:8px;
+cursor:pointer;
+border-bottom:1px solid #eee;
 }
 
-.rating button{
-width:18%;
+.suggestions div:hover{
+background:#eee;
+}
+
+.videoIntro{
+text-align:center;
+}
+
+video{
+width:100%;
+border-radius:15px;
 }
 
 </style>
-
-<script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&libraries=places"></script>
-
 </head>
 
 <body>
@@ -145,304 +135,230 @@ width:18%;
 <div class="title">CitizenVoice</div>
 <div class="subtitle">La ciudad te escucha y actúa</div>
 
-<div class="chat" id="chat"></div>
+<div id="intro" class="videoIntro">
 
-<div class="inputArea" id="inputArea"></div>
+<video autoplay muted loop>
+<source src="bot.mp4" type="video/mp4">
+</video>
+
+<button onclick="startChat()">Comenzar encuesta</button>
+
+</div>
+
+<div class="chat" id="chat" style="display:none;"></div>
 
 </div>
 
 <script>
 
-let step=0;
-let data={};
+let step=0
+let data={}
 
-const chat=document.getElementById("chat");
-const inputArea=document.getElementById("inputArea");
-
+const chat=document.getElementById("chat")
 
 function scrollBottom(){
 
 setTimeout(()=>{
 chat.scrollTo({
-top:chat.scrollHeight+800,
+top:chat.scrollHeight+1000,
 behavior:"smooth"
-});
+})
 },200)
 
 }
 
-
-function speak(text){
-
-let msg=new SpeechSynthesisUtterance(text);
-
-msg.lang="es-ES";
-
-speechSynthesis.cancel();
-
-speechSynthesis.speak(msg);
-
-}
-
-
 function addBot(text){
 
-let div=document.createElement("div");
+let div=document.createElement("div")
+div.className="bubble"
+div.innerText=text
 
-div.className="bubble";
+chat.appendChild(div)
 
-div.innerText=text;
-
-chat.appendChild(div);
-
-speak(text);
-
-scrollBottom();
+scrollBottom()
 
 }
-
 
 function addUser(text){
 
-let div=document.createElement("div");
+let div=document.createElement("div")
+div.className="user"
+div.innerText=text
 
-div.className="user";
+chat.appendChild(div)
 
-div.innerText=text;
-
-chat.appendChild(div);
-
-scrollBottom();
+scrollBottom()
 
 }
 
+function startChat(){
 
+document.getElementById("intro").style.display="none"
+chat.style.display="flex"
 
-function startIntro(){
-
-addBot("Hola. Soy el asistente de participación ciudadana.");
-
-setTimeout(()=>{
-addBot("Puedes dejar una incidencia o propuesta en solo treinta segundos.");
-},1200)
-
-setTimeout(()=>{
-inputArea.innerHTML=`<button onclick="startSurvey()">Iniciar encuesta</button>`;
-},2000)
+next()
 
 }
-
-
 
 function next(){
 
-step++;
-
-inputArea.innerHTML="";
+step++
 
 if(step==1){
 
-addBot("¿Sobre qué área quieres opinar?");
+addBot("¿Sobre qué área quieres opinar?")
 
-inputArea.innerHTML=`
+let options=document.createElement("div")
+options.className="options"
+
+options.innerHTML=`
 
 <button onclick="selectArea('Movilidad')">Movilidad</button>
-
 <button onclick="selectArea('Limpieza')">Limpieza</button>
-
 <button onclick="selectArea('Urbanismo')">Urbanismo</button>
-
 <button onclick="selectArea('Cultura')">Cultura</button>
-
 <button onclick="selectArea('Seguridad')">Seguridad</button>
-
 <button onclick="selectArea('Tramitación')">Tramitación</button>
-
 <button onclick="selectArea('Otros')">Otros</button>
 
-`;
+`
+
+chat.appendChild(options)
+
+scrollBottom()
 
 }
-
 
 if(step==2){
 
-addBot("¿Es una incidencia o una propuesta?");
+addBot("¿Es una incidencia o una propuesta?")
 
-inputArea.innerHTML=`
+let options=document.createElement("div")
+
+options.innerHTML=`
 
 <button onclick="selectType('Incidencia')">Incidencia</button>
-
 <button onclick="selectType('Propuesta')">Propuesta</button>
 
-`;
+`
+
+chat.appendChild(options)
+
+scrollBottom()
 
 }
-
 
 if(step==3){
 
-addBot("Describe la incidencia o propuesta");
+addBot("Describe la incidencia o propuesta")
 
-inputArea.innerHTML=`
+let div=document.createElement("div")
 
-<textarea id="desc" placeholder="Escribe o usa el micrófono"></textarea>
+div.innerHTML=`
 
-<div class="controls">
+<textarea id="desc"></textarea>
+<button onclick="sendDesc()">Enviar</button>
 
-<button class="small" onclick="startVoice()">🎤</button>
+`
 
-<button class="small" onclick="sendDesc()">Enviar</button>
+chat.appendChild(div)
 
-</div>
-
-`;
+scrollBottom()
 
 }
-
-
 
 if(step==4){
 
-addBot("Indica la calle o lugar");
+addBot("Indica la calle o lugar")
 
-inputArea.innerHTML=`
+let div=document.createElement("div")
 
-<input id="loc" placeholder="Empieza a escribir una calle">
+div.innerHTML=`
 
-<div class="controls">
+<input id="loc" onkeyup="searchStreet()">
 
-<button class="small" onclick="sendLocation()">Enviar</button>
+<div id="suggestions" class="suggestions"></div>
 
-<button class="small" onclick="useGPS()">GPS</button>
+<button onclick="sendLocation()">Enviar</button>
 
-</div>
+`
 
-`;
+chat.appendChild(div)
 
-let input=document.getElementById("loc");
-
-new google.maps.places.Autocomplete(input,{
-types:['geocode'],
-componentRestrictions:{country:'es'}
-});
+scrollBottom()
 
 }
-
-
 
 if(step==5){
 
-addBot("Valora el servicio al que te estás refiriendo");
+addBot("Valora el servicio")
 
-inputArea.innerHTML=`
+let div=document.createElement("div")
 
-<div class="rating">
+div.innerHTML=`
 
 <button onclick="rate(1)">1</button>
-
 <button onclick="rate(2)">2</button>
-
 <button onclick="rate(3)">3</button>
-
 <button onclick="rate(4)">4</button>
-
 <button onclick="rate(5)">5</button>
 
-</div>
+`
 
-`;
+chat.appendChild(div)
+
+scrollBottom()
 
 }
-
-
 
 if(step==6){
 
-addBot("Gracias. Tu opinión ha sido registrada.");
+addBot("Gracias. Tu opinión ha sido registrada.")
 
-inputArea.innerHTML="";
-
-console.log(data);
+console.log(data)
 
 }
 
 }
 
+function selectArea(val){data.area=val;addUser(val);next()}
+function selectType(val){data.tipo=val;addUser(val);next()}
+function sendDesc(){let val=document.getElementById("desc").value;data.desc=val;addUser(val);next()}
+function sendLocation(){let val=document.getElementById("loc").value;data.loc=val;addUser(val);next()}
+function rate(val){data.rate=val;addUser(val);next()}
 
+async function searchStreet(){
 
-function selectArea(val){data.area=val;addUser(val);next();}
-function selectType(val){data.tipo=val;addUser(val);next();}
-function sendDesc(){let val=document.getElementById("desc").value;data.descripcion=val;addUser(val);next();}
-function sendLocation(){let val=document.getElementById("loc").value;data.ubicacion=val;addUser(val);next();}
-function rate(val){data.valoracion=val;addUser("Valoración "+val);next();}
+let q=document.getElementById("loc").value
 
+if(q.length<3)return
 
+let res=await fetch("https://nominatim.openstreetmap.org/search?format=json&q="+q)
 
-function startVoice(){
+let data=await res.json()
 
-if(!('webkitSpeechRecognition'in window)){
+let box=document.getElementById("suggestions")
 
-alert("Tu navegador no soporta voz");
+box.innerHTML=""
 
-return;
+data.slice(0,5).forEach(place=>{
 
+let div=document.createElement("div")
+
+div.innerText=place.display_name
+
+div.onclick=()=>{
+document.getElementById("loc").value=place.display_name
+box.innerHTML=""
 }
 
-let rec=new webkitSpeechRecognition();
-
-rec.lang="es-ES";
-
-rec.onresult=function(e){
-
-document.getElementById("desc").value=e.results[0][0].transcript;
-
-}
-
-rec.start();
-
-}
-
-
-
-function useGPS(){
-
-if(navigator.geolocation){
-
-navigator.geolocation.getCurrentPosition(function(pos){
-
-let coords=pos.coords.latitude+","+pos.coords.longitude;
-
-document.getElementById("loc").value=coords;
-
-data.ubicacion=coords;
-
-},function(){
-
-alert("Activa la ubicación en tu móvil");
+box.appendChild(div)
 
 })
 
 }
 
-}
-
-
-
-function startSurvey(){
-
-inputArea.innerHTML="";
-
-next();
-
-}
-
-
-
-startIntro();
-
 </script>
 
 </body>
-
 </html>
