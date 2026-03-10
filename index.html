@@ -22,7 +22,7 @@ max-width:520px;
 }
 
 .title{
-font-size:50px;
+font-size:48px;
 font-weight:bold;
 text-align:center;
 color:#2e7d32;
@@ -49,23 +49,23 @@ flex-direction:column;
 background:#f1f1f1;
 padding:14px;
 border-radius:12px;
-margin:4px 0;
-font-size:18px;
+margin:5px 0;
+font-size:17px;
 max-width:85%;
 }
 
 .user{
 background:#2e7d32;
 color:white;
-padding:10px;
+padding:14px;
 border-radius:12px;
-margin:3px 0;
+margin:4px 0;
 align-self:flex-end;
-font-size:14px;
 max-width:85%;
+font-size:14px;
 }
 
-.smallHistory{
+.history{
 font-size:11px;
 opacity:0.8;
 }
@@ -73,7 +73,7 @@ opacity:0.8;
 button{
 width:100%;
 padding:12px;
-margin:4px 0;
+margin:5px 0;
 font-size:16px;
 border:none;
 border-radius:10px;
@@ -87,8 +87,8 @@ width:100%;
 padding:10px;
 border-radius:10px;
 border:1px solid #ccc;
-font-size:15px;
 background:#e8f5e9;
+font-size:15px;
 }
 
 .controls{
@@ -99,13 +99,13 @@ gap:8px;
 .suggestions{
 background:white;
 border-radius:10px;
-margin-top:5px;
+margin-top:4px;
 }
 
 .suggestions div{
 padding:8px;
-cursor:pointer;
 border-bottom:1px solid #eee;
+cursor:pointer;
 }
 
 </style>
@@ -118,18 +118,9 @@ border-bottom:1px solid #eee;
 <div class="title">CitizenVoice</div>
 <div class="subtitle">Tu opinión en solo 30 segundos</div>
 
-<div id="intro">
+<div id="chat" class="chat"></div>
 
-<p style="text-align:center;font-size:18px;">
-La ciudad te escucha.<br>
-¿Quieres dejar una incidencia o propuesta?
-</p>
-
-<button onclick="startChat()">Comenzar</button>
-
-</div>
-
-<div id="chat" class="chat" style="display:none;"></div>
+<button id="startBtn" onclick="startChat()">Empezar encuesta</button>
 
 </div>
 
@@ -158,30 +149,38 @@ behavior:"smooth"
 }
 
 function addBot(text){
+
 let div=document.createElement("div")
 div.className="bubble"
 div.innerText=text
+
 chat.appendChild(div)
+
 speak(text)
+
 scrollBottom()
+
 }
 
 function addUser(text){
+
 let div=document.createElement("div")
-div.className="user smallHistory"
+div.className="user history"
 div.innerText=text
+
 chat.appendChild(div)
+
 scrollBottom()
+
 }
 
 function startChat(){
 
-document.getElementById("intro").style.display="none"
-chat.style.display="flex"
+document.getElementById("startBtn").remove()
 
-addBot("Bienvenido. Puedes dejar una incidencia o propuesta en solo treinta segundos.")
+addBot("Bienvenido. Puedes dejar una incidencia o propuesta en treinta segundos.")
 
-setTimeout(next,1200)
+setTimeout(next,1000)
 
 }
 
@@ -231,15 +230,14 @@ div.innerHTML=`
 <textarea id="desc"></textarea>
 
 <div class="controls">
-
 <button onclick="startVoice()">🎤</button>
 <button onclick="sendDesc()">Enviar</button>
-
 </div>
 
 `
 
 chat.appendChild(div)
+
 scrollBottom()
 
 }
@@ -261,6 +259,7 @@ div.innerHTML=`
 `
 
 chat.appendChild(div)
+
 scrollBottom()
 
 }
@@ -300,6 +299,7 @@ div.appendChild(b)
 })
 
 chat.appendChild(div)
+
 currentOptions=div
 
 scrollBottom()
@@ -377,26 +377,30 @@ let q=document.getElementById("loc").value
 
 if(q.length<3)return
 
-let url="https://photon.komoot.io/api/?q="+q+"&limit=5&lang=es"
+let url="https://photon.komoot.io/api/?q="+q+"&limit=5"
 
 let res=await fetch(url)
 
-let data=await res.json()
+let result=await res.json()
 
 let box=document.getElementById("suggestions")
 
 box.innerHTML=""
 
-data.features.forEach(place=>{
+result.features.forEach(place=>{
 
-let name=place.properties.name+", "+place.properties.city
+let name=place.properties.name || place.properties.street
+
+let city=place.properties.city || ""
+
+let label=name+" "+city
 
 let div=document.createElement("div")
 
-div.innerText=name
+div.innerText=label
 
 div.onclick=()=>{
-document.getElementById("loc").value=name
+document.getElementById("loc").value=label
 box.innerHTML=""
 }
 
