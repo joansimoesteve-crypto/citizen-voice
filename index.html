@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 
 <meta charset="UTF-8">
@@ -32,8 +33,8 @@ color:#2e7d32;
 
 .subtitle{
 text-align:center;
-margin-bottom:15px;
 color:#666;
+margin-bottom:15px;
 }
 
 .chat{
@@ -82,7 +83,7 @@ width:100%;
 padding:10px;
 border-radius:10px;
 border:1px solid #ccc;
-margin-top:5px;
+margin-top:6px;
 }
 
 .controls{
@@ -90,10 +91,23 @@ display:flex;
 gap:6px;
 }
 
-</style>
+.suggestions{
+background:#f7f7f7;
+border-radius:8px;
+margin-top:4px;
+}
 
-<!-- GOOGLE MAPS AUTOCOMPLETE -->
-<script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&libraries=places"></script>
+.suggestions div{
+padding:8px;
+cursor:pointer;
+border-bottom:1px solid #eee;
+}
+
+.suggestions div:hover{
+background:#eee;
+}
+
+</style>
 
 </head>
 
@@ -106,7 +120,7 @@ gap:6px;
 
 <div id="chat" class="chat"></div>
 
-<button id="startBtn" onclick="startSurvey()">Empezar encuesta</button>
+<button onclick="startSurvey()">Empezar encuesta</button>
 
 </div>
 
@@ -114,17 +128,13 @@ gap:6px;
 
 let step=0
 let data={}
-
 const chat=document.getElementById("chat")
 
 function speak(text){
 
 let msg=new SpeechSynthesisUtterance(text)
-
 msg.lang="es-ES"
-
 speechSynthesis.cancel()
-
 speechSynthesis.speak(msg)
 
 }
@@ -132,39 +142,44 @@ speechSynthesis.speak(msg)
 function addBot(text){
 
 let div=document.createElement("div")
-
 div.className="bubble"
-
 div.innerText=text
 
 chat.appendChild(div)
 
 speak(text)
 
-chat.scrollTop=chat.scrollHeight
+scroll()
 
 }
 
 function addUser(text){
 
 let div=document.createElement("div")
-
 div.className="user"
-
 div.innerText=text
 
 chat.appendChild(div)
 
+scroll()
+
+}
+
+function scroll(){
 chat.scrollTop=chat.scrollHeight
+}
+
+function clearButtons(){
+
+document.querySelectorAll(".option").forEach(e=>e.remove())
 
 }
 
 function startSurvey(){
 
-document.getElementById("startBtn").remove()
+document.querySelector("button").remove()
 
 step=1
-
 next()
 
 }
@@ -212,6 +227,7 @@ div.innerHTML=`
 <button onclick="startVoice()">🎤</button>
 <button onclick="sendDesc()">Enviar</button>
 </div>
+
 `
 
 chat.appendChild(div)
@@ -226,7 +242,9 @@ let div=document.createElement("div")
 
 div.innerHTML=`
 
-<input id="loc" placeholder="Empieza a escribir calle">
+<input id="loc" placeholder="Escribe la calle">
+
+<div id="suggestions" class="suggestions"></div>
 
 <div class="controls">
 <button onclick="sendLocation()">Enviar</button>
@@ -237,12 +255,7 @@ div.innerHTML=`
 
 chat.appendChild(div)
 
-let input=document.getElementById("loc")
-
-new google.maps.places.Autocomplete(input,{
-types:['geocode'],
-componentRestrictions:{country:'es'}
-})
+document.getElementById("loc").addEventListener("input",searchAddress)
 
 }
 
@@ -272,7 +285,11 @@ let b=document.createElement("button")
 
 b.innerText=v
 
+b.className="option"
+
 b.onclick=()=>{
+
+clearButtons()
 
 addUser(v)
 
@@ -291,7 +308,6 @@ function selectArea(v){
 data.area=v
 
 step=2
-
 next()
 
 }
@@ -301,7 +317,6 @@ function selectType(v){
 data.tipo=v
 
 step=3
-
 next()
 
 }
@@ -315,7 +330,6 @@ data.descripcion=val
 addUser(val)
 
 step=4
-
 next()
 
 }
@@ -329,7 +343,6 @@ data.ubicacion=val
 addUser(val)
 
 step=5
-
 next()
 
 }
@@ -341,7 +354,6 @@ data.valoracion=v
 addUser("Valoración "+v)
 
 step=6
-
 next()
 
 }
@@ -378,6 +390,40 @@ document.getElementById("loc").value=coords
 })
 
 }
+
+}
+
+async function searchAddress(){
+
+let q=document.getElementById("loc").value
+
+if(q.length<3) return
+
+let res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&countrycodes=es`)
+
+let data=await res.json()
+
+let box=document.getElementById("suggestions")
+
+box.innerHTML=""
+
+data.slice(0,5).forEach(place=>{
+
+let div=document.createElement("div")
+
+div.innerText=place.display_name
+
+div.onclick=()=>{
+
+document.getElementById("loc").value=place.display_name
+
+box.innerHTML=""
+
+}
+
+box.appendChild(div)
+
+})
 
 }
 
