@@ -1,129 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>CitizenVoice</title>
-
-<style>
-
-body{
-font-family:Arial;
-background:#f2f2f2;
-display:flex;
-justify-content:center;
-padding:20px;
-margin:0;
-}
-
-.container{
-width:100%;
-max-width:520px;
-}
-
-.title{
-font-size:46px;
-font-weight:bold;
-text-align:center;
-color:#2e7d32;
-}
-
-.subtitle{
-text-align:center;
-color:#666;
-margin-bottom:15px;
-}
-
-.chat{
-background:white;
-padding:20px;
-border-radius:18px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-max-height:70vh;
-overflow-y:auto;
-display:flex;
-flex-direction:column;
-}
-
-.bubble{
-background:#f1f1f1;
-padding:14px;
-border-radius:12px;
-margin:4px 0;
-max-width:85%;
-}
-
-.user{
-background:#2e7d32;
-color:white;
-padding:12px;
-border-radius:12px;
-margin:4px 0;
-align-self:flex-end;
-max-width:85%;
-font-size:13px;
-}
-
-button{
-width:100%;
-padding:12px;
-margin:5px 0;
-border:none;
-border-radius:10px;
-background:#2e7d32;
-color:white;
-font-size:16px;
-}
-
-textarea,input{
-width:100%;
-padding:10px;
-border-radius:10px;
-border:1px solid #ccc;
-margin-top:6px;
-}
-
-.controls{
-display:flex;
-gap:6px;
-}
-
-.suggestions{
-background:#f7f7f7;
-border-radius:8px;
-margin-top:4px;
-}
-
-.suggestions div{
-padding:8px;
-cursor:pointer;
-border-bottom:1px solid #eee;
-}
-
-.suggestions div:hover{
-background:#eee;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-<div class="title">CitizenVoice</div>
-<div class="subtitle">Tu opinión en 30 segundos</div>
-
-<div id="chat" class="chat"></div>
-
-<button onclick="startSurvey()">Empezar encuesta</button>
-
-</div>
-
 <script>
 
 let step=0
@@ -166,7 +40,11 @@ scroll()
 }
 
 function scroll(){
+
+setTimeout(()=>{
 chat.scrollTop=chat.scrollHeight
+},200)
+
 }
 
 function clearButtons(){
@@ -221,33 +99,37 @@ let div=document.createElement("div")
 
 div.innerHTML=`
 
-<textarea id="desc"></textarea>
+<textarea id="desc" style="height:90px"></textarea>
 
 <div class="controls">
-<button onclick="startVoice()">🎤</button>
-<button onclick="sendDesc()">Enviar</button>
+<button id="micBtn" onclick="startVoice()">🎤</button>
+<button id="sendDescBtn" onclick="sendDesc()">Enviar</button>
 </div>
 
 `
 
 chat.appendChild(div)
 
+scroll()
+
 }
 
 if(step==4){
 
-addBot("Indica la calle o lugar")
+addBot("Indica la ubicación aproximada")
 
 let div=document.createElement("div")
 
 div.innerHTML=`
 
-<input id="loc" placeholder="Escribe la calle">
+<input id="calle" placeholder="Calle">
 
-<div id="suggestions" class="suggestions"></div>
+<input id="numero" placeholder="Número">
+
+<input id="cp" placeholder="Código Postal">
 
 <div class="controls">
-<button onclick="sendLocation()">Enviar</button>
+<button onclick="sendLocation()">Enviar ubicación</button>
 <button onclick="useGPS()">📍 GPS</button>
 </div>
 
@@ -255,7 +137,7 @@ div.innerHTML=`
 
 chat.appendChild(div)
 
-document.getElementById("loc").addEventListener("input",searchAddress)
+scroll()
 
 }
 
@@ -284,7 +166,6 @@ arr.forEach(v=>{
 let b=document.createElement("button")
 
 b.innerText=v
-
 b.className="option"
 
 b.onclick=()=>{
@@ -306,7 +187,6 @@ chat.appendChild(b)
 function selectArea(v){
 
 data.area=v
-
 step=2
 next()
 
@@ -315,7 +195,6 @@ next()
 function selectType(v){
 
 data.tipo=v
-
 step=3
 next()
 
@@ -329,6 +208,11 @@ data.descripcion=val
 
 addUser(val)
 
+/* eliminar controles */
+
+document.getElementById("micBtn").remove()
+document.getElementById("sendDescBtn").remove()
+
 step=4
 next()
 
@@ -336,11 +220,15 @@ next()
 
 function sendLocation(){
 
-let val=document.getElementById("loc").value
+let calle=document.getElementById("calle").value
+let numero=document.getElementById("numero").value
+let cp=document.getElementById("cp").value
 
-data.ubicacion=val
+let ubicacion=calle+" "+numero+" "+cp
 
-addUser(val)
+data.ubicacion=ubicacion
+
+addUser(ubicacion)
 
 step=5
 next()
@@ -383,51 +271,19 @@ if(navigator.geolocation){
 
 navigator.geolocation.getCurrentPosition(function(pos){
 
-let coords="Lat "+pos.coords.latitude.toFixed(5)+", Lng "+pos.coords.longitude.toFixed(5)
+let coords="Lat "+pos.coords.latitude.toFixed(5)+" , Lng "+pos.coords.longitude.toFixed(5)
 
-document.getElementById("loc").value=coords
+data.ubicacion=coords
 
-})
+addUser(coords)
 
-}
-
-}
-
-async function searchAddress(){
-
-let q=document.getElementById("loc").value
-
-if(q.length<3) return
-
-let res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&countrycodes=es`)
-
-let data=await res.json()
-
-let box=document.getElementById("suggestions")
-
-box.innerHTML=""
-
-data.slice(0,5).forEach(place=>{
-
-let div=document.createElement("div")
-
-div.innerText=place.display_name
-
-div.onclick=()=>{
-
-document.getElementById("loc").value=place.display_name
-
-box.innerHTML=""
-
-}
-
-box.appendChild(div)
+step=5
+next()
 
 })
+
+}
 
 }
 
 </script>
-
-</body>
-</html>
