@@ -14,13 +14,19 @@
 
 <body class="bg-green-50 flex justify-center items-start min-h-screen p-2">
 
-<div class="w-full max-w-md h-[95vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+<div class="w-full max-w-md h-[85vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
 <!-- HEADER -->
 
-<div class="bg-green-600 text-white p-4 font-semibold text-center">
+<div class="bg-green-700 text-white p-4 text-center">
 
-Asistente ciudadano
+<div class="text-lg font-bold">
+Citizen Voice
+</div>
+
+<div class="text-xs opacity-90">
+Registra incidencias en 30 segundos con el asistente urbano
+</div>
 
 </div>
 
@@ -30,7 +36,7 @@ Asistente ciudadano
 
 <!-- CONTROLES -->
 
-<div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
+<div id="controls" class="p-3 border-t flex flex-wrap gap-2 items-center"></div>
 
 </div>
 
@@ -51,13 +57,21 @@ speechSynthesis.speak(msg)
 
 function bot(text){
 
-const d=document.createElement("div")
+const row=document.createElement("div")
+row.className="flex items-start gap-2 max-w-[85%]"
 
-d.className="bg-gray-100 p-3 rounded-xl max-w-[75%] text-sm"
+const avatar=document.createElement("img")
+avatar.src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png"
+avatar.className="w-8 h-8"
 
-d.innerText=text
+const bubble=document.createElement("div")
+bubble.className="bg-gray-100 p-3 rounded-xl text-sm"
+bubble.innerText=text
 
-chat.appendChild(d)
+row.appendChild(avatar)
+row.appendChild(bubble)
+
+chat.appendChild(row)
 
 chat.scrollTop=chat.scrollHeight
 
@@ -139,7 +153,7 @@ askDescription()
 
 function askDescription(){
 
-bot("Describe brevemente el problema")
+bot("Describe brevemente el problema o usa el micrófono")
 
 controls.innerHTML=""
 
@@ -149,6 +163,26 @@ input.placeholder="Escribe aquí..."
 
 input.className="border rounded-lg p-2 flex-1 text-sm"
 
+const mic=document.createElement("button")
+mic.innerText="🎤"
+mic.className="bg-gray-100 px-3 py-2 rounded-lg"
+
+mic.onclick=()=>{
+
+const r=new webkitSpeechRecognition()
+
+r.lang="es-ES"
+
+r.start()
+
+r.onresult=e=>{
+
+input.value=e.results[0][0].transcript
+
+}
+
+}
+
 const send=document.createElement("button")
 
 send.innerText="Enviar"
@@ -156,6 +190,8 @@ send.innerText="Enviar"
 send.className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm"
 
 send.onclick=()=>{
+
+if(input.value==="") return
 
 user(input.value)
 
@@ -168,6 +204,7 @@ finish()
 }
 
 controls.appendChild(input)
+controls.appendChild(mic)
 controls.appendChild(send)
 
 }
@@ -183,4 +220,5 @@ start()
 </script>
 
 </body>
+
 </html>
