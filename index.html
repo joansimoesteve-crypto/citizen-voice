@@ -31,7 +31,7 @@ Citizen Voice
 </div>
 
 <div class="text-xs opacity-90">
-Registra incidencias o propuestas de mejora en 30 segundos con el asistente urbano
+Registra incidencias o propuestas de mejora en 30 segundos
 </div>
 
 </div>
@@ -53,7 +53,7 @@ const controls=document.getElementById("controls")
 
 let data={}
 
-/* VOZ BOT */
+/* VOZ */
 
 function speak(text){
 
@@ -63,7 +63,7 @@ speechSynthesis.speak(msg)
 
 }
 
-/* MENSAJE BOT */
+/* BOT */
 
 function bot(text){
 
@@ -71,7 +71,8 @@ const row=document.createElement("div")
 row.className="flex items-start gap-2"
 
 const avatar=document.createElement("img")
-avatar.src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
+
+avatar.src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
 avatar.className="w-8 h-8"
 
 const bubble=document.createElement("div")
@@ -89,7 +90,7 @@ speak(text)
 
 }
 
-/* MENSAJE USUARIO */
+/* USER */
 
 function user(text){
 
@@ -135,11 +136,11 @@ controls.appendChild(b)
 
 }
 
-/* INICIO */
+/* START */
 
 function start(){
 
-bot("Hola. Soy el asistente urbano. ¿Qué deseas registrar?")
+bot("Hola. ¿Qué deseas registrar?")
 
 buttons(["Incidencia","Propuesta de mejora"],v=>{
 
@@ -155,7 +156,7 @@ askArea()
 
 function askArea(){
 
-bot("¿En qué área deseas registrar la incidencia o propuesta?")
+bot("¿En qué área?")
 
 buttons(
 [
@@ -180,7 +181,7 @@ askRate()
 
 function askRate(){
 
-bot("¿Cómo valoras actualmente esta área del 1 al 5?")
+bot("¿Cómo valoras esta área del 1 al 5?")
 
 buttons(["1","2","3","4","5"],v=>{
 
@@ -196,23 +197,29 @@ selectMap()
 
 function selectMap(){
 
-bot("Selecciona en el mapa la ubicación de la incidencia")
+bot("Selecciona en el mapa la ubicación")
 
 controls.innerHTML=""
 
 const mapDiv=document.createElement("div")
 
+mapDiv.id="map"
 mapDiv.style.height="250px"
 mapDiv.style.width="100%"
-mapDiv.id="map"
 
 chat.appendChild(mapDiv)
+
+chat.scrollTop=chat.scrollHeight
+
+setTimeout(()=>{
 
 const map=L.map('map').setView([39.47,-0.37],14)
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 ).addTo(map)
+
+map.invalidateSize()
 
 let marker
 
@@ -231,13 +238,15 @@ askDescription()
 
 })
 
+},200)
+
 }
 
 /* DESCRIPCION */
 
 function askDescription(){
 
-bot("Describe brevemente la incidencia o propuesta")
+bot("Describe la incidencia o propuesta")
 
 controls.innerHTML=""
 
@@ -301,7 +310,7 @@ console.log(data)
 
 }
 
-/* BOTON EMPEZAR */
+/* BOTON INICIO */
 
 controls.innerHTML=""
 
