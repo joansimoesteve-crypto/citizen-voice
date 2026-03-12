@@ -53,6 +53,10 @@ const controls=document.getElementById("controls")
 
 let data={}
 
+/* URL GOOGLE SHEETS */
+
+const API="PEGA_AQUI_TU_URL"
+
 /* VOZ */
 
 function speak(text){
@@ -72,8 +76,8 @@ row.className="flex items-start gap-2"
 
 const avatar=document.createElement("img")
 
-avatar.src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
-avatar.className="w-8 h-8"
+avatar.src="https://cdn-icons-png.flaticon.com/512/6997/6997662.png"
+avatar.className="w-9 h-9"
 
 const bubble=document.createElement("div")
 bubble.className="bg-green-100 p-3 rounded-xl text-sm w-[75%]"
@@ -142,7 +146,9 @@ function start(){
 
 bot("Hola. ¿Qué deseas registrar?")
 
-buttons(["Incidencia","Propuesta de mejora"],v=>{
+buttons(
+["Incidencia","Propuesta de mejora"],
+v=>{
 
 data.tipo=v
 
@@ -160,12 +166,12 @@ bot("¿En qué área?")
 
 buttons(
 [
-"Limpieza",
-"Espacio público",
 "Movilidad",
+"Limpieza",
+"Urbanismo",
+"Cultura",
 "Seguridad",
-"Parques y jardines",
-"Alumbrado"
+"Otros trámites"
 ],
 v=>{
 
@@ -197,14 +203,14 @@ selectMap()
 
 function selectMap(){
 
-bot("Selecciona en el mapa la ubicación")
+bot("Selecciona la ubicación en el mapa")
 
 controls.innerHTML=""
 
 const mapDiv=document.createElement("div")
 
 mapDiv.id="map"
-mapDiv.style.height="250px"
+mapDiv.style.height="320px"
 mapDiv.style.width="100%"
 
 chat.appendChild(mapDiv)
@@ -232,7 +238,7 @@ marker=L.marker(e.latlng).addTo(map)
 data.lat=e.latlng.lat
 data.lng=e.latlng.lng
 
-user("Ubicación seleccionada")
+user("Ubicación registrada")
 
 askDescription()
 
@@ -257,6 +263,7 @@ input.placeholder="Escribe o usa el micrófono"
 input.className="border rounded-lg p-2 flex-1 text-sm"
 
 const mic=document.createElement("button")
+
 mic.innerText="🎤"
 mic.className="bg-gray-100 px-3 py-2 rounded-lg"
 
@@ -288,9 +295,7 @@ user(input.value)
 
 data.descripcion=input.value
 
-controls.innerHTML=""
-
-finish()
+saveData()
 
 }
 
@@ -300,11 +305,16 @@ controls.appendChild(send)
 
 }
 
-/* FINAL */
+/* GUARDAR */
 
-function finish(){
+function saveData(){
 
-bot("Gracias. Tu aportación ayuda a mejorar la ciudad.")
+fetch(API,{
+method:"POST",
+body:JSON.stringify(data)
+})
+
+bot("Gracias. Tu aportación ha sido registrada.")
 
 console.log(data)
 
