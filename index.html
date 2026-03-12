@@ -5,19 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CitizenVoice</title>
 <link rel="stylesheet" href="style.css">
+<!-- Leaflet para mapa -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
-<div class="container">
-  <div class="title">CitizenVoice</div>
-  <div class="subtitle">Deja tu opinión en solo 30 segundos</div>
+<div class="app">
 
-  <div id="chat" class="chat"></div>
-  <div id="controls" class="inputArea">
-    <button onclick="startSurvey()">Iniciar encuesta</button>
-  </div>
+  <header class="header">Asistente ciudadano</header>
+
+  <div id="chat"></div>
+  <div id="controls"></div>
+
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.6.0/dist/supabase.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
