@@ -1,39 +1,23 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>CitizenVoice</title>
 <meta charset="UTF-8">
-
-<title>Citizen Voice</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CitizenVoice</title>
 <link rel="stylesheet" href="style.css">
-
 </head>
+<body>
+<div class="container">
+  <div class="title">CitizenVoice</div>
+  <div class="subtitle">Deja tu opinión en solo 30 segundos</div>
 
-<body class="bg-slate-100 flex justify-center items-center h-screen">
-
-<div class="app">
-
-<header class="header">
-
-<img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
-
-Citizen Voice
-
-</header>
-
-<div id="chat"></div>
-
-<div id="controls"></div>
-
+  <div id="chat" class="chat"></div>
+  <div id="controls" class="inputArea">
+    <button onclick="startSurvey()">Iniciar encuesta</button>
+  </div>
 </div>
 
+<script src="https://unpkg.com/@supabase/supabase-js"></script>
 <script src="script.js"></script>
-
 </body>
-
 </html>
