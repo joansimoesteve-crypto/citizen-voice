@@ -10,6 +10,12 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<script
+src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 </head>
 
 <body class="bg-green-50 flex justify-center items-start min-h-screen p-2">
@@ -36,7 +42,7 @@ Registra incidencias en 30 segundos con el asistente urbano
 
 <!-- CONTROLES -->
 
-<div id="controls" class="p-3 border-t flex flex-wrap gap-2 items-center"></div>
+<div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
 
 </div>
 
@@ -47,6 +53,8 @@ const controls=document.getElementById("controls")
 
 let data={}
 
+/* VOZ BOT */
+
 function speak(text){
 
 const msg=new SpeechSynthesisUtterance(text)
@@ -55,17 +63,18 @@ speechSynthesis.speak(msg)
 
 }
 
+/* MENSAJE BOT */
+
 function bot(text){
 
 const row=document.createElement("div")
 row.className="flex items-start gap-2 max-w-[85%]"
 
-const avatar=document.createElement("img")
-avatar.src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png"
-avatar.className="w-8 h-8"
+const avatar=document.createElement("div")
+avatar.className="w-8 h-8 bg-green-600 rounded-full"
 
 const bubble=document.createElement("div")
-bubble.className="bg-gray-100 p-3 rounded-xl text-sm"
+bubble.className="bg-green-100 p-3 rounded-xl text-sm"
 bubble.innerText=text
 
 row.appendChild(avatar)
@@ -78,6 +87,8 @@ chat.scrollTop=chat.scrollHeight
 speak(text)
 
 }
+
+/* MENSAJE USUARIO */
 
 function user(text){
 
@@ -92,6 +103,8 @@ chat.appendChild(d)
 chat.scrollTop=chat.scrollHeight
 
 }
+
+/* BOTONES */
 
 function buttons(list,callback){
 
@@ -121,11 +134,13 @@ controls.appendChild(b)
 
 }
 
+/* INICIO */
+
 function start(){
 
-bot("Hola 👋 ¿Qué deseas registrar?")
+bot("Hola. Soy el asistente urbano. ¿Qué deseas registrar?")
 
-buttons(["Incidencia","Propuesta"],v=>{
+buttons(["Incidencia","Propuesta de mejora"],v=>{
 
 data.tipo=v
 
@@ -134,6 +149,8 @@ askArea()
 })
 
 }
+
+/* AREA */
 
 function askArea(){
 
@@ -145,21 +162,97 @@ v=>{
 
 data.area=v
 
-askDescription()
+askRate()
 
 })
 
 }
 
+/* VALORACION */
+
+function askRate(){
+
+bot("¿Cómo valoras actualmente esta área del 1 al 5?")
+
+buttons(["1","2","3","4","5"],v=>{
+
+data.valoracion=v
+
+askLocation()
+
+})
+
+}
+
+/* UBICACION */
+
+function askLocation(){
+
+bot("Puedes enviar tu ubicación para localizar la incidencia")
+
+controls.innerHTML=""
+
+const b=document.createElement("button")
+
+b.innerText="📍 Enviar ubicación"
+
+b.className="bg-green-600 text-white px-3 py-2 rounded-lg"
+
+b.onclick=()=>{
+
+navigator.geolocation.getCurrentPosition(pos=>{
+
+data.lat=pos.coords.latitude
+data.lng=pos.coords.longitude
+
+user("Ubicación enviada")
+
+showMap()
+
+})
+
+}
+
+controls.appendChild(b)
+
+}
+
+/* MAPA */
+
+function showMap(){
+
+bot("Ubicación registrada")
+
+const mapDiv=document.createElement("div")
+
+mapDiv.style.height="200px"
+mapDiv.id="map"
+
+chat.appendChild(mapDiv)
+
+const map=L.map('map').setView([data.lat,data.lng],16)
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(map)
+
+L.marker([data.lat,data.lng]).addTo(map)
+
+askDescription()
+
+}
+
+/* DESCRIPCION */
+
 function askDescription(){
 
-bot("Describe brevemente el problema o usa el micrófono")
+bot("Describe brevemente la incidencia o propuesta")
 
 controls.innerHTML=""
 
 const input=document.createElement("input")
 
-input.placeholder="Escribe aquí..."
+input.placeholder="Escribe o usa el micrófono"
 
 input.className="border rounded-lg p-2 flex-1 text-sm"
 
@@ -191,8 +284,6 @@ send.className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm"
 
 send.onclick=()=>{
 
-if(input.value==="") return
-
 user(input.value)
 
 data.descripcion=input.value
@@ -209,16 +300,37 @@ controls.appendChild(send)
 
 }
 
+/* FINAL */
+
 function finish(){
 
-bot("✅ Gracias. Tu aportación ha sido registrada.")
+bot("Gracias. Tu aportación ayuda a mejorar la ciudad.")
+
+console.log(data)
 
 }
 
+/* BOTON EMPEZAR */
+
+controls.innerHTML=""
+
+const startBtn=document.createElement("button")
+
+startBtn.innerText="Empezar"
+
+startBtn.className="bg-green-600 text-white px-4 py-2 rounded-lg"
+
+startBtn.onclick=()=>{
+
+controls.innerHTML=""
+
 start()
+
+}
+
+controls.appendChild(startBtn)
 
 </script>
 
 </body>
-
 </html>
