@@ -1,114 +1,114 @@
-// ⚡ Conexión a Supabase
+// Configuración Supabase
 const SUPABASE_URL = https://saiclsejxsycmeefuhvs.supabase.co;
 const SUPABASE_KEY = sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI;
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const chat = document.getElementById("chat");
 const controls = document.getElementById("controls");
-let step = 0;
+
 let data = {};
 
-function scroll() { setTimeout(()=>{ chat.scrollTop = chat.scrollHeight + 500; }, 200); }
-function speak(text){ let msg=new SpeechSynthesisUtterance(text); msg.lang="es-ES"; speechSynthesis.cancel(); speechSynthesis.speak(msg); }
-
-function addBot(text){
-  const div = document.createElement("div");
-  div.className = "bubble bubble-avatar";
-  div.innerHTML = `<img src="https://i.imgur.com/ZF6s192.png" alt="Bot"/> <span>${text}</span>`;
-  chat.appendChild(div);
-  speak(text);
-  scroll();
+// Función voz
+function speak(text){
+  let msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "es-ES";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(msg);
 }
 
-function addUser(text){
+// Bot con avatar simple
+function bot(text){
+  const div = document.createElement("div");
+  div.className = "bot";
+  div.innerHTML = `<div class="avatar">🤖</div><span>${text}</span>`;
+  chat.appendChild(div);
+  speak(text);
+  chat.scrollTop = chat.scrollHeight + 500;
+}
+
+// Usuario
+function user(text){
   const div = document.createElement("div");
   div.className = "user";
   div.innerText = text;
   chat.appendChild(div);
-  scroll();
+  chat.scrollTop = chat.scrollHeight + 500;
 }
 
-function startSurvey(){
-  controls.innerHTML = "";
-  step = 1;
-  next();
-}
-
-function next(){
-  controls.innerHTML = "";
-  if(step === 1){
-    addBot("¿Sobre qué área quieres opinar?");
-    buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Tramitación","Otros"], val => { data.area=val; addUser(val); step=2; next(); });
-  }
-  else if(step === 2){
-    addBot("¿Es una incidencia o propuesta?");
-    buttons(["Incidencia","Propuesta"], val => { data.tipo=val; addUser(val); step=3; next(); });
-  }
-  else if(step === 3){
-    addBot("Describe tu incidencia o propuesta");
-    controls.innerHTML = `<textarea id="desc"></textarea>
-      <div class="controls">
-        <button class="small" onclick="voice()">🎤</button>
-        <button class="small" onclick="sendDesc()">Enviar</button>
-      </div>`;
-  }
-  else if(step === 4){
-    addBot("Indica calle, número, código postal o código de urna");
-    controls.innerHTML = `<input id="loc" placeholder="Ej: Calle Mayor 10 o URNA-03">
-      <div class="controls">
-        <button class="small" onclick="sendLocation()">📍 Enviar ubicación</button>
-      </div>`;
-  }
-  else if(step === 5){
-    addBot("Valora el servicio del 1 al 5");
-    buttons(["1","2","3","4","5"], val => { data.valoracion=val; addUser("Valoración: "+val); sendData(); });
-  }
-}
-
+// Botones
 function buttons(arr, callback){
   controls.innerHTML="";
-  arr.forEach(val => {
+  arr.forEach(o=>{
     const b = document.createElement("button");
-    b.innerText = val;
-    b.onclick = ()=>{ callback(val); };
+    b.className="option";
+    b.innerText=o;
+    b.onclick = ()=> { user(o); callback(o); };
     controls.appendChild(b);
   });
 }
 
-function sendDesc(){ 
-  let val = document.getElementById("desc").value;
-  data.descripcion = val;
-  addUser(val);
-  step=4; next();
+// Inicio
+function start(){
+  bot("Hola 👋 puedes registrar una incidencia en segundos");
+  buttons(["Incidencia","Propuesta"], v=>{
+    data.tipo=v;
+    askArea();
+  });
 }
 
-function sendLocation(){
-  let val = document.getElementById("loc").value;
-  data.ubicacion = val;
-  addUser(val);
-  step=5; next();
+// Preguntar área
+function askArea(){
+  bot("¿Qué área?");
+  buttons(["Limpieza","Movilidad","Seguridad","Espacio público"], v=>{
+    data.area=v;
+    askLocation();
+  });
 }
 
-// Reconocimiento de voz
-function voice(){
-  if(!('webkitSpeechRecognition' in window)){ alert("Voz no soportada"); return; }
-  const r = new webkitSpeechRecognition();
-  r.lang="es-ES";
-  r.onresult = e => { document.getElementById("desc").value = e.results[0][0].transcript; }
-  r.start();
+// Ubicación con Leaflet o GPS simple
+function askLocation(){
+  bot("Indica calle, número, CP o código de urna");
+  controls.innerHTML="";
+  const input = document.createElement("input");
+  input.placeholder="Ej: Calle Mayor 10, CP 46001 o URNA-03";
+  input.style.flex="1";
+  const btn = document.createElement("button");
+  btn.innerText="Enviar ubicación";
+  btn.onclick = ()=>{
+    data.ubicacion=input.value;
+    user(input.value);
+    askVoice();
+  }
+  controls.appendChild(input);
+  controls.appendChild(btn);
 }
 
-// Enviar datos a Supabase
+// Voz
+function askVoice(){
+  bot("Describe brevemente el problema 🎤");
+  const rec = new webkitSpeechRecognition();
+  rec.lang="es-ES";
+  rec.start();
+  rec.onresult = e=>{
+    const text = e.results[0][0].transcript;
+    data.descripcion=text;
+    user(text);
+    sendData();
+  }
+}
+
+// Enviar a Supabase
 async function sendData(){
-  addBot("Registrando incidencia...");
-  const { error } = await supabase.from("incidencias").insert([{
-    tipo: data.tipo,
-    area: data.area,
-    descripcion: data.descripcion,
-    ubicacion: data.ubicacion,
-    lat: data.lat || null,
-    lng: data.lng || null
-  }]);
-  if(error){ console.error(error); addBot("❌ Error al registrar"); }
-  else{ addBot("✅ Incidencia registrada correctamente"); controls.innerHTML=""; }
+  bot("Registrando incidencia...");
+  const { error } = await supabase.from("incidencias").insert([data]);
+  if(error){
+    bot("❌ Error al registrar. Intenta de nuevo.");
+    console.log(error);
+  } else {
+    bot("✅ Incidencia registrada correctamente!");
+  }
+  controls.innerHTML="";
 }
+
+// Iniciar automáticamente
+start();
