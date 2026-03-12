@@ -4,6 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Citizen Voice</title>
 
@@ -11,17 +12,25 @@
 
 </head>
 
-<body class="bg-slate-100 flex items-center justify-center h-screen">
+<body class="bg-green-50 flex justify-center items-start min-h-screen p-2">
 
-<div class="w-[420px] h-[90vh] bg-white rounded-xl shadow-xl flex flex-col">
+<div class="w-full max-w-md h-[95vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
-<div class="bg-blue-600 text-white p-4 font-bold">
+<!-- HEADER -->
+
+<div class="bg-green-600 text-white p-4 font-semibold text-center">
+
 Asistente ciudadano
+
 </div>
+
+<!-- CHAT -->
 
 <div id="chat" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3"></div>
 
-<div id="controls" class="p-4 border-t"></div>
+<!-- CONTROLES -->
+
+<div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
 
 </div>
 
@@ -30,11 +39,21 @@ Asistente ciudadano
 const chat=document.getElementById("chat")
 const controls=document.getElementById("controls")
 
+let data={}
+
+function speak(text){
+
+const msg=new SpeechSynthesisUtterance(text)
+msg.lang="es-ES"
+speechSynthesis.speak(msg)
+
+}
+
 function bot(text){
 
 const d=document.createElement("div")
 
-d.className="bg-gray-100 p-3 rounded-lg max-w-[75%]"
+d.className="bg-gray-100 p-3 rounded-xl max-w-[75%] text-sm"
 
 d.innerText=text
 
@@ -42,13 +61,15 @@ chat.appendChild(d)
 
 chat.scrollTop=chat.scrollHeight
 
+speak(text)
+
 }
 
 function user(text){
 
 const d=document.createElement("div")
 
-d.className="bg-blue-600 text-white p-3 rounded-lg max-w-[75%] ml-auto"
+d.className="bg-green-600 text-white p-3 rounded-xl max-w-[75%] ml-auto text-sm"
 
 d.innerText=text
 
@@ -66,11 +87,13 @@ list.forEach(o=>{
 
 const b=document.createElement("button")
 
-b.className="bg-gray-100 px-3 py-2 rounded-lg mr-2 mb-2"
+b.className="bg-green-100 hover:bg-green-200 px-3 py-2 rounded-lg text-sm"
 
 b.innerText=o
 
 b.onclick=()=>{
+
+controls.innerHTML=""
 
 user(o)
 
@@ -86,13 +109,72 @@ controls.appendChild(b)
 
 function start(){
 
-bot("Hola 👋 ¿Qué quieres registrar?")
+bot("Hola 👋 ¿Qué deseas registrar?")
 
 buttons(["Incidencia","Propuesta"],v=>{
 
-bot("Has elegido: "+v)
+data.tipo=v
+
+askArea()
 
 })
+
+}
+
+function askArea(){
+
+bot("¿En qué área?")
+
+buttons(
+["Limpieza","Movilidad","Seguridad","Espacio público"],
+v=>{
+
+data.area=v
+
+askDescription()
+
+})
+
+}
+
+function askDescription(){
+
+bot("Describe brevemente el problema")
+
+controls.innerHTML=""
+
+const input=document.createElement("input")
+
+input.placeholder="Escribe aquí..."
+
+input.className="border rounded-lg p-2 flex-1 text-sm"
+
+const send=document.createElement("button")
+
+send.innerText="Enviar"
+
+send.className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm"
+
+send.onclick=()=>{
+
+user(input.value)
+
+data.descripcion=input.value
+
+controls.innerHTML=""
+
+finish()
+
+}
+
+controls.appendChild(input)
+controls.appendChild(send)
+
+}
+
+function finish(){
+
+bot("✅ Gracias. Tu aportación ha sido registrada.")
 
 }
 
@@ -101,5 +183,4 @@ start()
 </script>
 
 </body>
-
 </html>
