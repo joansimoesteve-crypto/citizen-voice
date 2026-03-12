@@ -20,7 +20,7 @@ src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <body class="bg-green-50 flex justify-center items-start min-h-screen p-2">
 
-<div class="w-full max-w-md h-[85vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+<div class="w-full max-w-md h-[82vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
 <!-- HEADER -->
 
@@ -31,14 +31,14 @@ Citizen Voice
 </div>
 
 <div class="text-xs opacity-90">
-Registra incidencias en 30 segundos con el asistente urbano
+Registra incidencias o propuestas de mejora en 30 segundos con el asistente urbano
 </div>
 
 </div>
 
 <!-- CHAT -->
 
-<div id="chat" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3"></div>
+<div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
 
 <!-- CONTROLES -->
 
@@ -68,13 +68,14 @@ speechSynthesis.speak(msg)
 function bot(text){
 
 const row=document.createElement("div")
-row.className="flex items-start gap-2 max-w-[85%]"
+row.className="flex items-start gap-2"
 
-const avatar=document.createElement("div")
-avatar.className="w-8 h-8 bg-green-600 rounded-full"
+const avatar=document.createElement("img")
+avatar.src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
+avatar.className="w-8 h-8"
 
 const bubble=document.createElement("div")
-bubble.className="bg-green-100 p-3 rounded-xl text-sm"
+bubble.className="bg-green-100 p-3 rounded-xl text-sm w-[75%]"
 bubble.innerText=text
 
 row.appendChild(avatar)
@@ -94,7 +95,7 @@ function user(text){
 
 const d=document.createElement("div")
 
-d.className="bg-green-600 text-white p-3 rounded-xl max-w-[75%] ml-auto text-sm"
+d.className="bg-green-600 text-white p-3 rounded-xl text-sm w-[75%] ml-auto"
 
 d.innerText=text
 
@@ -154,10 +155,17 @@ askArea()
 
 function askArea(){
 
-bot("¿En qué área?")
+bot("¿En qué área deseas registrar la incidencia o propuesta?")
 
 buttons(
-["Limpieza","Movilidad","Seguridad","Espacio público"],
+[
+"Limpieza",
+"Espacio público",
+"Movilidad",
+"Seguridad",
+"Parques y jardines",
+"Alumbrado"
+],
 v=>{
 
 data.area=v
@@ -178,67 +186,50 @@ buttons(["1","2","3","4","5"],v=>{
 
 data.valoracion=v
 
-askLocation()
+selectMap()
 
 })
-
-}
-
-/* UBICACION */
-
-function askLocation(){
-
-bot("Puedes enviar tu ubicación para localizar la incidencia")
-
-controls.innerHTML=""
-
-const b=document.createElement("button")
-
-b.innerText="📍 Enviar ubicación"
-
-b.className="bg-green-600 text-white px-3 py-2 rounded-lg"
-
-b.onclick=()=>{
-
-navigator.geolocation.getCurrentPosition(pos=>{
-
-data.lat=pos.coords.latitude
-data.lng=pos.coords.longitude
-
-user("Ubicación enviada")
-
-showMap()
-
-})
-
-}
-
-controls.appendChild(b)
 
 }
 
 /* MAPA */
 
-function showMap(){
+function selectMap(){
 
-bot("Ubicación registrada")
+bot("Selecciona en el mapa la ubicación de la incidencia")
+
+controls.innerHTML=""
 
 const mapDiv=document.createElement("div")
 
-mapDiv.style.height="200px"
+mapDiv.style.height="250px"
+mapDiv.style.width="100%"
 mapDiv.id="map"
 
 chat.appendChild(mapDiv)
 
-const map=L.map('map').setView([data.lat,data.lng],16)
+const map=L.map('map').setView([39.47,-0.37],14)
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 ).addTo(map)
 
-L.marker([data.lat,data.lng]).addTo(map)
+let marker
+
+map.on("click",e=>{
+
+if(marker) map.removeLayer(marker)
+
+marker=L.marker(e.latlng).addTo(map)
+
+data.lat=e.latlng.lat
+data.lng=e.latlng.lng
+
+user("Ubicación seleccionada")
 
 askDescription()
+
+})
 
 }
 
