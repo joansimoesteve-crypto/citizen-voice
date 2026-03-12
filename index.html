@@ -4,150 +4,104 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CitizenVoice</title>
-
-<!-- Tailwind CSS rápido para estilos -->
-<script src="https://cdn.tailwindcss.com"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <style>
 body { font-family: Arial; background:#f2f2f2; display:flex; justify-content:center; padding:20px; margin:0;}
 .container{ width:100%; max-width:520px; }
-.title{ font-size:40px; font-weight:bold; text-align:center; color:#2e7d32; margin-bottom:5px; }
+.title{ font-size:40px; font-weight:bold; text-align:center; color:#2563eb; margin-bottom:5px; }
 .subtitle{ text-align:center; color:#666; margin-bottom:15px; }
-.chat{ background:white; padding:20px; border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:70vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px;}
-.bubble{ background:#f1f1f1; padding:14px; border-radius:12px; margin:3px 0; font-size:18px; max-width:85%; display:flex; align-items:center; }
+.chat{ background:white; padding:20px; border-radius:20px; max-height:70vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px;}
+.bubble{ background:#f1f1f1; padding:14px; border-radius:12px; margin:3px 0; display:flex; align-items:center; }
 .bubble span{ display:block; }
-.user{ background:#2e7d32; color:white; padding:14px; border-radius:12px; margin:3px 0; align-self:flex-end; font-size:14px; max-width:70%; }
-.user-small{ background:#2e7d32; color:white; padding:8px; border-radius:12px; margin:2px 0; align-self:flex-end; font-size:12px; max-width:50%; }
-.inputArea{ margin-top:10px; width:100%; }
+.user{ background:#2e7d32; color:white; padding:14px; border-radius:12px; margin:3px 0; align-self:flex-end; max-width:70%; }
+.avatar{ width:40px; height:40px; border-radius:50%; margin-right:8px; }
 button{ width:100%; padding:12px; margin:5px 0; font-size:17px; border:none; border-radius:10px; background:#2e7d32; color:white; cursor:pointer; }
 button:hover{ background:#1b5e20; }
-textarea{ width:100%; max-width:100%; height:65px; padding:10px; border-radius:10px; border:1px solid #ccc; background:#dcedc8; font-size:15px; }
-input{ width:100%; max-width:100%; padding:10px; border-radius:10px; border:1px solid #ccc; background:#c8e6c9; font-size:15px; }
+textarea, input{ width:100%; padding:10px; border-radius:10px; border:1px solid #ccc; font-size:15px; margin-top:5px; }
 .controls{ display:flex; gap:8px; margin-top:6px; }
 .small{ flex:1; padding:10px; font-size:14px; border:none; border-radius:10px; background:#2e7d32; color:white; }
-.rating{ display:flex; justify-content:space-between; margin-top:10px; }
-.rating button{ width:18%; padding:10px; border:none; border-radius:10px; background:#2e7d32; color:white; }
-.avatar{ width:40px; height:40px; border-radius:50%; margin-right:8px; display:inline-block; vertical-align:middle; }
 </style>
-
-<!-- Supabase JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
 </head>
 <body>
-
 <div class="container">
   <div class="title">CitizenVoice</div>
   <div class="subtitle">Deja tu opinión en solo 30 segundos</div>
-
   <div class="chat" id="chat"></div>
-
-  <div class="inputArea" id="inputArea">
-    <button onclick="startSurvey()">Iniciar encuesta</button>
-  </div>
+  <div id="inputArea"><button onclick="startSurvey()">Iniciar encuesta</button></div>
 </div>
 
 <script>
-/********** CONFIG SUPABASE **********/
+/******** CONFIG SUPABASE ********/
 const SUPABASE_URL = "TU_SUPABASE_URL";
 const SUPABASE_KEY = "TU_SUPABASE_KEY";
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/********** VARIABLES **********/
-let step = 0;
-let data = {};
-const chat = document.getElementById("chat");
-const inputArea = document.getElementById("inputArea");
+/******** VARIABLES ********/
+let step=0;
+let data={};
+const chat=document.getElementById("chat");
+const inputArea=document.getElementById("inputArea");
 
-/********** FUNCIONES **********/
-function scrollBottom(){ setTimeout(()=>{ chat.scrollTop = chat.scrollHeight + 500; },200); }
-
-function speak(text){ 
-  let msg = new SpeechSynthesisUtterance(text); 
-  msg.lang = "es-ES"; 
-  speechSynthesis.cancel(); 
-  speechSynthesis.speak(msg);
-}
-
-// Bot con avatar fijo
+/******** FUNCIONES ********/
+function scrollBottom(){ setTimeout(()=>{ chat.scrollTop = chat.scrollHeight+500; },200); }
 function addBot(text){
-  let div = document.createElement("div");
-  div.className = "bubble";
-  div.innerHTML = `<img class="avatar" src="https://i.imgur.com/6z0sJqB.png" alt="Bot"> <span>${text}</span>`;
+  const div=document.createElement("div");
+  div.className="bubble";
+  div.innerHTML=`<img class="avatar" src="https://i.imgur.com/6z0sJqB.png" alt="Bot"> <span>${text}</span>`;
   chat.appendChild(div);
-  speak(text);
   scrollBottom();
 }
-
-// Usuario
 function addUser(text){
-  let div = document.createElement("div");
-  div.className = "user-small";
-  div.innerText = text;
+  const div=document.createElement("div");
+  div.className="user";
+  div.innerText=text;
   chat.appendChild(div);
   scrollBottom();
 }
 
-// FLUJO
+/******** FLUJO ********/
 function next(){
   step++;
   inputArea.innerHTML="";
-
   if(step==1){
     addBot("¿Sobre qué área quieres opinar?");
-    inputArea.innerHTML=`
-      <button onclick="selectArea('Movilidad')">Movilidad</button>
-      <button onclick="selectArea('Limpieza')">Limpieza</button>
-      <button onclick="selectArea('Urbanismo')">Urbanismo</button>
-      <button onclick="selectArea('Cultura')">Cultura</button>
-      <button onclick="selectArea('Seguridad')">Seguridad</button>
-      <button onclick="selectArea('Tramitación')">Tramitación</button>
-      <button onclick="selectArea('Otros')">Otros</button>
-    `;
+    inputArea.innerHTML=`<button onclick="selectArea('Movilidad')">Movilidad</button>
+                         <button onclick="selectArea('Limpieza')">Limpieza</button>
+                         <button onclick="selectArea('Urbanismo')">Urbanismo</button>
+                         <button onclick="selectArea('Cultura')">Cultura</button>
+                         <button onclick="selectArea('Seguridad')">Seguridad</button>
+                         <button onclick="selectArea('Tramitación')">Tramitación</button>
+                         <button onclick="selectArea('Otros')">Otros</button>`;
   }
-
   if(step==2){
     addBot("¿Es una incidencia o una propuesta?");
-    inputArea.innerHTML=`
-      <button onclick="selectType('Incidencia')">Incidencia</button>
-      <button onclick="selectType('Propuesta')">Propuesta</button>
-    `;
+    inputArea.innerHTML=`<button onclick="selectType('Incidencia')">Incidencia</button>
+                         <button onclick="selectType('Propuesta')">Propuesta</button>`;
   }
-
   if(step==3){
     addBot("Describe la incidencia o propuesta");
-    inputArea.innerHTML=`
-      <textarea id="desc" placeholder="Escribe o usa el micrófono"></textarea>
-      <div class="controls">
-        <button class="small" onclick="startVoice()">🎤</button>
-        <button class="small" onclick="sendDesc()">Enviar</button>
-      </div>
-    `;
+    inputArea.innerHTML=`<textarea id="desc" placeholder="Escribe aquí"></textarea>
+                         <div class="controls">
+                           <button class="small" onclick="sendDesc()">Enviar</button>
+                         </div>`;
   }
-
   if(step==4){
     addBot("Indica calle, número, código postal o código urna");
-    inputArea.innerHTML=`
-      <input id="loc" placeholder="Ej: Calle Mayor 10 o URNA-03">
-      <div class="controls">
-        <button class="small" onclick="sendLocation()">📍 Enviar ubicación</button>
-      </div>
-    `;
+    inputArea.innerHTML=`<input id="loc" placeholder="Ej: Calle Mayor 10 o URNA-03">
+                         <div class="controls">
+                           <button class="small" onclick="sendLocation()">Enviar</button>
+                         </div>`;
   }
-
   if(step==5){
     addBot("Valora el servicio de 1 a 5");
-    inputArea.innerHTML=`
-      <div class="rating">
-        <button onclick="rate(1)">1</button>
-        <button onclick="rate(2)">2</button>
-        <button onclick="rate(3)">3</button>
-        <button onclick="rate(4)">4</button>
-        <button onclick="rate(5)">5</button>
-      </div>
-    `;
+    inputArea.innerHTML=`<div class="controls">
+                           <button class="small" onclick="rate(1)">1</button>
+                           <button class="small" onclick="rate(2)">2</button>
+                           <button class="small" onclick="rate(3)">3</button>
+                           <button class="small" onclick="rate(4)">4</button>
+                           <button class="small" onclick="rate(5)">5</button>
+                         </div>`;
   }
-
   if(step==6){
     addBot("Gracias. Tu opinión ha sido registrada.");
     inputArea.innerHTML="";
@@ -155,47 +109,24 @@ function next(){
   }
 }
 
-// FUNCIONES DE BOTONES
-function selectArea(val){ data.area=val; addUser(val); next(); }
-function selectType(val){ data.tipo=val; addUser(val); next(); }
-function sendDesc(){ 
-  let val = document.getElementById("desc").value; 
-  data.descripcion = val; 
-  addUser(val); 
-  next(); 
-}
-function sendLocation(){ 
-  let val = document.getElementById("loc").value; 
-  data.ubicacion = val; 
-  addUser(val); 
-  next(); 
-}
-function rate(val){ data.valoracion=val; addUser("Valoración: "+val); next(); }
-
-// VOZ
-function startVoice(){
-  if(!('webkitSpeechRecognition' in window)){
-    alert("Voz no soportada");
-    return;
-  }
-  let rec = new webkitSpeechRecognition();
-  rec.lang="es-ES";
-  rec.onresult = function(e){ document.getElementById("desc").value = e.results[0][0].transcript; }
-  rec.start();
-}
-
-// INICIO
+/******** BOTONES ********/
+function selectArea(v){ data.area=v; addUser(v); next(); }
+function selectType(v){ data.tipo=v; addUser(v); next(); }
+function sendDesc(){ data.descripcion=document.getElementById("desc").value; addUser(data.descripcion); next(); }
+function sendLocation(){ data.ubicacion=document.getElementById("loc").value; addUser(data.ubicacion); next(); }
+function rate(v){ data.valoracion=v; addUser("Valoración: "+v); next(); }
 function startSurvey(){ inputArea.innerHTML=""; next(); }
 
-// GUARDAR EN SUPABASE
+/******** GUARDAR EN SUPABASE ********/
 async function saveData(){
   data.fecha = new Date().toISOString();
   const { error } = await supabase.from('incidencias').insert([data]);
   if(error){
-    console.error("Error guardando en Supabase:", error);
-    addBot("❌ Error registrando, revisa la conexión.");
+    console.error("Error Supabase:", error);
+    addBot("❌ Error registrando los datos.");
   } else {
-    console.log("✅ Datos guardados en Supabase:", data);
+    console.log("✅ Datos guardados:", data);
+    addBot("✅ Datos guardados correctamente en Supabase.");
   }
 }
 </script>
