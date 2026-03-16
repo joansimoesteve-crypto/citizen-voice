@@ -64,3 +64,10 @@ bot("Has seleccionado: "+v)
 }
 
 start()
+const SUPABASE_URL=https://saiclsejxsycmeefuhvs.supabase.co
+const SUPABASE_KEY=sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI
+
+const supabase = supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+)
