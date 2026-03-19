@@ -10,18 +10,17 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-<script
-src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 </head>
 
 <body class="bg-green-50 flex justify-center items-start min-h-screen p-2">
 
-<div class="w-full max-w-md h-[82vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+<div class="w-full max-w-md h-[85vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
 <!-- HEADER -->
 
@@ -49,14 +48,22 @@ Registra incidencias o propuestas de mejora en 30 segundos
 
 <script>
 
+/* SUPABASE */
+
+const SUPABASE_URL=https://saiclsejxsycmeefuhvs.supabase.co
+const SUPABASE_KEY=sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI
+
+const supabase = window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+)
+
+/* ELEMENTOS */
+
 const chat=document.getElementById("chat")
 const controls=document.getElementById("controls")
 
 let data={}
-
-/* URL GOOGLE SHEETS */
-
-const API="PEGA_AQUI_TU_URL"
 
 /* VOZ */
 
@@ -194,7 +201,7 @@ buttons(["1","2","3","4","5"],v=>{
 
 data.valoracion=v
 
-selectMap()
+showMap()
 
 })
 
@@ -202,7 +209,7 @@ selectMap()
 
 /* MAPA */
 
-function selectMap(){
+function showMap(){
 
 bot("Selecciona la ubicación en el mapa")
 
@@ -211,7 +218,7 @@ controls.innerHTML=""
 const mapDiv=document.createElement("div")
 
 mapDiv.id="map"
-mapDiv.style.height="320px"
+mapDiv.style.height="350px"
 mapDiv.style.width="100%"
 
 chat.appendChild(mapDiv)
@@ -245,7 +252,7 @@ askDescription()
 
 })
 
-},200)
+},300)
 
 }
 
@@ -306,14 +313,23 @@ controls.appendChild(send)
 
 }
 
-/* GUARDAR */
+/* GUARDAR EN DATABASE */
 
-function saveData(){
+async function saveData(){
 
-fetch(API,{
-method:"POST",
-body:JSON.stringify(data)
-})
+await supabase
+.from("incidencias")
+.insert([
+{
+fecha:new Date(),
+tipo:data.tipo,
+area:data.area,
+valoracion:data.valoracion,
+descripcion:data.descripcion,
+lat:data.lat,
+lng:data.lng
+}
+])
 
 bot("Gracias. Tu aportación ha sido registrada.")
 
@@ -322,8 +338,6 @@ console.log(data)
 }
 
 /* BOTON INICIO */
-
-controls.innerHTML=""
 
 const startBtn=document.createElement("button")
 
