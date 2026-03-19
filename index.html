@@ -10,10 +10,10 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<!-- SUPABASE VERSION ESTABLE -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 </head>
@@ -26,12 +26,10 @@
 
 <div class="bg-green-700 text-white p-4 text-center">
 
-<div class="text-lg font-bold">
-Citizen Voice
-</div>
+<div class="text-lg font-bold">Citizen Voice</div>
 
-<div class="text-xs opacity-90">
-Registra incidencias o propuestas de mejora en 30 segundos
+<div class="text-xs">
+Registra incidencias o propuestas en 30 segundos
 </div>
 
 </div>
@@ -48,14 +46,13 @@ Registra incidencias o propuestas de mejora en 30 segundos
 
 <script>
 
-/* SUPABASE */
+/* 🔗 SUPABASE BIEN CONFIGURADO */
 
-const SUPABASE_URL=https://saiclsejxsycmeefuhvs.supabase.co
-const SUPABASE_KEY=sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI
+const { createClient } = supabase
 
-const supabase = window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY
+const supabaseClient = createClient(
+"https://saiclsejxsycmeefuhvs.supabase.co",
+"sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
 
 /* ELEMENTOS */
@@ -68,11 +65,9 @@ let data={}
 /* VOZ */
 
 function speak(text){
-
 const msg=new SpeechSynthesisUtterance(text)
 msg.lang="es-ES"
 speechSynthesis.speak(msg)
-
 }
 
 /* BOT */
@@ -82,10 +77,8 @@ function bot(text){
 const row=document.createElement("div")
 row.className="flex items-start gap-2"
 
-const avatar=document.createElement("img")
-
-avatar.src="https://cdn-icons-png.flaticon.com/512/6997/6997662.png"
-avatar.className="w-9 h-9"
+const avatar=document.createElement("div")
+avatar.className="w-8 h-8 bg-green-600 rounded-full"
 
 const bubble=document.createElement("div")
 bubble.className="bg-green-100 p-3 rounded-xl text-sm w-[75%]"
@@ -107,9 +100,7 @@ speak(text)
 function user(text){
 
 const d=document.createElement("div")
-
 d.className="bg-green-600 text-white p-3 rounded-xl text-sm w-[75%] ml-auto"
-
 d.innerText=text
 
 chat.appendChild(d)
@@ -128,18 +119,14 @@ list.forEach(o=>{
 
 const b=document.createElement("button")
 
-b.className="bg-green-100 hover:bg-green-200 px-3 py-2 rounded-lg text-sm"
+b.className="bg-green-100 px-3 py-2 rounded-lg text-sm"
 
 b.innerText=o
 
 b.onclick=()=>{
-
 controls.innerHTML=""
-
 user(o)
-
 callback(o)
-
 }
 
 controls.appendChild(b)
@@ -157,11 +144,8 @@ bot("Hola. ¿Qué deseas registrar?")
 buttons(
 ["Incidencia","Propuesta de mejora"],
 v=>{
-
 data.tipo=v
-
 askArea()
-
 })
 
 }
@@ -173,20 +157,10 @@ function askArea(){
 bot("¿En qué área?")
 
 buttons(
-[
-"Movilidad",
-"Limpieza",
-"Urbanismo",
-"Cultura",
-"Seguridad",
-"Otros trámites"
-],
+["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros trámites"],
 v=>{
-
 data.area=v
-
 askRate()
-
 })
 
 }
@@ -195,14 +169,11 @@ askRate()
 
 function askRate(){
 
-bot("¿Cómo valoras esta área del 1 al 5?")
+bot("Valora del 1 al 5")
 
 buttons(["1","2","3","4","5"],v=>{
-
 data.valoracion=v
-
 showMap()
-
 })
 
 }
@@ -211,15 +182,13 @@ showMap()
 
 function showMap(){
 
-bot("Selecciona la ubicación en el mapa")
+bot("Marca la ubicación en el mapa")
 
 controls.innerHTML=""
 
 const mapDiv=document.createElement("div")
-
 mapDiv.id="map"
-mapDiv.style.height="350px"
-mapDiv.style.width="100%"
+mapDiv.style.height="300px"
 
 chat.appendChild(mapDiv)
 
@@ -227,13 +196,11 @@ chat.scrollTop=chat.scrollHeight
 
 setTimeout(()=>{
 
-const map=L.map('map').setView([39.47,-0.37],14)
+const map=L.map('map').setView([39.47,-0.37],13)
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 ).addTo(map)
-
-map.invalidateSize()
 
 let marker
 
@@ -246,7 +213,7 @@ marker=L.marker(e.latlng).addTo(map)
 data.lat=e.latlng.lat
 data.lng=e.latlng.lng
 
-user("Ubicación registrada")
+user("Ubicación guardada")
 
 askDescription()
 
@@ -260,51 +227,34 @@ askDescription()
 
 function askDescription(){
 
-bot("Describe la incidencia o propuesta")
+bot("Describe la incidencia")
 
 controls.innerHTML=""
 
 const input=document.createElement("input")
-
-input.placeholder="Escribe o usa el micrófono"
-
-input.className="border rounded-lg p-2 flex-1 text-sm"
+input.placeholder="Escribe o usa micrófono"
+input.className="border p-2 rounded flex-1 text-sm"
 
 const mic=document.createElement("button")
-
 mic.innerText="🎤"
-mic.className="bg-gray-100 px-3 py-2 rounded-lg"
 
 mic.onclick=()=>{
-
 const r=new webkitSpeechRecognition()
-
 r.lang="es-ES"
-
 r.start()
-
 r.onresult=e=>{
-
 input.value=e.results[0][0].transcript
-
 }
-
 }
 
 const send=document.createElement("button")
-
 send.innerText="Enviar"
-
-send.className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm"
+send.className="bg-green-600 text-white px-3 py-2 rounded"
 
 send.onclick=()=>{
-
 user(input.value)
-
 data.descripcion=input.value
-
 saveData()
-
 }
 
 controls.appendChild(input)
@@ -313,14 +263,13 @@ controls.appendChild(send)
 
 }
 
-/* GUARDAR EN DATABASE */
+/* 💾 GUARDAR */
 
 async function saveData(){
 
-await supabase
+await supabaseClient
 .from("incidencias")
-.insert([
-{
+.insert([{
 fecha:new Date(),
 tipo:data.tipo,
 area:data.area,
@@ -328,10 +277,9 @@ valoracion:data.valoracion,
 descripcion:data.descripcion,
 lat:data.lat,
 lng:data.lng
-}
-])
+}])
 
-bot("Gracias. Tu aportación ha sido registrada.")
+bot("Incidencia registrada correctamente")
 
 console.log(data)
 
@@ -342,15 +290,11 @@ console.log(data)
 const startBtn=document.createElement("button")
 
 startBtn.innerText="Empezar"
-
 startBtn.className="bg-green-600 text-white px-4 py-2 rounded-lg"
 
 startBtn.onclick=()=>{
-
 controls.innerHTML=""
-
 start()
-
 }
 
 controls.appendChild(startBtn)
