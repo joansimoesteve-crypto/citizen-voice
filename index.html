@@ -2,10 +2,8 @@
 <html lang="es">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Citizen Voice</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -29,13 +27,8 @@
 
 <!-- HEADER -->
 <div class="bg-green-700 text-white p-4 text-center">
-
 <div class="text-2xl font-bold">Citizen Voice</div>
-
-<div class="text-xs opacity-90">
-Incidencias en 30 segundos
-</div>
-
+<div class="text-xs opacity-90">Incidencias en 30 segundos</div>
 </div>
 
 <!-- CHAT -->
@@ -63,18 +56,18 @@ const supabaseClient = createClient(
 /* ESTADO */
 /* ===================== */
 
-const chat=document.getElementById("chat")
-const controls=document.getElementById("controls")
+const chat = document.getElementById("chat")
+const controls = document.getElementById("controls")
 
-let data={}
+let data = {}
 
 /* ===================== */
 /* VOZ */
 /* ===================== */
 
 function speak(text){
-const msg=new SpeechSynthesisUtterance(text)
-msg.lang="es-ES"
+const msg = new SpeechSynthesisUtterance(text)
+msg.lang = "es-ES"
 speechSynthesis.speak(msg)
 }
 
@@ -84,23 +77,22 @@ speechSynthesis.speak(msg)
 
 function bot(text){
 
-const row=document.createElement("div")
-row.className="flex items-start gap-2"
+const row = document.createElement("div")
+row.className = "flex items-start gap-2"
 
-const avatar=document.createElement("div")
-avatar.className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-xl shadow-md border-2 border-green-300"
-avatar.innerHTML="🤖"
+const avatar = document.createElement("div")
+avatar.className = "w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-xl"
+avatar.innerHTML = "🤖"
 
-const bubble=document.createElement("div")
-bubble.className="bg-green-100 p-3 rounded-2xl text-sm w-[80%] shadow-sm"
-bubble.innerText=text
+const bubble = document.createElement("div")
+bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
+bubble.innerText = text
 
 row.appendChild(avatar)
 row.appendChild(bubble)
 
 chat.appendChild(row)
-
-setTimeout(()=>chat.scrollTop=chat.scrollHeight,120)
+setTimeout(()=>chat.scrollTop = chat.scrollHeight,100)
 
 speak(text)
 }
@@ -110,14 +102,11 @@ speak(text)
 /* ===================== */
 
 function user(text){
-
-const d=document.createElement("div")
-d.className="bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto shadow"
-d.innerText=text
-
+const d = document.createElement("div")
+d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
+d.innerText = text
 chat.appendChild(d)
-
-setTimeout(()=>chat.scrollTop=chat.scrollHeight,120)
+setTimeout(()=>chat.scrollTop = chat.scrollHeight,100)
 }
 
 /* ===================== */
@@ -125,25 +114,21 @@ setTimeout(()=>chat.scrollTop=chat.scrollHeight,120)
 /* ===================== */
 
 function buttons(list,callback){
-
-controls.innerHTML=""
+controls.innerHTML = ""
 
 list.forEach(o=>{
+const b = document.createElement("button")
+b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
+b.innerText = o
 
-const b=document.createElement("button")
-b.className="bg-green-100 hover:bg-green-200 transition px-4 py-2 rounded-xl text-sm shadow-sm"
-b.innerText=o
-
-b.onclick=()=>{
-controls.innerHTML=""
+b.onclick = ()=>{
+controls.innerHTML = ""
 user(o)
 callback(o)
 }
 
 controls.appendChild(b)
-
 })
-
 }
 
 /* ===================== */
@@ -152,8 +137,8 @@ controls.appendChild(b)
 
 function start(){
 bot("Hola, ¿qué deseas registrar?")
-buttons(["Incidencia","Propuesta de mejora"],v=>{
-data.tipo=v
+buttons(["Incidencia","Propuesta de mejora"], v=>{
+data.tipo = v
 askArea()
 })
 }
@@ -164,10 +149,8 @@ askArea()
 
 function askArea(){
 bot("¿En qué área?")
-buttons(
-["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"],
-v=>{
-data.area=v
+buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"], v=>{
+data.area = v
 askRate()
 })
 }
@@ -177,9 +160,9 @@ askRate()
 /* ===================== */
 
 function askRate(){
-bot("Valora del 1 al 5 la situación actual")
-buttons(["1","2","3","4","5"],v=>{
-data.valoracion=v
+bot("Valora del 1 al 5")
+buttons(["1","2","3","4","5"], v=>{
+data.valoracion = v
 showMap()
 })
 }
@@ -190,32 +173,27 @@ showMap()
 
 function showMap(){
 
-bot("Busca o marca la ubicación 📍")
+bot("Marca o busca ubicación 📍")
 
-controls.innerHTML=""
+controls.innerHTML = ""
 
-const mapContainer=document.createElement("div")
-mapContainer.className="w-full"
+const search = document.createElement("input")
+search.placeholder = "Buscar dirección..."
+search.className = "border p-3 rounded-xl w-full mb-2"
 
-const search=document.createElement("input")
-search.placeholder="Buscar dirección..."
-search.className="border p-3 rounded-xl w-full mb-2 text-sm"
+const mapDiv = document.createElement("div")
+mapDiv.id = "map"
+mapDiv.style.height = "450px"
+mapDiv.className = "rounded-xl"
 
-const mapDiv=document.createElement("div")
-mapDiv.id="map"
-mapDiv.style.height="500px"
-mapDiv.className="rounded-2xl shadow"
+chat.appendChild(search)
+chat.appendChild(mapDiv)
 
-mapContainer.appendChild(search)
-mapContainer.appendChild(mapDiv)
-
-chat.appendChild(mapContainer)
-
-setTimeout(()=>chat.scrollTop=chat.scrollHeight,200)
+setTimeout(()=>chat.scrollTop = chat.scrollHeight,200)
 
 setTimeout(()=>{
 
-const map=L.map('map').setView([39.47,-0.37],13)
+const map = L.map('map').setView([39.47,-0.37],13)
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
 
@@ -223,52 +201,41 @@ let marker
 
 const geocoder = L.Control.Geocoder.nominatim()
 
-search.addEventListener("keydown",(e)=>{
+search.addEventListener("keydown", e=>{
+if(e.key === "Enter"){
 
-if(e.key==="Enter"){
+geocoder.geocode(search.value, results=>{
+if(results.length){
 
-const query=search.value
-
-geocoder.geocode(query,(results)=>{
-
-if(results.length>0){
-
-const r=results[0]
+const r = results[0]
 
 map.setView(r.center,16)
 
 if(marker) map.removeLayer(marker)
+marker = L.marker(r.center).addTo(map)
 
-marker=L.marker(r.center).addTo(map)
-
-data.lat=r.center.lat
-data.lng=r.center.lng
+data.lat = r.center.lat
+data.lng = r.center.lng
 
 user("Ubicación encontrada")
-
 askDescription()
 
 }
-
 })
 
 }
-
 })
 
-map.on("click",e=>{
-
+map.on("click", e=>{
 if(marker) map.removeLayer(marker)
 
-marker=L.marker(e.latlng).addTo(map)
+marker = L.marker(e.latlng).addTo(map)
 
-data.lat=e.latlng.lat
-data.lng=e.latlng.lng
+data.lat = e.latlng.lat
+data.lng = e.latlng.lng
 
 user("Ubicación guardada")
-
 askDescription()
-
 })
 
 },300)
@@ -283,38 +250,25 @@ function askDescription(){
 
 bot("Describe la incidencia")
 
-controls.innerHTML=""
+controls.innerHTML = ""
 
-const input=document.createElement("input")
-input.placeholder="Escribe o usa micrófono"
-input.className="border p-3 rounded-xl flex-1 text-sm"
+const input = document.createElement("input")
+input.className = "border p-3 rounded-xl flex-1"
+input.placeholder = "Escribe aquí..."
 
-const mic=document.createElement("button")
-mic.innerText="🎤"
-mic.className="bg-green-100 px-4 rounded-xl"
+const send = document.createElement("button")
+send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
+send.innerText = "Enviar"
 
-mic.onclick=()=>{
-const r=new webkitSpeechRecognition()
-r.lang="es-ES"
-r.start()
-r.onresult=e=>{
-input.value=e.results[0][0].transcript
-}
-}
-
-const send=document.createElement("button")
-send.innerText="Enviar"
-send.className="bg-green-600 text-white px-4 py-2 rounded-xl"
-
-send.onclick=()=>{
+send.onclick = ()=>{
 if(!input.value) return
+
 user(input.value)
-data.descripcion=input.value
+data.descripcion = input.value
 saveData()
 }
 
 controls.appendChild(input)
-controls.appendChild(mic)
 controls.appendChild(send)
 
 }
@@ -326,23 +280,17 @@ controls.appendChild(send)
 async function callGemini(description, area, tipo){
 
 const prompt = `
-Eres un técnico municipal.
-
-Devuelve SOLO JSON válido:
+Devuelve SOLO JSON:
 
 {
-"resumen": "",
-"acciones": []
+"resumen":"",
+"acciones":[]
 }
 
-Incidencia:
+Texto:
 ${description}
-
-Área:
-${area}
-
-Tipo:
-${tipo}
+Área:${area}
+Tipo:${tipo}
 `
 
 const res = await fetch(
@@ -358,41 +306,34 @@ contents:[{parts:[{text:prompt}]}]
 
 const json = await res.json()
 
-const text = json.candidates?.[0]?.content?.parts?.[0]?.text || ""
-
-console.log("GEMINI:", text)
+const text = json?.candidates?.[0]?.content?.parts?.[0]?.text || ""
 
 try{
-
-const cleaned = text.substring(text.indexOf("{"))
-return JSON.parse(cleaned)
-
+const match = text.match(/\{[\s\S]*\}/)
+return JSON.parse(match[0])
 }catch(e){
-
-return {
-resumen:text,
-acciones:[]
-}
-
+return {resumen:text,acciones:[]}
 }
 
 }
 
 /* ===================== */
-/* GUARDAR */
+/* GUARDAR (ARREGLADO) */
 /* ===================== */
 
 async function saveData(){
 
 const incidencia = {
-fecha:new Date(),
-tipo:data.tipo,
-area:data.area,
-valoracion:data.valoracion,
-descripcion:data.descripcion,
-lat:data.lat,
-lng:data.lng
+fecha: new Date().toISOString(),   // 🔥 FIX CLAVE
+tipo: data.tipo || "",
+area: data.area || "",
+valoracion: data.valoracion || "",
+descripcion: data.descripcion || "",
+lat: data.lat ?? null,
+lng: data.lng ?? null
 }
+
+console.log("INCIDENCIA:", incidencia)
 
 const { data: saved, error } = await supabaseClient
 .from("incidencias")
@@ -401,7 +342,7 @@ const { data: saved, error } = await supabaseClient
 
 if(error){
 console.log("SUPABASE ERROR:", error)
-bot("Error guardando incidencia ❌")
+bot("Error guardando ❌")
 return
 }
 
@@ -423,26 +364,24 @@ acciones: aiData.acciones
 
 if(updateError){
 console.log("UPDATE ERROR:", updateError)
-bot("Error guardando IA ❌")
+bot("Error IA ❌")
 return
 }
 
 bot("Incidencia registrada y analizada correctamente ✅")
 
-console.log({incidencia, aiData})
-
 }
 
 /* ===================== */
-/* INICIO */
+/* START BUTTON */
 /* ===================== */
 
-const startBtn=document.createElement("button")
-startBtn.innerText="Empezar"
-startBtn.className="w-full bg-green-600 text-white px-4 py-3 rounded-xl text-lg shadow"
+const startBtn = document.createElement("button")
+startBtn.innerText = "Empezar"
+startBtn.className = "w-full bg-green-600 text-white p-3 rounded-xl"
 
-startBtn.onclick=()=>{
-controls.innerHTML=""
+startBtn.onclick = ()=>{
+controls.innerHTML = ""
 start()
 }
 
