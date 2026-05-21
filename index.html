@@ -10,17 +10,26 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- SUPABASE VERSION ESTABLE -->
+<!-- SUPABASE -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
+<!-- LEAFLET -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- BUSCADOR DIRECCIONES -->
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
+/>
+
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 </head>
 
 <body class="bg-green-50 flex justify-center items-start min-h-screen p-2">
 
-<div class="w-full max-w-md h-[85vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+<div class="w-full max-w-md h-[90vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
 <!-- HEADER -->
 
@@ -46,7 +55,7 @@ Registra incidencias o propuestas en 30 segundos
 
 <script>
 
-/* 🔗 SUPABASE BIEN CONFIGURADO */
+/* 🔗 SUPABASE */
 
 const { createClient } = supabase
 
@@ -65,9 +74,13 @@ let data={}
 /* VOZ */
 
 function speak(text){
+
 const msg=new SpeechSynthesisUtterance(text)
+
 msg.lang="es-ES"
+
 speechSynthesis.speak(msg)
+
 }
 
 /* BOT */
@@ -75,16 +88,23 @@ speechSynthesis.speak(msg)
 function bot(text){
 
 const row=document.createElement("div")
+
 row.className="flex items-start gap-2"
 
 const avatar=document.createElement("div")
-avatar.className="w-8 h-8 bg-green-600 rounded-full"
+
+avatar.className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-lg shadow"
+
+avatar.innerHTML="🤖"
 
 const bubble=document.createElement("div")
+
 bubble.className="bg-green-100 p-3 rounded-xl text-sm w-[75%]"
+
 bubble.innerText=text
 
 row.appendChild(avatar)
+
 row.appendChild(bubble)
 
 chat.appendChild(row)
@@ -100,7 +120,9 @@ speak(text)
 function user(text){
 
 const d=document.createElement("div")
+
 d.className="bg-green-600 text-white p-3 rounded-xl text-sm w-[75%] ml-auto"
+
 d.innerText=text
 
 chat.appendChild(d)
@@ -124,9 +146,13 @@ b.className="bg-green-100 px-3 py-2 rounded-lg text-sm"
 b.innerText=o
 
 b.onclick=()=>{
+
 controls.innerHTML=""
+
 user(o)
+
 callback(o)
+
 }
 
 controls.appendChild(b)
@@ -144,8 +170,11 @@ bot("Hola. ¿Qué deseas registrar?")
 buttons(
 ["Incidencia","Propuesta de mejora"],
 v=>{
+
 data.tipo=v
+
 askArea()
+
 })
 
 }
@@ -157,10 +186,20 @@ function askArea(){
 bot("¿En qué área?")
 
 buttons(
-["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros trámites"],
+[
+"Movilidad",
+"Limpieza",
+"Urbanismo",
+"Cultura",
+"Seguridad",
+"Otros trámites"
+],
 v=>{
+
 data.area=v
+
 askRate()
+
 })
 
 }
@@ -172,8 +211,11 @@ function askRate(){
 bot("Valora del 1 al 5")
 
 buttons(["1","2","3","4","5"],v=>{
+
 data.valoracion=v
+
 showMap()
+
 })
 
 }
@@ -182,15 +224,33 @@ showMap()
 
 function showMap(){
 
-bot("Marca la ubicación en el mapa")
+bot("Busca o marca la ubicación en el mapa")
 
 controls.innerHTML=""
 
-const mapDiv=document.createElement("div")
-mapDiv.id="map"
-mapDiv.style.height="300px"
+const mapContainer=document.createElement("div")
 
-chat.appendChild(mapDiv)
+mapContainer.className="w-full"
+
+const search=document.createElement("input")
+
+search.placeholder="Buscar dirección..."
+
+search.className="border p-2 rounded w-full mb-2 text-sm"
+
+const mapDiv=document.createElement("div")
+
+mapDiv.id="map"
+
+mapDiv.style.height="500px"
+
+mapDiv.className="rounded-xl"
+
+mapContainer.appendChild(search)
+
+mapContainer.appendChild(mapDiv)
+
+chat.appendChild(mapContainer)
 
 chat.scrollTop=chat.scrollHeight
 
@@ -204,6 +264,46 @@ L.tileLayer(
 
 let marker
 
+/* BUSCADOR */
+
+const geocoder = L.Control.Geocoder.nominatim()
+
+search.addEventListener("keydown",(e)=>{
+
+if(e.key==="Enter"){
+
+const query=search.value
+
+geocoder.geocode(query,(results)=>{
+
+if(results.length>0){
+
+const r=results[0]
+
+map.setView(r.center,16)
+
+if(marker) map.removeLayer(marker)
+
+marker=L.marker(r.center).addTo(map)
+
+data.lat=r.center.lat
+
+data.lng=r.center.lng
+
+user("Ubicación encontrada")
+
+askDescription()
+
+}
+
+})
+
+}
+
+})
+
+/* CLICK MAPA */
+
 map.on("click",e=>{
 
 if(marker) map.removeLayer(marker)
@@ -211,6 +311,7 @@ if(marker) map.removeLayer(marker)
 marker=L.marker(e.latlng).addTo(map)
 
 data.lat=e.latlng.lat
+
 data.lng=e.latlng.lng
 
 user("Ubicación guardada")
@@ -232,33 +333,55 @@ bot("Describe la incidencia")
 controls.innerHTML=""
 
 const input=document.createElement("input")
+
 input.placeholder="Escribe o usa micrófono"
+
 input.className="border p-2 rounded flex-1 text-sm"
 
 const mic=document.createElement("button")
+
 mic.innerText="🎤"
 
+mic.className="bg-green-100 px-3 rounded"
+
 mic.onclick=()=>{
+
 const r=new webkitSpeechRecognition()
+
 r.lang="es-ES"
+
 r.start()
+
 r.onresult=e=>{
+
 input.value=e.results[0][0].transcript
+
 }
+
 }
 
 const send=document.createElement("button")
+
 send.innerText="Enviar"
+
 send.className="bg-green-600 text-white px-3 py-2 rounded"
 
 send.onclick=()=>{
+
+if(!input.value) return
+
 user(input.value)
+
 data.descripcion=input.value
+
 saveData()
+
 }
 
 controls.appendChild(input)
+
 controls.appendChild(mic)
+
 controls.appendChild(send)
 
 }
@@ -270,16 +393,24 @@ async function saveData(){
 await supabaseClient
 .from("incidencias")
 .insert([{
+
 fecha:new Date(),
+
 tipo:data.tipo,
+
 area:data.area,
+
 valoracion:data.valoracion,
+
 descripcion:data.descripcion,
+
 lat:data.lat,
+
 lng:data.lng
+
 }])
 
-bot("Incidencia registrada correctamente")
+bot("Incidencia registrada correctamente ✅")
 
 console.log(data)
 
@@ -290,11 +421,15 @@ console.log(data)
 const startBtn=document.createElement("button")
 
 startBtn.innerText="Empezar"
+
 startBtn.className="bg-green-600 text-white px-4 py-2 rounded-lg"
 
 startBtn.onclick=()=>{
+
 controls.innerHTML=""
+
 start()
+
 }
 
 controls.appendChild(startBtn)
