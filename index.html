@@ -17,12 +17,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<!-- BUSCADOR -->
-<link
-rel="stylesheet"
-href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
-/>
-
+<!-- GEOCODER -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 </head>
@@ -31,33 +27,30 @@ href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
 
 <div class="w-full max-w-md h-[95vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
-<!-- HEADER -->
+<!-- HEADER (menos vacío arriba) -->
+<div class="bg-green-700 text-white p-4 text-center">
 
-<div class="bg-green-700 text-white p-5 text-center">
+<div class="text-2xl font-bold">Citizen Voice</div>
 
-<div class="text-3xl font-bold tracking-wide">
-Citizen Voice
-</div>
-
-<div class="text-sm mt-1 opacity-90">
-Registra incidencias o propuestas en 30 segundos
+<div class="text-xs opacity-90">
+Incidencias en 30 segundos
 </div>
 
 </div>
 
 <!-- CHAT -->
-
 <div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
 
 <!-- CONTROLES -->
-
 <div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
 
 </div>
 
 <script>
 
+/* ===================== */
 /* SUPABASE */
+/* ===================== */
 
 const { createClient } = supabase
 
@@ -66,78 +59,70 @@ const supabaseClient = createClient(
 "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
 
-/* ELEMENTOS */
+/* ===================== */
+/* ESTADO */
+/* ===================== */
 
 const chat=document.getElementById("chat")
 const controls=document.getElementById("controls")
 
 let data={}
 
+/* ===================== */
 /* VOZ */
+/* ===================== */
 
 function speak(text){
-
 const msg=new SpeechSynthesisUtterance(text)
-
 msg.lang="es-ES"
-
 speechSynthesis.speak(msg)
-
 }
 
-/* BOT */
+/* ===================== */
+/* BOT (verde mejorado) */
+/* ===================== */
 
 function bot(text){
 
 const row=document.createElement("div")
-
-row.className="flex items-start gap-2 animate-fade"
+row.className="flex items-start gap-2"
 
 const avatar=document.createElement("div")
-
 avatar.className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-xl shadow-md border-2 border-green-300"
-
 avatar.innerHTML="🤖"
 
 const bubble=document.createElement("div")
-
 bubble.className="bg-green-100 p-3 rounded-2xl text-sm w-[80%] shadow-sm"
-
 bubble.innerText=text
 
 row.appendChild(avatar)
-
 row.appendChild(bubble)
 
 chat.appendChild(row)
 
-setTimeout(()=>{
-chat.scrollTop=chat.scrollHeight
-},100)
+setTimeout(()=>chat.scrollTop=chat.scrollHeight,100)
 
 speak(text)
-
 }
 
+/* ===================== */
 /* USER */
+/* ===================== */
 
 function user(text){
 
 const d=document.createElement("div")
-
 d.className="bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto shadow"
-
 d.innerText=text
 
 chat.appendChild(d)
 
-setTimeout(()=>{
-chat.scrollTop=chat.scrollHeight
-},100)
-
+setTimeout(()=>chat.scrollTop=chat.scrollHeight,100)
 }
 
+/* ===================== */
 /* BOTONES */
+/* ===================== */
 
 function buttons(list,callback){
 
@@ -146,19 +131,13 @@ controls.innerHTML=""
 list.forEach(o=>{
 
 const b=document.createElement("button")
-
 b.className="bg-green-100 hover:bg-green-200 transition px-4 py-2 rounded-xl text-sm shadow-sm"
-
 b.innerText=o
 
 b.onclick=()=>{
-
 controls.innerHTML=""
-
 user(o)
-
 callback(o)
-
 }
 
 controls.appendChild(b)
@@ -167,112 +146,91 @@ controls.appendChild(b)
 
 }
 
+/* ===================== */
 /* START */
+/* ===================== */
 
 function start(){
 
-bot("Hola 👋 ¿Qué deseas registrar?")
+bot("Hola, ¿Qué deseas registrar?")
 
 buttons(
 ["Incidencia","Propuesta de mejora"],
 v=>{
-
 data.tipo=v
-
 askArea()
-
 })
 
 }
 
+/* ===================== */
 /* AREA */
+/* ===================== */
 
 function askArea(){
 
 bot("¿En qué área?")
 
 buttons(
-[
-"Movilidad",
-"Limpieza",
-"Urbanismo",
-"Cultura",
-"Seguridad",
-"Otros trámites"
-],
+["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"],
 v=>{
-
 data.area=v
-
 askRate()
-
 })
 
 }
 
-/* VALORACION */
+/* ===================== */
+/* VALORACIÓN */
+/* ===================== */
 
 function askRate(){
 
-bot("Valora del 1 al 5")
+bot("Valora del 1 al 5 la satisfacción actual del servicio seleccionado")
 
 buttons(["1","2","3","4","5"],v=>{
-
 data.valoracion=v
-
 showMap()
-
 })
 
 }
 
+/* ===================== */
 /* MAPA */
+/* ===================== */
 
 function showMap(){
 
-bot("Busca o marca la ubicación en el mapa 📍")
+bot("Busca o marca la ubicación ")
 
 controls.innerHTML=""
 
 const mapContainer=document.createElement("div")
-
 mapContainer.className="w-full"
 
 const search=document.createElement("input")
-
 search.placeholder="Buscar dirección..."
-
 search.className="border p-3 rounded-xl w-full mb-2 text-sm"
 
 const mapDiv=document.createElement("div")
-
 mapDiv.id="map"
-
 mapDiv.style.height="500px"
-
 mapDiv.className="rounded-2xl shadow"
 
 mapContainer.appendChild(search)
-
 mapContainer.appendChild(mapDiv)
 
 chat.appendChild(mapContainer)
 
-setTimeout(()=>{
-chat.scrollTop=chat.scrollHeight
-},200)
+setTimeout(()=>chat.scrollTop=chat.scrollHeight,200)
 
 setTimeout(()=>{
 
 const map=L.map('map').setView([39.47,-0.37],13)
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-).addTo(map)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
 
 let marker
-
-/* BUSCADOR */
 
 const geocoder = L.Control.Geocoder.nominatim()
 
@@ -295,10 +253,9 @@ if(marker) map.removeLayer(marker)
 marker=L.marker(r.center).addTo(map)
 
 data.lat=r.center.lat
-
 data.lng=r.center.lng
 
-user("Ubicación encontrada 📍")
+user("Ubicación encontrada")
 
 askDescription()
 
@@ -310,8 +267,6 @@ askDescription()
 
 })
 
-/* CLICK MAPA */
-
 map.on("click",e=>{
 
 if(marker) map.removeLayer(marker)
@@ -319,10 +274,9 @@ if(marker) map.removeLayer(marker)
 marker=L.marker(e.latlng).addTo(map)
 
 data.lat=e.latlng.lat
-
 data.lng=e.latlng.lng
 
-user("Ubicación guardada 📍")
+user("Ubicación guardada")
 
 askDescription()
 
@@ -332,112 +286,153 @@ askDescription()
 
 }
 
-/* DESCRIPCION */
+/* ===================== */
+/* DESCRIPCIÓN */
+/* ===================== */
 
 function askDescription(){
 
-bot("Describe la incidencia o propuesta")
+bot("Describe la incidencia")
 
 controls.innerHTML=""
 
 const input=document.createElement("input")
-
 input.placeholder="Escribe o usa micrófono"
-
 input.className="border p-3 rounded-xl flex-1 text-sm"
 
 const mic=document.createElement("button")
-
 mic.innerText="🎤"
-
 mic.className="bg-green-100 px-4 rounded-xl"
 
 mic.onclick=()=>{
-
 const r=new webkitSpeechRecognition()
-
 r.lang="es-ES"
-
 r.start()
-
 r.onresult=e=>{
-
 input.value=e.results[0][0].transcript
-
 }
-
 }
 
 const send=document.createElement("button")
-
 send.innerText="Enviar"
-
 send.className="bg-green-600 text-white px-4 py-2 rounded-xl"
 
 send.onclick=()=>{
-
 if(!input.value) return
-
 user(input.value)
-
 data.descripcion=input.value
-
 saveData()
-
 }
 
 controls.appendChild(input)
-
 controls.appendChild(mic)
-
 controls.appendChild(send)
 
 }
 
-/* GUARDAR */
+/* ===================== */
+/* GEMINI IA */
+/* ===================== */
 
-async function saveData(){
+async function callGemini(description, area, tipo){
 
-await supabaseClient
-.from("incidencias")
-.insert([{
+const prompt = `
+Eres un técnico municipal.
 
-fecha:new Date(),
+Devuelve SOLO JSON válido:
 
-tipo:data.tipo,
+{
+"resumen": "",
+"acciones": []
+}
 
-area:data.area,
+Incidencia:
+${description}
 
-valoracion:data.valoracion,
+Área:
+${area}
 
-descripcion:data.descripcion,
+Tipo:
+${tipo}
+`
 
-lat:data.lat,
+const res = await fetch(
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyD4eEVcGUPBuDzlE5edGhud4DYlZBAj1D8",
+{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+contents:[{parts:[{text:prompt}]}]
+})
+}
+)
 
-lng:data.lng
+const data = await res.json()
 
-}])
+const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ""
 
-bot("Incidencia registrada correctamente ✅")
-
-console.log(data)
+try{
+return JSON.parse(text)
+}catch(e){
+return {resumen:text,acciones:[]}
+}
 
 }
 
-/* BOTON INICIO */
+/* ===================== */
+/* GUARDAR */
+/* ===================== */
+
+async function saveData(){
+
+const incidencia = {
+fecha:new Date(),
+tipo:data.tipo,
+area:data.area,
+valoracion:data.valoracion,
+descripcion:data.descripcion,
+lat:data.lat,
+lng:data.lng
+}
+
+const { data: saved } = await supabaseClient
+.from("incidencias")
+.insert([incidencia])
+.select()
+
+const id = saved?.[0]?.id
+
+const aiData = await callGemini(
+data.descripcion,
+data.area,
+data.tipo
+)
+
+await supabaseClient
+.from("incidencias")
+.update({
+resumen: aiData.resumen,
+acciones: aiData.acciones
+})
+.eq("id", id)
+
+bot("Incidencia registrada y analizada correctamente")
+
+console.log({incidencia, aiData})
+
+}
+
+/* ===================== */
+/* BOTÓN INICIO (menos vacío) */
+/* ===================== */
 
 const startBtn=document.createElement("button")
-
 startBtn.innerText="Empezar"
-
 startBtn.className="w-full bg-green-600 hover:bg-green-700 transition text-white px-4 py-3 rounded-xl text-lg shadow"
 
 startBtn.onclick=()=>{
-
 controls.innerHTML=""
-
 start()
-
 }
 
 controls.appendChild(startBtn)
