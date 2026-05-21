@@ -27,7 +27,7 @@
 
 <div class="w-full max-w-md h-[95vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
-<!-- HEADER (menos vacío arriba) -->
+<!-- HEADER -->
 <div class="bg-green-700 text-white p-4 text-center">
 
 <div class="text-2xl font-bold">Citizen Voice</div>
@@ -79,7 +79,7 @@ speechSynthesis.speak(msg)
 }
 
 /* ===================== */
-/* BOT (verde mejorado) */
+/* BOT */
 /* ===================== */
 
 function bot(text){
@@ -100,7 +100,7 @@ row.appendChild(bubble)
 
 chat.appendChild(row)
 
-setTimeout(()=>chat.scrollTop=chat.scrollHeight,100)
+setTimeout(()=>chat.scrollTop=chat.scrollHeight,120)
 
 speak(text)
 }
@@ -117,7 +117,7 @@ d.innerText=text
 
 chat.appendChild(d)
 
-setTimeout(()=>chat.scrollTop=chat.scrollHeight,100)
+setTimeout(()=>chat.scrollTop=chat.scrollHeight,120)
 }
 
 /* ===================== */
@@ -151,16 +151,11 @@ controls.appendChild(b)
 /* ===================== */
 
 function start(){
-
-bot("Hola, ¿Qué deseas registrar?")
-
-buttons(
-["Incidencia","Propuesta de mejora"],
-v=>{
+bot("Hola, ¿qué deseas registrar?")
+buttons(["Incidencia","Propuesta de mejora"],v=>{
 data.tipo=v
 askArea()
 })
-
 }
 
 /* ===================== */
@@ -168,16 +163,13 @@ askArea()
 /* ===================== */
 
 function askArea(){
-
 bot("¿En qué área?")
-
 buttons(
 ["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"],
 v=>{
 data.area=v
 askRate()
 })
-
 }
 
 /* ===================== */
@@ -185,14 +177,11 @@ askRate()
 /* ===================== */
 
 function askRate(){
-
-bot("Valora del 1 al 5 la satisfacción actual del servicio seleccionado")
-
+bot("Valora del 1 al 5 la situación actual")
 buttons(["1","2","3","4","5"],v=>{
 data.valoracion=v
 showMap()
 })
-
 }
 
 /* ===================== */
@@ -201,7 +190,7 @@ showMap()
 
 function showMap(){
 
-bot("Busca o marca la ubicación ")
+bot("Busca o marca la ubicación 📍")
 
 controls.innerHTML=""
 
@@ -331,7 +320,7 @@ controls.appendChild(send)
 }
 
 /* ===================== */
-/* GEMINI IA */
+/* GEMINI */
 /* ===================== */
 
 async function callGemini(description, area, tipo){
@@ -367,14 +356,24 @@ contents:[{parts:[{text:prompt}]}]
 }
 )
 
-const data = await res.json()
+const json = await res.json()
 
-const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ""
+const text = json.candidates?.[0]?.content?.parts?.[0]?.text || ""
+
+console.log("GEMINI:", text)
 
 try{
-return JSON.parse(text)
+
+const cleaned = text.substring(text.indexOf("{"))
+return JSON.parse(cleaned)
+
 }catch(e){
-return {resumen:text,acciones:[]}
+
+return {
+resumen:text,
+acciones:[]
+}
+
 }
 
 }
@@ -395,10 +394,16 @@ lat:data.lat,
 lng:data.lng
 }
 
-const { data: saved } = await supabaseClient
+const { data: saved, error } = await supabaseClient
 .from("incidencias")
 .insert([incidencia])
 .select()
+
+if(error){
+console.log("SUPABASE ERROR:", error)
+bot("Error guardando incidencia ❌")
+return
+}
 
 const id = saved?.[0]?.id
 
@@ -408,7 +413,7 @@ data.area,
 data.tipo
 )
 
-await supabaseClient
+const { error: updateError } = await supabaseClient
 .from("incidencias")
 .update({
 resumen: aiData.resumen,
@@ -416,19 +421,25 @@ acciones: aiData.acciones
 })
 .eq("id", id)
 
-bot("Incidencia registrada y analizada correctamente")
+if(updateError){
+console.log("UPDATE ERROR:", updateError)
+bot("Error guardando IA ❌")
+return
+}
+
+bot("Incidencia registrada y analizada correctamente ✅")
 
 console.log({incidencia, aiData})
 
 }
 
 /* ===================== */
-/* BOTÓN INICIO (menos vacío) */
+/* INICIO */
 /* ===================== */
 
 const startBtn=document.createElement("button")
 startBtn.innerText="Empezar"
-startBtn.className="w-full bg-green-600 hover:bg-green-700 transition text-white px-4 py-3 rounded-xl text-lg shadow"
+startBtn.className="w-full bg-green-600 text-white px-4 py-3 rounded-xl text-lg shadow"
 
 startBtn.onclick=()=>{
 controls.innerHTML=""
