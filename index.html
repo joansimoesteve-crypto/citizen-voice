@@ -2,8 +2,10 @@
 <html lang="es">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Citizen Voice</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -27,8 +29,15 @@
 
 <!-- HEADER -->
 <div class="bg-green-700 text-white p-4 text-center">
-<div class="text-2xl font-bold">Citizen Voice</div>
-<div class="text-xs opacity-90">Incidencias en 30 segundos</div>
+
+<div class="text-2xl font-bold">
+Citizen Voice
+</div>
+
+<div class="text-xs opacity-90">
+Incidencias en 30 segundos
+</div>
+
 </div>
 
 <!-- CHAT -->
@@ -53,22 +62,26 @@ const supabaseClient = createClient(
 )
 
 /* ===================== */
-/* ESTADO */
+/* VARIABLES */
 /* ===================== */
 
 const chat = document.getElementById("chat")
 const controls = document.getElementById("controls")
 
-let data = {}
+let formData = {}
 
 /* ===================== */
 /* VOZ */
 /* ===================== */
 
 function speak(text){
+
 const msg = new SpeechSynthesisUtterance(text)
+
 msg.lang = "es-ES"
+
 speechSynthesis.speak(msg)
+
 }
 
 /* ===================== */
@@ -81,20 +94,24 @@ const row = document.createElement("div")
 row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("div")
-avatar.className = "w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-xl"
-avatar.innerHTML = "🤖"
+avatar.className = "w-10 h-10 rounded-full bg-green-600"
 
 const bubble = document.createElement("div")
 bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
+
 bubble.innerText = text
 
 row.appendChild(avatar)
 row.appendChild(bubble)
 
 chat.appendChild(row)
-setTimeout(()=>chat.scrollTop = chat.scrollHeight,100)
+
+setTimeout(()=>{
+chat.scrollTop = chat.scrollHeight
+},100)
 
 speak(text)
+
 }
 
 /* ===================== */
@@ -102,33 +119,51 @@ speak(text)
 /* ===================== */
 
 function user(text){
+
 const d = document.createElement("div")
+
 d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
+
 d.innerText = text
+
 chat.appendChild(d)
-setTimeout(()=>chat.scrollTop = chat.scrollHeight,100)
+
+setTimeout(()=>{
+chat.scrollTop = chat.scrollHeight
+},100)
+
 }
 
 /* ===================== */
 /* BOTONES */
 /* ===================== */
 
-function buttons(list,callback){
+function buttons(list, callback){
+
 controls.innerHTML = ""
 
 list.forEach(o=>{
+
 const b = document.createElement("button")
-b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
+
+b.className = "bg-green-100 hover:bg-green-200 transition px-4 py-2 rounded-xl text-sm"
+
 b.innerText = o
 
 b.onclick = ()=>{
+
 controls.innerHTML = ""
+
 user(o)
+
 callback(o)
+
 }
 
 controls.appendChild(b)
+
 })
+
 }
 
 /* ===================== */
@@ -136,11 +171,19 @@ controls.appendChild(b)
 /* ===================== */
 
 function start(){
-bot("Hola, ¿qué deseas registrar?")
-buttons(["Incidencia","Propuesta de mejora"], v=>{
-data.tipo = v
+
+bot("Hola. ¿Qué deseas registrar?")
+
+buttons(
+["Incidencia","Propuesta de mejora"],
+v=>{
+
+formData.tipo = v
+
 askArea()
+
 })
+
 }
 
 /* ===================== */
@@ -148,23 +191,39 @@ askArea()
 /* ===================== */
 
 function askArea(){
+
 bot("¿En qué área?")
-buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"], v=>{
-data.area = v
+
+buttons(
+["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"],
+v=>{
+
+formData.area = v
+
 askRate()
+
 })
+
 }
 
 /* ===================== */
-/* VALORACIÓN */
+/* VALORACION */
 /* ===================== */
 
 function askRate(){
-bot("Valora del 1 al 5")
-buttons(["1","2","3","4","5"], v=>{
-data.valoracion = v
+
+bot("Valora del 1 al 5 la situación actual")
+
+buttons(
+["1","2","3","4","5"],
+v=>{
+
+formData.valoracion = v
+
 showMap()
+
 })
+
 }
 
 /* ===================== */
@@ -173,69 +232,92 @@ showMap()
 
 function showMap(){
 
-bot("Marca o busca ubicación 📍")
+bot("Busca o marca la ubicación")
 
 controls.innerHTML = ""
 
+const mapContainer = document.createElement("div")
+mapContainer.className = "w-full"
+
 const search = document.createElement("input")
+
 search.placeholder = "Buscar dirección..."
-search.className = "border p-3 rounded-xl w-full mb-2"
+
+search.className = "border p-3 rounded-xl w-full mb-2 text-sm"
 
 const mapDiv = document.createElement("div")
+
 mapDiv.id = "map"
-mapDiv.style.height = "450px"
-mapDiv.className = "rounded-xl"
 
-chat.appendChild(search)
-chat.appendChild(mapDiv)
+mapDiv.style.height = "500px"
 
-setTimeout(()=>chat.scrollTop = chat.scrollHeight,200)
+mapDiv.className = "rounded-2xl shadow"
+
+mapContainer.appendChild(search)
+mapContainer.appendChild(mapDiv)
+
+chat.appendChild(mapContainer)
+
+setTimeout(()=>{
+chat.scrollTop = chat.scrollHeight
+},200)
 
 setTimeout(()=>{
 
 const map = L.map('map').setView([39.47,-0.37],13)
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(map)
 
 let marker
 
 const geocoder = L.Control.Geocoder.nominatim()
 
-search.addEventListener("keydown", e=>{
+search.addEventListener("keydown",(e)=>{
+
 if(e.key === "Enter"){
 
-geocoder.geocode(search.value, results=>{
-if(results.length){
+geocoder.geocode(search.value,(results)=>{
+
+if(results.length > 0){
 
 const r = results[0]
 
 map.setView(r.center,16)
 
 if(marker) map.removeLayer(marker)
+
 marker = L.marker(r.center).addTo(map)
 
-data.lat = r.center.lat
-data.lng = r.center.lng
+formData.lat = r.center.lat
+formData.lng = r.center.lng
 
 user("Ubicación encontrada")
+
 askDescription()
 
 }
+
 })
 
 }
+
 })
 
-map.on("click", e=>{
+map.on("click",e=>{
+
 if(marker) map.removeLayer(marker)
 
 marker = L.marker(e.latlng).addTo(map)
 
-data.lat = e.latlng.lat
-data.lng = e.latlng.lng
+formData.lat = e.latlng.lat
+formData.lng = e.latlng.lng
 
 user("Ubicación guardada")
+
 askDescription()
+
 })
 
 },300)
@@ -243,7 +325,7 @@ askDescription()
 }
 
 /* ===================== */
-/* DESCRIPCIÓN */
+/* DESCRIPCION */
 /* ===================== */
 
 function askDescription(){
@@ -253,22 +335,53 @@ bot("Describe la incidencia")
 controls.innerHTML = ""
 
 const input = document.createElement("input")
-input.className = "border p-3 rounded-xl flex-1"
-input.placeholder = "Escribe aquí..."
+
+input.placeholder = "Escribe o usa micrófono"
+
+input.className = "border p-3 rounded-xl flex-1 text-sm"
+
+const mic = document.createElement("button")
+
+mic.innerText = "🎤"
+
+mic.className = "bg-green-100 px-4 rounded-xl"
+
+mic.onclick = ()=>{
+
+const r = new webkitSpeechRecognition()
+
+r.lang = "es-ES"
+
+r.start()
+
+r.onresult = e=>{
+
+input.value = e.results[0][0].transcript
+
+}
+
+}
 
 const send = document.createElement("button")
-send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
+
 send.innerText = "Enviar"
 
+send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
+
 send.onclick = ()=>{
+
 if(!input.value) return
 
 user(input.value)
-data.descripcion = input.value
+
+formData.descripcion = input.value
+
 saveData()
+
 }
 
 controls.appendChild(input)
+controls.appendChild(mic)
 controls.appendChild(send)
 
 }
@@ -277,10 +390,14 @@ controls.appendChild(send)
 /* GEMINI */
 /* ===================== */
 
-async function callGemini(description, area, tipo){
+async function callGemini(description){
+
+try{
 
 const prompt = `
-Devuelve SOLO JSON:
+Resume esta incidencia y propone acciones municipales.
+
+Devuelve SOLO JSON válido:
 
 {
 "resumen":"",
@@ -289,100 +406,152 @@ Devuelve SOLO JSON:
 
 Texto:
 ${description}
-Área:${area}
-Tipo:${tipo}
 `
 
 const res = await fetch(
 "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyD4eEVcGUPBuDzlE5edGhud4DYlZBAj1D8",
 {
 method:"POST",
-headers:{"Content-Type":"application/json"},
+headers:{
+"Content-Type":"application/json"
+},
 body:JSON.stringify({
-contents:[{parts:[{text:prompt}]}]
+contents:[
+{
+parts:[
+{ text: prompt }
+]
+}
+]
 })
 }
 )
 
 const json = await res.json()
 
-const text = json?.candidates?.[0]?.content?.parts?.[0]?.text || ""
+console.log("GEMINI RESPONSE:", json)
 
-try{
+const text =
+json?.candidates?.[0]?.content?.parts?.[0]?.text || ""
+
 const match = text.match(/\{[\s\S]*\}/)
+
+if(match){
+
 return JSON.parse(match[0])
-}catch(e){
-return {resumen:text,acciones:[]}
+
+}
+
+return {
+resumen:"",
+acciones:[]
+}
+
+}catch(err){
+
+console.log("ERROR GEMINI:", err)
+
+return {
+resumen:"",
+acciones:[]
+}
+
 }
 
 }
 
 /* ===================== */
-/* GUARDAR (ARREGLADO) */
+/* GUARDAR */
 /* ===================== */
 
 async function saveData(){
 
-const incidencia = {
-fecha: new Date().toISOString(),   // 🔥 FIX CLAVE
-tipo: data.tipo || "",
-area: data.area || "",
-valoracion: data.valoracion || "",
-descripcion: data.descripcion || "",
-lat: data.lat ?? null,
-lng: data.lng ?? null
-}
+try{
 
-console.log("INCIDENCIA:", incidencia)
-
-const { data: saved, error } = await supabaseClient
-.from("incidencias")
-.insert([incidencia])
-.select()
-
-if(error){
-console.log("SUPABASE ERROR:", error)
-bot("Error guardando ❌")
-return
-}
-
-const id = saved?.[0]?.id
+/* ===================== */
+/* IA PRIMERO */
+/* ===================== */
 
 const aiData = await callGemini(
-data.descripcion,
-data.area,
-data.tipo
+formData.descripcion
 )
 
-const { error: updateError } = await supabaseClient
-.from("incidencias")
-.update({
-resumen: aiData.resumen,
-acciones: aiData.acciones
-})
-.eq("id", id)
+console.log("AI DATA:", aiData)
 
-if(updateError){
-console.log("UPDATE ERROR:", updateError)
-bot("Error IA ❌")
-return
+/* ===================== */
+/* OBJETO */
+/* ===================== */
+
+const incidencia = {
+
+tipo: formData.tipo || "",
+
+area: formData.area || "",
+
+valoracion: formData.valoracion || "",
+
+descripcion: formData.descripcion || "",
+
+lat: formData.lat || null,
+
+lng: formData.lng || null,
+
+resumen: aiData.resumen || "",
+
+acciones: aiData.acciones || []
+
 }
 
-bot("Incidencia registrada y analizada correctamente ✅")
+console.log("INCIDENCIA FINAL:", incidencia)
+
+/* ===================== */
+/* INSERT SUPABASE */
+/* ===================== */
+
+const { data, error } = await supabaseClient
+.from("incidencias")
+.insert([incidencia])
+
+console.log("SUPABASE DATA:", data)
+console.log("SUPABASE ERROR:", error)
+
+if(error){
+
+bot("Error guardando incidencia")
+
+return
+
+}
+
+bot("Incidencia registrada correctamente")
+
+}catch(err){
+
+console.log("ERROR GENERAL:", err)
+
+bot("Ha ocurrido un error")
+
+}
 
 }
 
 /* ===================== */
-/* START BUTTON */
+/* BOTON INICIO */
 /* ===================== */
 
 const startBtn = document.createElement("button")
+
 startBtn.innerText = "Empezar"
-startBtn.className = "w-full bg-green-600 text-white p-3 rounded-xl"
+
+startBtn.className =
+"w-full bg-green-600 hover:bg-green-700 transition text-white px-4 py-3 rounded-xl text-lg"
 
 startBtn.onclick = ()=>{
+
 controls.innerHTML = ""
+
 start()
+
 }
 
 controls.appendChild(startBtn)
