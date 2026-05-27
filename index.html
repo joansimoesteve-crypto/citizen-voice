@@ -342,28 +342,32 @@ controls.appendChild(send)
 
 async function callAI(description){
 
-try{
+  try {
 
-const res = await fetch("/api/ai",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({ description })
-})
+    const res = await fetch("/api/ai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ description })
+    })
 
-return await res.json()
+    const data = await res.json()
 
-}catch(err){
+    console.log("🔥 RESPUESTA API /api/ai:", data)
 
-console.log(err)
+    return data
 
-return {
-resumen:"",
-acciones:[]
-}
+  } catch(err){
 
-}
+    console.log("❌ ERROR CALLAI:", err)
+
+    return {
+      resumen:"",
+      acciones:[]
+    }
+
+  }
 
 }
 
