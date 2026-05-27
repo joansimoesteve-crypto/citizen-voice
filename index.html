@@ -106,9 +106,7 @@ row.appendChild(bubble)
 
 chat.appendChild(row)
 
-setTimeout(()=>{
-chat.scrollTop = chat.scrollHeight
-},100)
+setTimeout(()=> chat.scrollTop = chat.scrollHeight, 100)
 
 speak(text)
 
@@ -128,9 +126,7 @@ d.innerText = text
 
 chat.appendChild(d)
 
-setTimeout(()=>{
-chat.scrollTop = chat.scrollHeight
-},100)
+setTimeout(()=> chat.scrollTop = chat.scrollHeight, 100)
 
 }
 
@@ -242,15 +238,11 @@ mapContainer.className = "w-full"
 const search = document.createElement("input")
 
 search.placeholder = "Buscar dirección..."
-
 search.className = "border p-3 rounded-xl w-full mb-2 text-sm"
 
 const mapDiv = document.createElement("div")
-
 mapDiv.id = "map"
-
 mapDiv.style.height = "500px"
-
 mapDiv.className = "rounded-2xl shadow"
 
 mapContainer.appendChild(search)
@@ -258,17 +250,13 @@ mapContainer.appendChild(mapDiv)
 
 chat.appendChild(mapContainer)
 
-setTimeout(()=>{
-chat.scrollTop = chat.scrollHeight
-},200)
+setTimeout(()=> chat.scrollTop = chat.scrollHeight, 200)
 
 setTimeout(()=>{
 
 const map = L.map('map').setView([39.47,-0.37],13)
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-).addTo(map)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
 
 let marker
 
@@ -337,13 +325,11 @@ controls.innerHTML = ""
 const input = document.createElement("input")
 
 input.placeholder = "Escribe o usa micrófono"
-
 input.className = "border p-3 rounded-xl flex-1 text-sm"
 
 const mic = document.createElement("button")
 
 mic.innerText = "🎤"
-
 mic.className = "bg-green-100 px-4 rounded-xl"
 
 mic.onclick = ()=>{
@@ -365,7 +351,6 @@ input.value = e.results[0][0].transcript
 const send = document.createElement("button")
 
 send.innerText = "Enviar"
-
 send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
 
 send.onclick = ()=>{
@@ -387,69 +372,26 @@ controls.appendChild(send)
 }
 
 /* ===================== */
-/* GEMINI */
+/* IA (OPENROUTER API) */
 /* ===================== */
 
-async function callGemini(description){
+async function callAI(description){
 
 try{
 
-const prompt = `
-Resume esta incidencia y propone acciones municipales.
-
-Devuelve SOLO JSON válido:
-
-{
-"resumen":"",
-"acciones":[]
-}
-
-Texto:
-${description}
-`
-
-const res = await fetch(
-"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyD4eEVcGUPBuDzlE5edGhud4DYlZBAj1D8",
-{
+const res = await fetch("/api/ai",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({
-contents:[
-{
-parts:[
-{ text: prompt }
-]
-}
-]
+body:JSON.stringify({ description })
 })
-}
-)
 
-const json = await res.json()
-
-console.log("GEMINI RESPONSE:", json)
-
-const text =
-json?.candidates?.[0]?.content?.parts?.[0]?.text || ""
-
-const match = text.match(/\{[\s\S]*\}/)
-
-if(match){
-
-return JSON.parse(match[0])
-
-}
-
-return {
-resumen:"",
-acciones:[]
-}
+return await res.json()
 
 }catch(err){
 
-console.log("ERROR GEMINI:", err)
+console.log(err)
 
 return {
 resumen:"",
@@ -468,57 +410,30 @@ async function saveData(){
 
 try{
 
-/* ===================== */
-/* IA PRIMERO */
-/* ===================== */
-
-const aiData = await callGemini(
-formData.descripcion
-)
+const aiData = await callAI(formData.descripcion)
 
 console.log("AI DATA:", aiData)
-
-/* ===================== */
-/* OBJETO */
-/* ===================== */
 
 const incidencia = {
 
 tipo: formData.tipo || "",
-
 area: formData.area || "",
-
 valoracion: formData.valoracion || "",
-
 descripcion: formData.descripcion || "",
-
 lat: formData.lat || null,
-
 lng: formData.lng || null,
-
 resumen: aiData.resumen || "",
-
 acciones: aiData.acciones || []
 
 }
-
-console.log("INCIDENCIA FINAL:", incidencia)
-
-/* ===================== */
-/* INSERT SUPABASE */
-/* ===================== */
 
 const { data, error } = await supabaseClient
 .from("incidencias")
 .insert([incidencia])
 
-console.log("SUPABASE DATA:", data)
-console.log("SUPABASE ERROR:", error)
-
 if(error){
 
 bot("Error guardando incidencia")
-
 return
 
 }
@@ -527,8 +442,7 @@ bot("Incidencia registrada correctamente")
 
 }catch(err){
 
-console.log("ERROR GENERAL:", err)
-
+console.log(err)
 bot("Ha ocurrido un error")
 
 }
@@ -536,13 +450,12 @@ bot("Ha ocurrido un error")
 }
 
 /* ===================== */
-/* BOTON INICIO */
+/* START BUTTON */
 /* ===================== */
 
 const startBtn = document.createElement("button")
 
 startBtn.innerText = "Empezar"
-
 startBtn.className =
 "w-full bg-green-600 hover:bg-green-700 transition text-white px-4 py-3 rounded-xl text-lg"
 
