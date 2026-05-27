@@ -77,56 +77,46 @@ let formData = {}
 function speak(text){
 
 const msg = new SpeechSynthesisUtterance(text)
-
 msg.lang = "es-ES"
-
 speechSynthesis.speak(msg)
 
 }
 
 /* ===================== */
-/* BOT */
-/* ===================== */
-
-function bot(text){
-
-const row = document.createElement("div")
-row.className = "flex items-start gap-2"
-
-const avatar = document.createElement("div")
-avatar.className = "w-10 h-10 rounded-full bg-green-600"
-
-const bubble = document.createElement("div")
-bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
-
-bubble.innerText = text
-
-row.appendChild(avatar)
-row.appendChild(bubble)
-
-chat.appendChild(row)
-
-setTimeout(()=> chat.scrollTop = chat.scrollHeight, 100)
-
-speak(text)
-
-}
-
-/* ===================== */
-/* USER */
+/* USER MESSAGE */
 /* ===================== */
 
 function user(text){
 
 const d = document.createElement("div")
-
 d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
-
 d.innerText = text
 
 chat.appendChild(d)
 
 setTimeout(()=> chat.scrollTop = chat.scrollHeight, 100)
+
+}
+
+/* ===================== */
+/* BOT MESSAGE (SIN ICONOS) */
+/* ===================== */
+
+function bot(text){
+
+const row = document.createElement("div")
+row.className = "flex"
+
+const bubble = document.createElement("div")
+bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
+bubble.innerText = text
+
+row.appendChild(bubble)
+chat.appendChild(row)
+
+setTimeout(()=> chat.scrollTop = chat.scrollHeight, 100)
+
+speak(text)
 
 }
 
@@ -141,9 +131,7 @@ controls.innerHTML = ""
 list.forEach(o=>{
 
 const b = document.createElement("button")
-
 b.className = "bg-green-100 hover:bg-green-200 transition px-4 py-2 rounded-xl text-sm"
-
 b.innerText = o
 
 b.onclick = ()=>{
@@ -173,11 +161,8 @@ bot("Hola. ¿Qué deseas registrar?")
 buttons(
 ["Incidencia","Propuesta de mejora"],
 v=>{
-
 formData.tipo = v
-
 askArea()
-
 })
 
 }
@@ -193,17 +178,14 @@ bot("¿En qué área?")
 buttons(
 ["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"],
 v=>{
-
 formData.area = v
-
 askRate()
-
 })
 
 }
 
 /* ===================== */
-/* VALORACION */
+/* VALORACIÓN */
 /* ===================== */
 
 function askRate(){
@@ -213,11 +195,8 @@ bot("Valora del 1 al 5 la situación actual")
 buttons(
 ["1","2","3","4","5"],
 v=>{
-
 formData.valoracion = v
-
 showMap()
-
 })
 
 }
@@ -232,11 +211,7 @@ bot("Busca o marca la ubicación")
 
 controls.innerHTML = ""
 
-const mapContainer = document.createElement("div")
-mapContainer.className = "w-full"
-
 const search = document.createElement("input")
-
 search.placeholder = "Buscar dirección..."
 search.className = "border p-3 rounded-xl w-full mb-2 text-sm"
 
@@ -245,10 +220,8 @@ mapDiv.id = "map"
 mapDiv.style.height = "500px"
 mapDiv.className = "rounded-2xl shadow"
 
-mapContainer.appendChild(search)
-mapContainer.appendChild(mapDiv)
-
-chat.appendChild(mapContainer)
+chat.appendChild(search)
+chat.appendChild(mapDiv)
 
 setTimeout(()=> chat.scrollTop = chat.scrollHeight, 200)
 
@@ -259,7 +232,6 @@ const map = L.map('map').setView([39.47,-0.37],13)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
 
 let marker
-
 const geocoder = L.Control.Geocoder.nominatim()
 
 search.addEventListener("keydown",(e)=>{
@@ -281,7 +253,7 @@ marker = L.marker(r.center).addTo(map)
 formData.lat = r.center.lat
 formData.lng = r.center.lng
 
-user("Ubicación encontrada")
+bot("Ubicación guardada")
 
 askDescription()
 
@@ -302,7 +274,7 @@ marker = L.marker(e.latlng).addTo(map)
 formData.lat = e.latlng.lat
 formData.lng = e.latlng.lng
 
-user("Ubicación guardada")
+bot("Ubicación guardada")
 
 askDescription()
 
@@ -313,7 +285,7 @@ askDescription()
 }
 
 /* ===================== */
-/* DESCRIPCION */
+/* DESCRIPCIÓN */
 /* ===================== */
 
 function askDescription(){
@@ -323,33 +295,26 @@ bot("Describe la incidencia")
 controls.innerHTML = ""
 
 const input = document.createElement("input")
-
 input.placeholder = "Escribe o usa micrófono"
 input.className = "border p-3 rounded-xl flex-1 text-sm"
 
 const mic = document.createElement("button")
-
 mic.innerText = "🎤"
 mic.className = "bg-green-100 px-4 rounded-xl"
 
 mic.onclick = ()=>{
 
 const r = new webkitSpeechRecognition()
-
 r.lang = "es-ES"
-
 r.start()
 
 r.onresult = e=>{
-
 input.value = e.results[0][0].transcript
-
 }
 
 }
 
 const send = document.createElement("button")
-
 send.innerText = "Enviar"
 send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
 
@@ -372,7 +337,7 @@ controls.appendChild(send)
 }
 
 /* ===================== */
-/* IA (OPENROUTER API) */
+/* IA (HUGGING FACE VIA VERCEL API) */
 /* ===================== */
 
 async function callAI(description){
@@ -403,7 +368,7 @@ acciones:[]
 }
 
 /* ===================== */
-/* GUARDAR */
+/* GUARDAR EN SUPABASE */
 /* ===================== */
 
 async function saveData(){
@@ -411,8 +376,6 @@ async function saveData(){
 try{
 
 const aiData = await callAI(formData.descripcion)
-
-console.log("AI DATA:", aiData)
 
 const incidencia = {
 
@@ -427,7 +390,7 @@ acciones: aiData.acciones || []
 
 }
 
-const { data, error } = await supabaseClient
+const { error } = await supabaseClient
 .from("incidencias")
 .insert([incidencia])
 
@@ -456,13 +419,13 @@ bot("Ha ocurrido un error")
 const startBtn = document.createElement("button")
 
 startBtn.innerText = "Empezar"
+
 startBtn.className =
 "w-full bg-green-600 hover:bg-green-700 transition text-white px-4 py-3 rounded-xl text-lg"
 
 startBtn.onclick = ()=>{
 
 controls.innerHTML = ""
-
 start()
 
 }
