@@ -9,24 +9,29 @@ export default async function handler(req, res) {
     const { description } = req.body
 
     const prompt = `
-Eres un técnico municipal experto en gestión urbana, mantenimiento de ciudad y servicios públicos.
+Eres un técnico municipal experto en gestión urbana y mantenimiento de ciudades.
 
-Tu trabajo es analizar incidencias ciudadanas reales.
+Analiza la incidencia ciudadana y genera una respuesta REALISTA y DESCRIPTIVA.
 
-RESPONDE SOLO EN JSON VÁLIDO.
-
-REGLAS OBLIGATORIAS:
-- "resumen": SIEMPRE obligatorio, 2-3 frases técnicas, nunca vacío
-- "acciones": 3 a 6 acciones concretas como un ayuntamiento real
-- lenguaje profesional (brigadas, inspección, mantenimiento, servicio urbano)
+IMPORTANTE:
+- NO seas genérico
+- SIEMPRE menciona el elemento urbano afectado (ej: calle, acera, farola, contenedor, tráfico, iluminación, basura, ruido, etc.)
+- "resumen" debe describir el problema concreto observado
+- "acciones" deben ser operativas como un ayuntamiento real
+- lenguaje técnico pero natural (no robotizado)
 - NO texto fuera del JSON
 
-FORMATO EXACTO:
+FORMATO OBLIGATORIO:
 
 {
-  "resumen": "texto técnico obligatorio",
+  "resumen": "descripción concreta del problema urbano detectado",
   "acciones": ["acción 1", "acción 2", "acción 3"]
 }
+
+EJEMPLOS DE BUENA RESPUESTA:
+- "Baches en la calzada de la calle principal que dificultan el tráfico"
+- "Acumulación de residuos en contenedores de zona residencial"
+- "Farola apagada en vía peatonal con riesgo de seguridad"
 
 Incidencia:
 ${description}
@@ -48,7 +53,7 @@ ${description}
               content: prompt
             }
           ],
-          temperature: 0.4
+          temperature: 0.5
         })
       }
     )
@@ -76,18 +81,18 @@ ${description}
       console.log("JSON ERROR:", e)
     }
 
-    // 🔥 GARANTÍA RESUMEN (FIX REAL)
+    // 🔥 FIX RESUMEN MÁS NATURAL
     if (!json.resumen || json.resumen.trim() === "") {
       json.resumen =
-        "Incidencia detectada en el espacio público que requiere evaluación técnica por parte de los servicios municipales competentes."
+        "Incidencia detectada en la vía pública que requiere revisión por parte de los servicios municipales."
     }
 
-    // 🔥 GARANTÍA ACCIONES
+    // 🔥 FIX ACCIONES
     if (!json.acciones || json.acciones.length === 0) {
       json.acciones = [
-        "Inspección técnica por brigada municipal",
-        "Evaluación del estado del espacio afectado",
-        "Asignación de intervención por servicio competente"
+        "Inspección técnica en la ubicación señalada",
+        "Evaluación del estado del elemento urbano afectado",
+        "Asignación de brigada municipal correspondiente"
       ]
     }
 
@@ -98,11 +103,11 @@ ${description}
     console.log("AI ERROR:", err)
 
     return res.status(200).json({
-      resumen: "Incidencia registrada pendiente de evaluación técnica.",
+      resumen: "Incidencia registrada en espacio urbano pendiente de análisis.",
       acciones: [
-        "Revisión por equipo municipal",
-        "Asignación de responsable de área",
-        "Seguimiento del expediente"
+        "Revisión técnica municipal",
+        "Asignación de equipo de mantenimiento",
+        "Seguimiento del caso"
       ]
     })
 
