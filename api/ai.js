@@ -9,20 +9,22 @@ export default async function handler(req, res) {
     const { description } = req.body
 
     const prompt = `
-Eres un experto en gestión urbana y smart cities.
+Eres un técnico municipal experto en gestión urbana, mantenimiento de ciudad y servicios públicos.
 
-Analiza esta incidencia municipal y responde SOLO con JSON válido.
+Tu trabajo es analizar incidencias ciudadanas reales.
 
-REGLAS:
-- "resumen": breve y claro (máx 2 frases)
-- "acciones": entre 2 y 5 acciones concretas, operativas y realistas
+RESPONDE SOLO EN JSON VÁLIDO.
+
+REGLAS OBLIGATORIAS:
+- "resumen": SIEMPRE obligatorio, 2-3 frases técnicas, nunca vacío
+- "acciones": 3 a 6 acciones concretas como un ayuntamiento real
+- lenguaje profesional (brigadas, inspección, mantenimiento, servicio urbano)
 - NO texto fuera del JSON
-- NO acciones genéricas tipo "revisar el problema" sin contexto
 
-FORMATO OBLIGATORIO:
+FORMATO EXACTO:
 
 {
-  "resumen": "texto",
+  "resumen": "texto técnico obligatorio",
   "acciones": ["acción 1", "acción 2", "acción 3"]
 }
 
@@ -46,7 +48,7 @@ ${description}
               content: prompt
             }
           ],
-          temperature: 0.3
+          temperature: 0.4
         })
       }
     )
@@ -63,21 +65,29 @@ ${description}
     }
 
     try {
+
       const match = text.match(/\{[\s\S]*\}/)
 
       if (match) {
         json = JSON.parse(match[0])
       }
+
     } catch (e) {
       console.log("JSON ERROR:", e)
     }
 
-    // 🔥 fallback seguro
+    // 🔥 GARANTÍA RESUMEN (FIX REAL)
+    if (!json.resumen || json.resumen.trim() === "") {
+      json.resumen =
+        "Incidencia detectada en el espacio público que requiere evaluación técnica por parte de los servicios municipales competentes."
+    }
+
+    // 🔥 GARANTÍA ACCIONES
     if (!json.acciones || json.acciones.length === 0) {
       json.acciones = [
-        "Inspección técnica en el lugar",
-        "Asignación de equipo responsable",
-        "Seguimiento del incidente"
+        "Inspección técnica por brigada municipal",
+        "Evaluación del estado del espacio afectado",
+        "Asignación de intervención por servicio competente"
       ]
     }
 
@@ -88,11 +98,11 @@ ${description}
     console.log("AI ERROR:", err)
 
     return res.status(200).json({
-      resumen: "",
+      resumen: "Incidencia registrada pendiente de evaluación técnica.",
       acciones: [
-        "Revisión manual de la incidencia",
-        "Contacto con equipo técnico",
-        "Seguimiento del caso"
+        "Revisión por equipo municipal",
+        "Asignación de responsable de área",
+        "Seguimiento del expediente"
       ]
     })
 
