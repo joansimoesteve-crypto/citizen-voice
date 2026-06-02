@@ -43,27 +43,35 @@ ${description}
 
     const data = await response.json()
 
-    const text = data?.choices?.[0]?.message?.content || ""
+    console.log("HF RESPONSE:", data)
+
+    const text =
+      data?.choices?.[0]?.message?.content || ""
 
     const match = text.match(/\{[\s\S]*\}/)
 
-    if (!match) {
+    if(!match){
+
       return res.status(200).json({
-        resumen: "",
-        acciones: []
+        resumen:"",
+        acciones:[]
       })
+
     }
 
-    return res.status(200).json(JSON.parse(match[0]))
+    return res.status(200).json(
+      JSON.parse(match[0])
+    )
 
-  } catch (err) {
+  } catch(err){
 
-    console.log(err)
+    console.log("AI ERROR:", err)
 
     return res.status(500).json({
-      resumen: "",
-      acciones: []
+      resumen:"",
+      acciones:[]
     })
 
   }
+
 }
