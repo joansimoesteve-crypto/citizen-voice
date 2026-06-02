@@ -11,27 +11,28 @@ export default async function handler(req, res) {
     const prompt = `
 Eres un técnico municipal experto en gestión urbana y mantenimiento de ciudades.
 
-Analiza la incidencia ciudadana y genera una respuesta REALISTA y DESCRIPTIVA.
+Analiza la incidencia ciudadana y responde SOLO con JSON válido.
 
-IMPORTANTE:
-- NO seas genérico
-- SIEMPRE menciona el elemento urbano afectado (ej: calle, acera, farola, contenedor, tráfico, iluminación, basura, ruido, etc.)
-- "resumen" debe describir el problema concreto observado
-- "acciones" deben ser operativas como un ayuntamiento real
-- lenguaje técnico pero natural (no robotizado)
+REGLAS OBLIGATORIAS:
+- "resumen" debe describir el problema de forma concreta (menciona el elemento urbano: calle, farola, acera, contenedor, tráfico, etc.)
+- "acciones" deben ser 2 a 5 acciones operativas reales que haría un ayuntamiento
+- lenguaje claro, práctico y no burocrático
+- evita frases genéricas como "evaluación técnica" sin acción real
 - NO texto fuera del JSON
 
-FORMATO OBLIGATORIO:
+FORMATO EXACTO:
 
 {
-  "resumen": "descripción concreta del problema urbano detectado",
+  "resumen": "texto descriptivo del problema urbano",
   "acciones": ["acción 1", "acción 2", "acción 3"]
 }
 
-EJEMPLOS DE BUENA RESPUESTA:
-- "Baches en la calzada de la calle principal que dificultan el tráfico"
-- "Acumulación de residuos en contenedores de zona residencial"
-- "Farola apagada en vía peatonal con riesgo de seguridad"
+EJEMPLOS DE ACCIONES BUENAS:
+- "Limpiar la zona afectada y retirar residuos"
+- "Reparar el pavimento deteriorado"
+- "Colocar señalización preventiva en la vía"
+- "Sustituir luminaria dañada en la calle"
+- "Inspeccionar el sistema de contenedores"
 
 Incidencia:
 ${description}
@@ -46,14 +47,14 @@ ${description}
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "mistralai/Mistral-7B-Instruct-v0.3",
+          model: "meta-llama/Meta-Llama-3-8B-Instruct",
           messages: [
             {
               role: "user",
               content: prompt
             }
           ],
-          temperature: 0.5
+          temperature: 0.4
         })
       }
     )
@@ -81,18 +82,18 @@ ${description}
       console.log("JSON ERROR:", e)
     }
 
-    // 🔥 FIX RESUMEN MÁS NATURAL
+    // 🔥 FIX RESUMEN
     if (!json.resumen || json.resumen.trim() === "") {
       json.resumen =
-        "Incidencia detectada en la vía pública que requiere revisión por parte de los servicios municipales."
+        "Incidencia detectada en el espacio urbano que requiere intervención por los servicios municipales."
     }
 
     // 🔥 FIX ACCIONES
     if (!json.acciones || json.acciones.length === 0) {
       json.acciones = [
-        "Inspección técnica en la ubicación señalada",
-        "Evaluación del estado del elemento urbano afectado",
-        "Asignación de brigada municipal correspondiente"
+        "Inspeccionar la zona afectada",
+        "Realizar intervención de mantenimiento urbano",
+        "Asignar equipo municipal correspondiente"
       ]
     }
 
@@ -103,10 +104,10 @@ ${description}
     console.log("AI ERROR:", err)
 
     return res.status(200).json({
-      resumen: "Incidencia registrada en espacio urbano pendiente de análisis.",
+      resumen: "Incidencia registrada pendiente de revisión municipal.",
       acciones: [
-        "Revisión técnica municipal",
-        "Asignación de equipo de mantenimiento",
+        "Revisión técnica del área",
+        "Asignación de brigada municipal",
         "Seguimiento del caso"
       ]
     })
