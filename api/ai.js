@@ -9,21 +9,21 @@ export default async function handler(req, res) {
     const { description } = req.body
 
     const prompt = `
-Eres un asistente de gestión municipal.
+Eres un experto en gestión urbana y smart cities.
 
-Analiza esta incidencia y responde SOLO con JSON válido.
+Analiza esta incidencia municipal y responde SOLO con JSON válido.
 
-IMPORTANTE:
-- "resumen" debe ser claro y breve
-- "acciones" debe tener mínimo 2 y máximo 5 acciones concretas
-- NO puede estar vacío
-- NO añadas texto fuera del JSON
+REGLAS:
+- "resumen": breve y claro (máx 2 frases)
+- "acciones": entre 2 y 5 acciones concretas, operativas y realistas
+- NO texto fuera del JSON
+- NO acciones genéricas tipo "revisar el problema" sin contexto
 
 FORMATO OBLIGATORIO:
 
 {
-  "resumen": "texto breve",
-  "acciones": ["acción 1", "acción 2"]
+  "resumen": "texto",
+  "acciones": ["acción 1", "acción 2", "acción 3"]
 }
 
 Incidencia:
@@ -39,7 +39,7 @@ ${description}
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "meta-llama/Meta-Llama-3-8B-Instruct",
+          model: "mistralai/Mistral-7B-Instruct-v0.3",
           messages: [
             {
               role: "user",
@@ -68,16 +68,16 @@ ${description}
       if (match) {
         json = JSON.parse(match[0])
       }
-
     } catch (e) {
-      console.log("JSON PARSE ERROR:", e)
+      console.log("JSON ERROR:", e)
     }
 
-    // 🔥 FIX FINAL: asegurar acciones nunca vacías
+    // 🔥 fallback seguro
     if (!json.acciones || json.acciones.length === 0) {
       json.acciones = [
-        "Revisar la incidencia en el lugar",
-        "Asignar equipo técnico responsable"
+        "Inspección técnica en el lugar",
+        "Asignación de equipo responsable",
+        "Seguimiento del incidente"
       ]
     }
 
@@ -90,8 +90,9 @@ ${description}
     return res.status(200).json({
       resumen: "",
       acciones: [
-        "Revisar manualmente la incidencia",
-        "Contactar con el equipo técnico"
+        "Revisión manual de la incidencia",
+        "Contacto con equipo técnico",
+        "Seguimiento del caso"
       ]
     })
 
