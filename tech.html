@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel Técnico</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="p-4 bg-white shadow">
+  <h1 class="text-xl font-bold">Panel Técnico Municipal</h1>
+</div>
+
+<div id="filters" class="p-3 flex gap-2"></div>
+
+<div id="list" class="p-3"></div>
+
+<script>
+
+const { createClient } = supabase
+
+const supabaseClient = createClient(
+"https://saiclsejxsycmeefuhvs.supabase.co",
+"sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
+)
+
+async function loadIncidencias(){
+
+const { data } = await supabaseClient
+.from("incidencias")
+.select("*")
+.order("created_at", { ascending: false })
+
+render(data)
+
+}
+
+function render(data){
+
+const list = document.getElementById("list")
+list.innerHTML = ""
+
+data.forEach(i=>{
+
+const card = document.createElement("div")
+card.className = "bg-white p-3 mb-2 rounded shadow"
+
+card.innerHTML = `
+<b>${i.area}</b><br>
+${i.resumen}<br><br>
+<b>Acciones:</b><br>
+${(i.acciones || []).join("<br>")}
+`
+
+list.appendChild(card)
+
+})
+
+}
+
+loadIncidencias()
+
+</script>
+
+</body>
+</html>
