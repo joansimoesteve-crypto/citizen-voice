@@ -1,23 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
-<title>Panel Técnico</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Citizen Voice - Técnico</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-blue-50 flex justify-center min-h-screen">
 
-<div class="p-4 bg-white shadow">
-  <h1 class="text-xl font-bold">Panel Técnico Municipal</h1>
+<!-- APP -->
+<div class="w-full max-w-md h-screen bg-white flex flex-col shadow-xl">
+
+<!-- HEADER -->
+<div class="bg-blue-700 text-white p-4 text-center">
+  <div class="text-xl font-bold">Citizen Voice</div>
+  <div class="text-xs opacity-90">Panel Técnico Municipal</div>
 </div>
 
-<div id="filters" class="p-3 flex gap-2"></div>
+<!-- CHAT -->
+<div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
 
-<div id="list" class="p-3"></div>
+<!-- ACCIONES -->
+<div id="actions" class="p-3 border-t flex flex-wrap gap-2"></div>
+
+</div>
 
 <script>
+
+/* ===================== */
+/* SUPABASE */
+/* ===================== */
 
 const { createClient } = supabase
 
@@ -26,41 +43,230 @@ const supabaseClient = createClient(
 "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
 
-async function loadIncidencias(){
+/* ===================== */
+/* UI CHAT */
+/* ===================== */
+
+const chat = document.getElementById("chat")
+const actions = document.getElementById("actions")
+
+function addBot(text){
+
+const row = document.createElement("div")
+row.className = "flex"
+
+const bubble = document.createElement("div")
+bubble.className = "bg-blue-100 text-sm p-3 rounded-2xl max-w-[85%]"
+bubble.innerText = text
+
+row.appendChild(bubble)
+chat.appendChild(row)
+
+scroll()
+
+}
+
+function addUser(text){
+
+const row = document.createElement("div")
+row.className = "flex justify-end"
+
+const bubble = document.createElement("div")
+bubble.className = "bg-blue-600 text-white text-sm p-3 rounded-2xl max-w-[85%]"
+bubble.innerText = text
+
+row.appendChild(bubble)
+chat.appendChild(row)
+
+scroll()
+
+}
+
+function scroll(){
+setTimeout(()=>{
+chat.scrollTop = chat.scrollHeight
+},100)
+}
+
+/* ===================== */
+/* BOTONES ACCIÓN */
+/* ===================== */
+
+function showActions(list, callback){
+
+actions.innerHTML = ""
+
+list.forEach(a=>{
+
+const b = document.createElement("button")
+
+b.className = "bg-blue-100 hover:bg-blue-200 text-sm px-3 py-2 rounded-xl transition"
+
+b.innerText = a
+
+b.onclick = ()=>{
+
+addUser(a)
+actions.innerHTML = ""
+callback(a)
+
+}
+
+actions.appendChild(b)
+
+})
+
+}
+
+/* ===================== */
+/* CARGA INCIDENCIAS */
+/* ===================== */
+
+let incidencias = []
+let current = 0
+
+async function load(){
 
 const { data } = await supabaseClient
 .from("incidencias")
 .select("*")
 .order("created_at", { ascending: false })
 
-render(data)
+incidencias = data || []
+
+if(incidencias.length === 0){
+addBot("No hay incidencias registradas.")
+return
+}
+
+showIncident()
 
 }
 
-function render(data){
+/* ===================== */
+/* MOSTRAR INCIDENCIA */
+/* ===================== */
 
-const list = document.getElementById("list")
-list.innerHTML = ""
+function showIncident(){
 
-data.forEach(i=>{
+const i = incidencias[current]
 
-const card = document.createElement("div")
-card.className = "bg-white p-3 mb-2 rounded shadow"
+addBot("📍 Nueva incidencia detectada")
 
-card.innerHTML = `
-<b>${i.area}</b><br>
-${i.resumen}<br><br>
-<b>Acciones:</b><br>
-${(i.acciones || []).join("<br>")}
-`
+addBot("Área: " + i.area)
+addBot("Resumen: " + i.resumen)
 
-list.appendChild(card)
+addBot("Acciones sugeridas:")
 
+if(i.acciones){
+
+i.acciones.forEach(a=>{
+addBot("• " + a)
 })
 
 }
 
-loadIncidencias()
+/* ACCIONES TECNICO */
+
+showActions(
+[
+"✔ Marcar en curso",
+"✔ Resuelto",
+"⚠ Desestimar",
+"📝 Añadir comentario"
+],
+handleAction
+)
+
+}
+
+/* ===================== */
+/* ACCIONES TECNICAS */
+/* ===================== */
+
+async function handleAction(action){
+
+const i = incidencias[current]
+
+if(action === "✔ Marcar en curso"){
+
+await updateState(i.id, "en_curso")
+addBot("Estado actualizado: EN CURSO")
+
+}
+
+if(action === "✔ Resuelto"){
+
+await updateState(i.id, "resuelto")
+addBot("Estado actualizado: RESUELTO")
+
+}
+
+if(action === "⚠ Desestimar"){
+
+await updateState(i.id, "desestimado")
+addBot("Incidencia desestimada")
+
+}
+
+if(action === "📝 Añadir comentario"){
+
+const comment = prompt("Comentario técnico:")
+if(comment){
+await updateComment(i.id, comment)
+addBot("Comentario guardado")
+}
+
+}
+
+next()
+
+}
+
+/* ===================== */
+/* SUPABASE UPDATE */
+/* ===================== */
+
+async function updateState(id, state){
+
+await supabaseClient
+.from("incidencias")
+.update({ estado: state })
+.eq("id", id)
+
+}
+
+async function updateComment(id, comment){
+
+await supabaseClient
+.from("incidencias")
+.update({ comentario_tecnico: comment })
+.eq("id", id)
+
+}
+
+/* ===================== */
+/* SIGUIENTE */
+/* ===================== */
+
+function next(){
+
+current++
+
+if(current < incidencias.length){
+setTimeout(showIncident, 600)
+}else{
+addBot("No hay más incidencias.")
+}
+
+}
+
+/* ===================== */
+/* INIT */
+/* ===================== */
+
+addBot("Bienvenido al panel técnico municipal.")
+load()
 
 </script>
 
