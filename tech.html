@@ -11,22 +11,42 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 
-<body class="bg-blue-50 flex justify-center min-h-screen">
+<body class="bg-slate-100 flex justify-center min-h-screen">
 
-<!-- APP -->
 <div class="w-full max-w-md h-screen bg-white flex flex-col shadow-xl">
 
 <!-- HEADER -->
-<div class="bg-blue-700 text-white p-4 text-center">
+<div class="bg-[#2F4A6D] text-white p-4 text-center">
   <div class="text-xl font-bold">Citizen Voice</div>
   <div class="text-xs opacity-90">Panel Técnico Municipal</div>
 </div>
 
-<!-- CHAT -->
-<div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
+<!-- SELECTORES -->
+<div class="p-3 border-b bg-white">
 
-<!-- ACCIONES -->
-<div id="actions" class="p-3 border-t flex flex-wrap gap-2"></div>
+<!-- AREA -->
+<select id="areaSelect" class="w-full border p-2 rounded-xl text-sm mb-2">
+  <option value="">Selecciona área</option>
+  <option>Movilidad</option>
+  <option>Limpieza</option>
+  <option>Urbanismo</option>
+  <option>Cultura</option>
+  <option>Seguridad</option>
+  <option>Otros</option>
+</select>
+
+<!-- FILTRO -->
+<div class="flex gap-2">
+  <button onclick="setFilter('all')" class="flex-1 bg-slate-200 p-2 rounded-xl text-sm">Todas</button>
+  <button onclick="setFilter('active')" class="flex-1 bg-slate-200 p-2 rounded-xl text-sm">Activas</button>
+</div>
+
+<div id="stats" class="text-xs mt-2 text-slate-600"></div>
+
+</div>
+
+<!-- LISTA -->
+<div id="list" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
 
 </div>
 
@@ -44,231 +64,106 @@ const supabaseClient = createClient(
 )
 
 /* ===================== */
-/* UI CHAT */
+/* STATE */
 /* ===================== */
 
-const chat = document.getElementById("chat")
-const actions = document.getElementById("actions")
-
-function addBot(text){
-
-const row = document.createElement("div")
-row.className = "flex"
-
-const bubble = document.createElement("div")
-bubble.className = "bg-blue-100 text-sm p-3 rounded-2xl max-w-[85%]"
-bubble.innerText = text
-
-row.appendChild(bubble)
-chat.appendChild(row)
-
-scroll()
-
-}
-
-function addUser(text){
-
-const row = document.createElement("div")
-row.className = "flex justify-end"
-
-const bubble = document.createElement("div")
-bubble.className = "bg-blue-600 text-white text-sm p-3 rounded-2xl max-w-[85%]"
-bubble.innerText = text
-
-row.appendChild(bubble)
-chat.appendChild(row)
-
-scroll()
-
-}
-
-function scroll(){
-setTimeout(()=>{
-chat.scrollTop = chat.scrollHeight
-},100)
-}
+let allData = []
+let filtered = []
+let currentFilter = "all"
 
 /* ===================== */
-/* BOTONES ACCIÓN */
+/* AREA CHANGE */
 /* ===================== */
 
-function showActions(list, callback){
-
-actions.innerHTML = ""
-
-list.forEach(a=>{
-
-const b = document.createElement("button")
-
-b.className = "bg-blue-100 hover:bg-blue-200 text-sm px-3 py-2 rounded-xl transition"
-
-b.innerText = a
-
-b.onclick = ()=>{
-
-addUser(a)
-actions.innerHTML = ""
-callback(a)
-
-}
-
-actions.appendChild(b)
-
+document.getElementById("areaSelect").addEventListener("change", e=>{
+loadData(e.target.value)
 })
 
+function setFilter(type){
+currentFilter = type
+render()
 }
 
 /* ===================== */
-/* CARGA INCIDENCIAS */
+/* LOAD SUPABASE */
 /* ===================== */
 
-let incidencias = []
-let current = 0
+async function loadData(area){
 
-async function load(){
+if(!area){
+document.getElementById("list").innerHTML = ""
+document.getElementById("stats").innerText = ""
+return
+}
 
 const { data } = await supabaseClient
 .from("incidencias")
 .select("*")
+.eq("area", area)
 .order("created_at", { ascending: false })
 
-incidencias = data || []
+allData = data || []
 
-if(incidencias.length === 0){
-addBot("No hay incidencias registradas.")
-return
-}
-
-showIncident()
+render()
 
 }
 
 /* ===================== */
-/* MOSTRAR INCIDENCIA */
+/* RENDER */
 /* ===================== */
 
-function showIncident(){
+function render(){
 
-const i = incidencias[current]
+if(currentFilter === "active"){
+filtered = allData.filter(i =>
+i.estado !== "resuelto" && i.estado !== "desestimado"
+)
+}else{
+filtered = allData
+}
 
-addBot("📍 Nueva incidencia detectada")
+const list = document.getElementById("list")
+const stats = document.getElementById("stats")
 
-addBot("Área: " + i.area)
-addBot("Resumen: " + i.resumen)
+list.innerHTML = ""
 
-addBot("Acciones sugeridas:")
+stats.innerHTML = `
+Total incidencias: <b>${allData.length}</b> |
+Activas: <b>${allData.filter(i => i.estado !== "resuelto" && i.estado !== "desestimado").length}</b>
+`
 
-if(i.acciones){
+filtered.forEach(i=>{
 
-i.acciones.forEach(a=>{
-addBot("• " + a)
+const card = document.createElement("div")
+
+card.className =
+"bg-[#EAF0F6] rounded-2xl p-3 shadow flex flex-col gap-1"
+
+card.innerHTML = `
+<div class="text-xs text-slate-500">${i.area || ""}</div>
+
+<div class="font-semibold text-sm">
+${i.resumen || ""}
+</div>
+
+<div class="text-xs text-slate-600">
+${(i.acciones || []).join(" · ")}
+</div>
+
+<div class="text-[10px] mt-1 opacity-70">
+Estado: ${i.estado || "pendiente"}
+</div>
+`
+
+list.appendChild(card)
+
 })
 
 }
 
-/* ACCIONES TECNICO */
-
-showActions(
-[
-"✔ Marcar en curso",
-"✔ Resuelto",
-"⚠ Desestimar",
-"📝 Añadir comentario"
-],
-handleAction
-)
-
-}
-
-/* ===================== */
-/* ACCIONES TECNICAS */
-/* ===================== */
-
-async function handleAction(action){
-
-const i = incidencias[current]
-
-if(action === "✔ Marcar en curso"){
-
-await updateState(i.id, "en_curso")
-addBot("Estado actualizado: EN CURSO")
-
-}
-
-if(action === "✔ Resuelto"){
-
-await updateState(i.id, "resuelto")
-addBot("Estado actualizado: RESUELTO")
-
-}
-
-if(action === "⚠ Desestimar"){
-
-await updateState(i.id, "desestimado")
-addBot("Incidencia desestimada")
-
-}
-
-if(action === "📝 Añadir comentario"){
-
-const comment = prompt("Comentario técnico:")
-if(comment){
-await updateComment(i.id, comment)
-addBot("Comentario guardado")
-}
-
-}
-
-next()
-
-}
-
-/* ===================== */
-/* SUPABASE UPDATE */
-/* ===================== */
-
-async function updateState(id, state){
-
-await supabaseClient
-.from("incidencias")
-.update({ estado: state })
-.eq("id", id)
-
-}
-
-async function updateComment(id, comment){
-
-await supabaseClient
-.from("incidencias")
-.update({ comentario_tecnico: comment })
-.eq("id", id)
-
-}
-
-/* ===================== */
-/* SIGUIENTE */
-/* ===================== */
-
-function next(){
-
-current++
-
-if(current < incidencias.length){
-setTimeout(showIncident, 600)
-}else{
-addBot("No hay más incidencias.")
-}
-
-}
-
-/* ===================== */
 /* INIT */
-/* ===================== */
-
-addBot("Bienvenido al panel técnico municipal.")
-load()
-
 </script>
 
 </body>
+
 </html>
