@@ -93,7 +93,7 @@ loadData()
 },200)
 
 /* ===================== */
-/* LOAD (TODO SUPABASE) */
+/* LOAD DATA */
 /* ===================== */
 
 async function loadData(){
@@ -107,11 +107,22 @@ if(areaFilter){
 query = query.eq("area", areaFilter)
 }
 
-const { data } = await query
+const { data, error } = await query
 
+/* 🔴 DEBUG CLAVE */
+console.log("SUPABASE DATA:", data)
+console.log("SUPABASE ERROR:", error)
+
+if(error){
+alert("Error Supabase: " + error.message)
+return
+}
+
+/* NORMALIZAR */
 allData = (data || []).map(i => ({
   ...i,
-  estado: i.estado || "pendiente"
+  estado: i.estado || "pendiente",
+  tipo: i.tipo || "Incidencia"
 }))
 
 render()
@@ -170,6 +181,12 @@ const card = document.createElement("div")
 card.className =
 "bg-[#EAF0F6] rounded-2xl p-3 shadow flex flex-col gap-2"
 
+let estadoColor = "#64748b"
+if(i.estado === "pendiente") estadoColor = "#f59e0b"
+if(i.estado === "en_curso") estadoColor = "#3b82f6"
+if(i.estado === "resuelto") estadoColor = "#22c55e"
+if(i.estado === "desestimado") estadoColor = "#ef4444"
+
 card.innerHTML = `
 <div class="text-xs text-slate-500">${i.area || ""}</div>
 
@@ -181,8 +198,12 @@ ${i.resumen || ""}
 ${(i.acciones || []).join(" · ")}
 </div>
 
+<div class="text-[10px]" style="color:${estadoColor}">
+Estado: ${i.estado}
+</div>
+
 <select onchange="updateEstado('${i.id}', this.value)"
-class="mt-2 p-2 rounded-xl border text-sm">
+class="mt-2 p-2 border rounded-xl text-sm">
 
 <option value="pendiente" ${i.estado==="pendiente"?"selected":""}>Pendiente</option>
 <option value="en_curso" ${i.estado==="en_curso"?"selected":""}>En curso</option>
