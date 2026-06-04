@@ -21,9 +21,10 @@
   <div class="text-xs opacity-90">Panel Técnico Municipal</div>
 </div>
 
-<!-- CONTROLES -->
+<!-- FILTROS -->
 <div class="p-3 border-b bg-white">
 
+<!-- AREA -->
 <select id="areaSelect" class="w-full border p-2 rounded-xl text-sm mb-2">
   <option value="">Todas las áreas</option>
   <option>Movilidad</option>
@@ -34,13 +35,16 @@
   <option>Otros</option>
 </select>
 
-<div class="flex gap-2 mb-2">
-  <button onclick="setFilter('all')" class="flex-1 bg-slate-200 p-2 rounded-xl text-sm">Todas</button>
-  <button onclick="setFilter('active')" class="flex-1 bg-slate-200 p-2 rounded-xl text-sm">Activas</button>
-  <button onclick="setFilter('improve')" class="flex-1 bg-slate-200 p-2 rounded-xl text-sm">Mejoras</button>
-</div>
+<!-- ESTADO -->
+<select id="estadoSelect" class="w-full border p-2 rounded-xl text-sm">
+  <option value="">Todos los estados</option>
+  <option value="pendiente">Pendiente</option>
+  <option value="en_curso">En curso</option>
+  <option value="resuelto">Resuelto</option>
+  <option value="desestimado">Desestimado</option>
+</select>
 
-<div id="stats" class="text-xs text-slate-600"></div>
+<div id="stats" class="text-xs text-slate-600 mt-2"></div>
 
 </div>
 
@@ -67,56 +71,65 @@ const supabaseClient = createClient(
 /* ===================== */
 
 let allData = []
-let currentFilter = "all"
-let currentArea = ""
+let areaFilter = ""
+let estadoFilter = ""
 
 /* ===================== */
 /* INIT */
 /* ===================== */
 
 document.getElementById("areaSelect").addEventListener("change", e=>{
-currentArea = e.target.value
-loadData(currentArea)
+areaFilter = e.target.value
+loadData()
+})
+
+document.getElementById("estadoSelect").addEventListener("change", e=>{
+estadoFilter = e.target.value
+render()
 })
 
 setTimeout(()=>{
-loadData("") // carga inicial
+loadData()
 },200)
 
 /* ===================== */
-/* FILTERS */
+/* LOAD (TODO SUPABASE) */
 /* ===================== */
 
-function setFilter(type){
-currentFilter = type
-render()
-}
-
-/* ===================== */
-/* LOAD DATA */
-/* ===================== */
-
-async function loadData(area){
+async function loadData(){
 
 let query = supabaseClient
 .from("incidencias")
 .select("*")
 .order("created_at", { ascending: false })
 
-if(area){
-query = query.eq("area", area)
+if(areaFilter){
+query = query.eq("area", areaFilter)
 }
 
 const { data } = await query
 
-/* 🔥 NORMALIZACIÓN CLAVE */
 allData = (data || []).map(i => ({
   ...i,
-  estado: i.estado || "pendiente",
-  tipo: i.tipo || "Incidencia"
+  estado: i.estado || "pendiente"
 }))
 
 render()
+
+}
+
+/* ===================== */
+/* UPDATE ESTADO */
+/* ===================== */
+
+async function updateEstado(id, newState){
+
+await supabaseClient
+.from("incidencias")
+.update({ estado: newState })
+.eq("id", id)
+
+loadData()
 
 }
 
@@ -128,46 +141,25 @@ function render(){
 
 let data = [...allData]
 
-/* FILTRO ACTIVAS */
-if(currentFilter === "active"){
-data = data.filter(i =>
-i.estado !== "resuelto" &&
-i.estado !== "desestimado"
-)
+/* filtro estado */
+if(estadoFilter){
+data = data.filter(i => i.estado === estadoFilter)
 }
 
-/* FILTRO MEJORAS */
-if(currentFilter === "improve"){
-data = data.filter(i =>
-i.tipo === "Propuesta de mejora"
-)
-}
-
-/* ===================== */
-/* STATS ROBUSTOS */
-/* ===================== */
-
+/* stats */
 const total = allData.length
-
-const activas = allData.filter(i =>
-i.estado !== "resuelto" &&
-i.estado !== "desestimado"
-).length
-
-const mejoras = allData.filter(i =>
-i.tipo === "Propuesta de mejora"
-).length
+const pendientes = allData.filter(i => i.estado === "pendiente").length
+const enCurso = allData.filter(i => i.estado === "en_curso").length
+const resueltas = allData.filter(i => i.estado === "resuelto").length
 
 document.getElementById("stats").innerHTML = `
 Total: <b>${total}</b> |
-Activas: <b>${activas}</b> |
-Mejoras: <b>${mejoras}</b>
+Pendientes: <b>${pendientes}</b> |
+En curso: <b>${enCurso}</b> |
+Resueltas: <b>${resueltas}</b>
 `
 
-/* ===================== */
-/* LISTA */
-/* ===================== */
-
+/* list */
 const list = document.getElementById("list")
 list.innerHTML = ""
 
@@ -176,20 +168,7 @@ data.forEach(i=>{
 const card = document.createElement("div")
 
 card.className =
-"bg-[#EAF0F6] rounded-2xl p-3 shadow flex flex-col gap-1"
-
-/* mejoras highlight */
-if(i.tipo === "Propuesta de mejora"){
-card.style.borderLeft = "4px solid #22c55e"
-}
-
-/* estado visual */
-let estadoColor = "#64748b"
-
-if(i.estado === "pendiente") estadoColor = "#f59e0b"
-if(i.estado === "en_curso") estadoColor = "#3b82f6"
-if(i.estado === "resuelto") estadoColor = "#22c55e"
-if(i.estado === "desestimado") estadoColor = "#ef4444"
+"bg-[#EAF0F6] rounded-2xl p-3 shadow flex flex-col gap-2"
 
 card.innerHTML = `
 <div class="text-xs text-slate-500">${i.area || ""}</div>
@@ -198,13 +177,19 @@ card.innerHTML = `
 ${i.resumen || ""}
 </div>
 
-<div class="text-xs text-slate-600 mt-1">
+<div class="text-xs text-slate-600">
 ${(i.acciones || []).join(" · ")}
 </div>
 
-<div class="text-[10px] mt-1" style="color:${estadoColor}">
-Estado: ${i.estado}
-</div>
+<select onchange="updateEstado('${i.id}', this.value)"
+class="mt-2 p-2 rounded-xl border text-sm">
+
+<option value="pendiente" ${i.estado==="pendiente"?"selected":""}>Pendiente</option>
+<option value="en_curso" ${i.estado==="en_curso"?"selected":""}>En curso</option>
+<option value="resuelto" ${i.estado==="resuelto"?"selected":""}>Resuelto</option>
+<option value="desestimado" ${i.estado==="desestimado"?"selected":""}>Desestimado</option>
+
+</select>
 `
 
 list.appendChild(card)
