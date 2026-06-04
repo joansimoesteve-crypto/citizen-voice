@@ -80,7 +80,7 @@ loadData(currentArea)
 })
 
 setTimeout(()=>{
-loadData("")   // 🔥 carga inicial automática
+loadData("") // carga inicial
 },200)
 
 /* ===================== */
@@ -109,7 +109,12 @@ query = query.eq("area", area)
 
 const { data } = await query
 
-allData = data || []
+/* 🔥 NORMALIZACIÓN CLAVE */
+allData = (data || []).map(i => ({
+  ...i,
+  estado: i.estado || "pendiente",
+  tipo: i.tipo || "Incidencia"
+}))
 
 render()
 
@@ -126,7 +131,8 @@ let data = [...allData]
 /* FILTRO ACTIVAS */
 if(currentFilter === "active"){
 data = data.filter(i =>
-i.estado !== "resuelto" && i.estado !== "desestimado"
+i.estado !== "resuelto" &&
+i.estado !== "desestimado"
 )
 }
 
@@ -137,11 +143,15 @@ i.tipo === "Propuesta de mejora"
 )
 }
 
-/* STATS */
+/* ===================== */
+/* STATS ROBUSTOS */
+/* ===================== */
+
 const total = allData.length
 
 const activas = allData.filter(i =>
-i.estado !== "resuelto" && i.estado !== "desestimado"
+i.estado !== "resuelto" &&
+i.estado !== "desestimado"
 ).length
 
 const mejoras = allData.filter(i =>
@@ -154,7 +164,10 @@ Activas: <b>${activas}</b> |
 Mejoras: <b>${mejoras}</b>
 `
 
+/* ===================== */
 /* LISTA */
+/* ===================== */
+
 const list = document.getElementById("list")
 list.innerHTML = ""
 
@@ -165,9 +178,18 @@ const card = document.createElement("div")
 card.className =
 "bg-[#EAF0F6] rounded-2xl p-3 shadow flex flex-col gap-1"
 
+/* mejoras highlight */
 if(i.tipo === "Propuesta de mejora"){
 card.style.borderLeft = "4px solid #22c55e"
 }
+
+/* estado visual */
+let estadoColor = "#64748b"
+
+if(i.estado === "pendiente") estadoColor = "#f59e0b"
+if(i.estado === "en_curso") estadoColor = "#3b82f6"
+if(i.estado === "resuelto") estadoColor = "#22c55e"
+if(i.estado === "desestimado") estadoColor = "#ef4444"
 
 card.innerHTML = `
 <div class="text-xs text-slate-500">${i.area || ""}</div>
@@ -180,8 +202,8 @@ ${i.resumen || ""}
 ${(i.acciones || []).join(" · ")}
 </div>
 
-<div class="text-[10px] mt-1 opacity-70">
-Estado: ${i.estado || "pendiente"}
+<div class="text-[10px] mt-1" style="color:${estadoColor}">
+Estado: ${i.estado}
 </div>
 `
 
