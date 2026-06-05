@@ -11,7 +11,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-<!-- LEAFLET -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -37,7 +36,6 @@ Panel Técnico Municipal
 <!-- FILTROS -->
 <div class="p-3 bg-white border-b flex flex-col gap-2">
 
-<!-- AREA -->
 <select id="areaSelect"
 class="border p-3 rounded-2xl text-sm">
 
@@ -52,7 +50,6 @@ class="border p-3 rounded-2xl text-sm">
 
 </select>
 
-<!-- ESTADO -->
 <select id="estadoSelect"
 class="border p-3 rounded-2xl text-sm">
 
@@ -65,7 +62,6 @@ class="border p-3 rounded-2xl text-sm">
 
 </select>
 
-<!-- FECHA -->
 <select id="fechaSelect"
 class="border p-3 rounded-2xl text-sm">
 
@@ -77,7 +73,6 @@ class="border p-3 rounded-2xl text-sm">
 
 </select>
 
-<!-- BOTONES VISTA -->
 <div class="flex gap-2 mt-1">
 
 <button id="cardsBtn"
@@ -92,19 +87,18 @@ Mapa
 
 </div>
 
-<!-- STATS -->
 <div id="stats"
 class="text-xs text-slate-600 mt-1">
 </div>
 
 </div>
 
-<!-- LISTA -->
+<!-- LIST -->
 <div id="list"
 class="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
 </div>
 
-<!-- MAPA -->
+<!-- MAP -->
 <div id="mapContainer"
 class="hidden flex-1">
 
@@ -118,20 +112,12 @@ class="w-full h-full">
 
 <script>
 
-/* ===================== */
-/* SUPABASE */
-/* ===================== */
-
 const { createClient } = supabase
 
 const supabaseClient = createClient(
 "https://saiclsejxsycmeefuhvs.supabase.co",
 "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
-
-/* ===================== */
-/* STATE */
-/* ===================== */
 
 let allData = []
 
@@ -175,20 +161,22 @@ render()
 document.getElementById("cardsBtn")
 .onclick = ()=>{
 
-currentView = "cards"
+document.getElementById("list")
+.classList.remove("hidden")
 
-document.getElementById("list").classList.remove("hidden")
-document.getElementById("mapContainer").classList.add("hidden")
+document.getElementById("mapContainer")
+.classList.add("hidden")
 
 }
 
 document.getElementById("mapBtn")
 .onclick = ()=>{
 
-currentView = "map"
+document.getElementById("list")
+.classList.add("hidden")
 
-document.getElementById("list").classList.add("hidden")
-document.getElementById("mapContainer").classList.remove("hidden")
+document.getElementById("mapContainer")
+.classList.remove("hidden")
 
 setTimeout(initMap,200)
 
@@ -205,7 +193,7 @@ async function loadData(){
 const { data, error } = await supabaseClient
 .from("incidencias")
 .select("*")
-.order("id", { ascending:false })
+.order("created_at", { ascending:false })
 
 console.log(data)
 console.log(error)
@@ -223,7 +211,7 @@ render()
 }
 
 /* ===================== */
-/* DIAS */
+/* DAYS */
 /* ===================== */
 
 function daysAgo(date){
@@ -236,11 +224,9 @@ const created = new Date(date)
 
 const diff = now - created
 
-const days = Math.floor(
+return Math.floor(
 diff / (1000 * 60 * 60 * 24)
 )
-
-return days
 
 }
 
@@ -250,24 +236,55 @@ return days
 
 async function updateEstado(id){
 
-const select = document.getElementById("estado_"+id)
+const estado =
+document.getElementById("estado_"+id).value
 
-const comment = document.getElementById("comment_"+id)
+const comentario =
+document.getElementById("comment_"+id).value
 
-await supabaseClient
+const { error } = await supabaseClient
 .from("incidencias")
 .update({
 
-estado: select.value,
-
-comentario_tecnico: comment.value
+estado: estado,
+comentario_tecnico: comentario
 
 })
-.eq("id",id)
+.eq("id", id)
+
+console.log(error)
+
+if(error){
+
+alert("Error actualizando")
+
+return
+
+}
+
+/* UPDATE LOCAL */
+allData = allData.map(i=>{
+
+if(i.id == id){
+
+return {
+
+...i,
+
+estado: estado,
+comentario_tecnico: comentario
+
+}
+
+}
+
+return i
+
+})
+
+render()
 
 alert("Estado actualizado")
-
-loadData()
 
 }
 
@@ -317,18 +334,20 @@ return days <= parseInt(fechaFilter)
 
 /* STATS */
 
-document.getElementById("stats").innerHTML = `
+document.getElementById("stats")
+.innerHTML = `
 Total registros:
 <b>${data.length}</b>
 `
 
 /* LIST */
 
-const list = document.getElementById("list")
+const list =
+document.getElementById("list")
 
 list.innerHTML = ""
 
-/* MAP */
+/* CLEAR MAP */
 
 markers.forEach(m=>{
 
@@ -340,19 +359,14 @@ markers = []
 
 data.forEach(i=>{
 
-/* CARD */
-
-const card = document.createElement("div")
+const card =
+document.createElement("div")
 
 card.className =
 "bg-[#EEF4FA] p-4 rounded-[28px] shadow flex flex-col gap-2"
 
-/* FECHA */
-
 const days =
 daysAgo(i.created_at)
-
-/* COLOR ESTADO */
 
 let estadoColor = "#64748b"
 
@@ -392,14 +406,15 @@ ${(i.acciones || []).join(" · ")}
 </div>
 
 <div class="text-[11px] text-slate-500">
-Fecha:
+
 ${i.created_at
 ? new Date(i.created_at)
 .toLocaleDateString()
 : "-"
 }
-·
-Hace ${days} días
+
+· Hace ${days} días
+
 </div>
 
 <textarea
@@ -437,14 +452,16 @@ Desestimado
 <button
 onclick="updateEstado('${i.id}')"
 class="bg-[#3C5A78] text-white p-3 rounded-2xl text-sm font-semibold">
+
 Actualizar estado
+
 </button>
 
 `
 
 list.appendChild(card)
 
-/* MAPA */
+/* MAP */
 
 if(i.lat && i.lng && map){
 
@@ -468,7 +485,7 @@ markers.push(marker)
 }
 
 /* ===================== */
-/* MAPA */
+/* MAP */
 /* ===================== */
 
 function initMap(){
