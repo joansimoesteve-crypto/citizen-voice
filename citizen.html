@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Citizen Voice · Open Data</title>
+<title>Citizen Voice · Ciudadano</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -20,15 +20,15 @@
 
 <div class="w-full max-w-md bg-white min-h-screen shadow-2xl overflow-hidden rounded-[35px]">
 
-<!-- HEADER (más compacto) -->
+<!-- HEADER (compacto) -->
 <div class="bg-gradient-to-br from-slate-700 to-slate-500 text-white p-4 rounded-b-[30px]">
 
-<div class="text-2xl font-bold">
-Citizen Voice 🤝
+<div class="text-2xl font-bold flex items-center gap-2">
+Citizen Voice <span>🙂</span>
 </div>
 
 <div class="text-xs opacity-90">
-Transparencia urbana · Ciudad inteligente
+Transparencia urbana · Participación ciudadana
 </div>
 
 </div>
@@ -46,9 +46,6 @@ Transparencia urbana · Ciudad inteligente
 ¿Del 1 al 5, qué importancia das a crear más actividades culturales infantiles en la ciudad?
 </div>
 
-<!-- ICONO MÁS HUMANO -->
-<div class="text-2xl mt-2">🙂</div>
-
 <div class="flex gap-2 mt-3">
 
 <button onclick="sendAnswer(1)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">1</button>
@@ -63,7 +60,7 @@ Transparencia urbana · Ciudad inteligente
 
 </div>
 
-<!-- KPIS (compactos) -->
+<!-- KPIs -->
 <div class="px-4 flex flex-col gap-3">
 
 <div class="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-4 rounded-[28px] shadow">
@@ -72,27 +69,39 @@ Transparencia urbana · Ciudad inteligente
 </div>
 
 <div class="bg-gradient-to-r from-emerald-500 to-green-400 text-white p-4 rounded-[28px] shadow">
-<div class="text-xs opacity-80">Tiempo medio resolución</div>
+<div class="text-xs opacity-80">Tiempo medio de resolución</div>
 <div id="avgTime" class="text-2xl font-bold">0 días</div>
 </div>
 
 </div>
 
-<!-- VALORACIONES -->
+<!-- VALORACIÓN POR ÁREAS -->
 <div class="px-4 mt-3">
-<div class="text-sm font-semibold mb-2">Valoración por áreas</div>
+
+<div class="text-sm font-semibold mb-2">
+Valoración ciudadana por áreas
+</div>
+
 <div id="ratings"></div>
+
 </div>
 
-<!-- MAPA (más pequeño y limpio) -->
+<!-- MAPA -->
 <div class="px-4 mt-3">
-<div id="map" class="w-full h-[200px] rounded-[25px] shadow"></div>
+
+<div id="map" class="w-full h-[220px] rounded-[25px] shadow"></div>
+
 </div>
 
-<!-- ULTIMAS -->
+<!-- ÚLTIMAS -->
 <div class="px-4 mt-3 pb-6">
-<div class="text-sm font-semibold mb-2">Últimas incidencias</div>
+
+<div class="text-sm font-semibold mb-2">
+Últimas incidencias
+</div>
+
 <div id="latest"></div>
+
 </div>
 
 </div>
@@ -113,7 +122,7 @@ const supabaseClient = createClient(
 let allData = []
 
 /* ===================== */
-/* MAP */
+/* MAPA */
 /* ===================== */
 
 const map = L.map('map').setView([39.47,-0.37],11)
@@ -123,7 +132,7 @@ L.tileLayer(
 ).addTo(map)
 
 /* ===================== */
-/* LOAD */
+/* INIT */
 /* ===================== */
 
 loadData()
@@ -135,12 +144,13 @@ const { data } = await supabaseClient
 .select("*")
 
 allData = data || []
+
 render()
 
 }
 
 /* ===================== */
-/* WEEKLY ANSWER */
+/* PREGUNTA SEMANAL */
 /* ===================== */
 
 async function sendAnswer(value){
@@ -164,8 +174,8 @@ alert("Gracias por participar 🙂")
 
 function getWeekNumber(date){
 const firstJan = new Date(date.getFullYear(),0,1)
-const pastDays = (date - firstJan) / 86400000
-return Math.ceil((pastDays + firstJan.getDay()+1)/7)
+const diff = (date - firstJan) / 86400000
+return Math.ceil((diff + firstJan.getDay()+1)/7)
 }
 
 /* ===================== */
@@ -191,7 +201,7 @@ function render(){
 /* KPI TOTAL */
 document.getElementById("totalIncidencias").innerText = allData.length
 
-/* KPI MEDIA */
+/* KPI MEDIA TIEMPO */
 const resolved = allData.filter(i => i.estado === "resuelto")
 
 let avg = 0
@@ -202,7 +212,10 @@ avg = resolved.reduce((a,b)=>a+daysAgo(b.created_at),0)/resolved.length
 
 document.getElementById("avgTime").innerText = Math.round(avg)+" días"
 
+/* ===================== */
 /* RATINGS */
+/* ===================== */
+
 const areas = ["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"]
 
 const ratings = document.getElementById("ratings")
@@ -226,7 +239,16 @@ ratings.innerHTML += `
 `
 })
 
+/* ===================== */
 /* MAPA */
+/* ===================== */
+
+map.eachLayer(layer=>{
+if(layer instanceof L.CircleMarker){
+map.removeLayer(layer)
+}
+})
+
 allData.forEach(i=>{
 if(i.lat && i.lng){
 L.circleMarker([i.lat,i.lng],{
@@ -237,7 +259,10 @@ fillOpacity:0.7
 }
 })
 
+/* ===================== */
 /* LATEST */
+/* ===================== */
+
 const latest = document.getElementById("latest")
 latest.innerHTML = ""
 
