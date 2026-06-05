@@ -12,6 +12,7 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
@@ -26,7 +27,6 @@
 
 <div class="flex items-center gap-3">
 
-<!-- avatar humano -->
 <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
 <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
 <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5z"/>
@@ -45,6 +45,11 @@
 
 <!-- CHAT -->
 <div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
+
+<!-- MAPA FIJO (ESTO ES LO QUE ARREGLA TODO) -->
+<div id="mapContainer" class="hidden p-3">
+<div id="map" class="w-full h-[480px] rounded-2xl shadow"></div>
+</div>
 
 <!-- CONTROLES -->
 <div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
@@ -66,13 +71,14 @@ const supabaseClient = createClient(
 
 const chat = document.getElementById("chat")
 const controls = document.getElementById("controls")
+const mapContainer = document.getElementById("mapContainer")
 
 let formData = {}
-let map, marker
-let mapInitialized = false
+let map = null
+let marker = null
 
 /* ===================== */
-/* BOT */
+/* BOT (SIN ICONOS LEÍBLES) */
 /* ===================== */
 
 function bot(text){
@@ -186,39 +192,25 @@ showMap()
 }
 
 /* ===================== */
-/* MAPA FIX REAL */
+/* MAPA FIX DEFINITIVO */
 /* ===================== */
 
 function showMap(){
 
-bot("Indica la ubicación")
+bot("Selecciona ubicación en el mapa")
 
 controls.innerHTML = ""
+mapContainer.classList.remove("hidden")
 
-const search = document.createElement("input")
-search.placeholder = "Buscar dirección..."
-search.className = "border p-3 rounded-xl w-full text-sm"
+setTimeout(()=>{
 
-const mapDiv = document.createElement("div")
-mapDiv.id = "map"
-mapDiv.className = "w-full h-[480px] rounded-2xl shadow mt-2"
-
-chat.appendChild(search)
-chat.appendChild(mapDiv)
-
-/* 🔥 CLAVE: esperar render real */
-requestAnimationFrame(() => {
-
-setTimeout(() => {
-
-if (!mapInitialized) {
+if(!map){
 
 map = L.map('map').setView([39.47, -0.37], 13)
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map)
 
-mapInitialized = true
 } else {
 map.invalidateSize()
 }
@@ -227,7 +219,7 @@ const geocoder = L.Control.Geocoder.nominatim()
 
 map.on("click", e => {
 
-if (marker) map.removeLayer(marker)
+if(marker) map.removeLayer(marker)
 
 marker = L.marker(e.latlng).addTo(map)
 
@@ -238,38 +230,7 @@ askDescription()
 
 })
 
-search.addEventListener("keydown", e => {
-
-if (e.key === "Enter") {
-
-geocoder.geocode(search.value, res => {
-
-if (res.length) {
-
-const p = res[0].center
-
-map.setView(p, 16)
-
-if (marker) map.removeLayer(marker)
-
-marker = L.marker(p).addTo(map)
-
-formData.lat = p.lat
-formData.lng = p.lng
-
-askDescription()
-
-}
-
-})
-
-}
-
-})
-
-}, 150)
-
-})
+},200)
 
 }
 
@@ -290,12 +251,11 @@ const send = document.createElement("button")
 send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
 send.innerText = "Enviar"
 
-send.onclick = async () => {
+send.onclick = async ()=>{
 
-if (!input.value) return
+if(!input.value) return
 
 user(input.value)
-
 formData.descripcion = input.value
 
 await supabaseClient
@@ -319,7 +279,7 @@ const startBtn = document.createElement("button")
 startBtn.innerText = "Empezar"
 startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 
-startBtn.onclick = () => {
+startBtn.onclick = ()=>{
 controls.innerHTML = ""
 start()
 }
