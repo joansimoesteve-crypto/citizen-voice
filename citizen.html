@@ -11,9 +11,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 </head>
@@ -22,96 +20,79 @@ href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <div class="w-full max-w-md bg-white min-h-screen shadow-2xl overflow-hidden rounded-[35px]">
 
-<!-- HEADER -->
+<!-- HEADER (más compacto) -->
+<div class="bg-gradient-to-br from-slate-700 to-slate-500 text-white p-4 rounded-b-[30px]">
 
-<div class="bg-gradient-to-br from-slate-700 to-slate-500 text-white p-6 rounded-b-[35px]">
-
-<div class="text-3xl font-bold">
-Citizen Voice
+<div class="text-2xl font-bold">
+Citizen Voice 🤝
 </div>
 
-<div class="text-sm opacity-90 mt-1">
-Panel Ciudadano · Transparencia Urbana
-</div>
-
-</div>
-
-<!-- KPIS -->
-
-<div class="p-4 flex flex-col gap-3">
-
-<!-- KPI TOTAL -->
-
-<div class="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-5 rounded-[28px] shadow">
-
-<div class="text-xs opacity-80">
-Incidencias registradas
-</div>
-
-<div id="totalIncidencias"
-class="text-4xl font-bold mt-1">
-0
+<div class="text-xs opacity-90">
+Transparencia urbana · Ciudad inteligente
 </div>
 
 </div>
 
-<!-- KPI TIEMPO -->
+<!-- CONSULTA SEMANAL -->
+<div class="p-3">
 
-<div class="bg-gradient-to-r from-emerald-500 to-green-400 text-white p-5 rounded-[28px] shadow">
+<div class="bg-gradient-to-r from-indigo-500 to-blue-500 text-white p-4 rounded-[25px] shadow">
 
-<div class="text-xs opacity-80">
-Tiempo medio de resolución
+<div class="text-[11px] opacity-80">
+#ConsultaSemanal-1
 </div>
 
-<div id="avgTime"
-class="text-3xl font-bold mt-1">
-0 días
+<div class="font-semibold mt-1 text-sm leading-snug">
+¿Del 1 al 5, qué importancia das a crear más actividades culturales infantiles en la ciudad?
 </div>
 
+<!-- ICONO MÁS HUMANO -->
+<div class="text-2xl mt-2">🙂</div>
+
+<div class="flex gap-2 mt-3">
+
+<button onclick="sendAnswer(1)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">1</button>
+<button onclick="sendAnswer(2)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">2</button>
+<button onclick="sendAnswer(3)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">3</button>
+<button onclick="sendAnswer(4)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">4</button>
+<button onclick="sendAnswer(5)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">5</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- KPIS (compactos) -->
+<div class="px-4 flex flex-col gap-3">
+
+<div class="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-4 rounded-[28px] shadow">
+<div class="text-xs opacity-80">Incidencias registradas</div>
+<div id="totalIncidencias" class="text-3xl font-bold">0</div>
+</div>
+
+<div class="bg-gradient-to-r from-emerald-500 to-green-400 text-white p-4 rounded-[28px] shadow">
+<div class="text-xs opacity-80">Tiempo medio resolución</div>
+<div id="avgTime" class="text-2xl font-bold">0 días</div>
 </div>
 
 </div>
 
 <!-- VALORACIONES -->
-
-<div class="px-4 pb-3">
-
-<div class="text-sm font-semibold text-slate-700 mb-3">
-Valoración ciudadana por áreas
+<div class="px-4 mt-3">
+<div class="text-sm font-semibold mb-2">Valoración por áreas</div>
+<div id="ratings"></div>
 </div>
 
-<div id="ratings"
-class="flex flex-col gap-3">
-</div>
-
-</div>
-
-<!-- MAPA -->
-
-<div class="px-4 pb-4">
-
-<div class="text-sm font-semibold text-slate-700 mb-3">
-Mapa de incidencias
-</div>
-
-<div id="map"
-class="w-full h-[320px] rounded-[30px] overflow-hidden shadow">
-</div>
-
+<!-- MAPA (más pequeño y limpio) -->
+<div class="px-4 mt-3">
+<div id="map" class="w-full h-[200px] rounded-[25px] shadow"></div>
 </div>
 
 <!-- ULTIMAS -->
-
-<div class="px-4 pb-10">
-
-<div class="text-sm font-semibold text-slate-700 mb-3">
-Últimas incidencias
-</div>
-
-<div id="latest"
-class="flex flex-col gap-3">
-</div>
-
+<div class="px-4 mt-3 pb-6">
+<div class="text-sm font-semibold mb-2">Últimas incidencias</div>
+<div id="latest"></div>
 </div>
 
 </div>
@@ -135,8 +116,7 @@ let allData = []
 /* MAP */
 /* ===================== */
 
-const map = L.map('map')
-.setView([39.47,-0.37],11)
+const map = L.map('map').setView([39.47,-0.37],11)
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -150,17 +130,42 @@ loadData()
 
 async function loadData(){
 
-const { data, error } = await supabaseClient
+const { data } = await supabaseClient
 .from("incidencias")
 .select("*")
 
-console.log(data)
-console.log(error)
-
 allData = data || []
-
 render()
 
+}
+
+/* ===================== */
+/* WEEKLY ANSWER */
+/* ===================== */
+
+async function sendAnswer(value){
+
+await supabaseClient
+.from("weekly_engagement")
+.insert([{
+week: getWeekNumber(new Date()),
+question: "¿Qué importancia das a las actividades culturales infantiles?",
+area: "Cultura",
+answer: value
+}])
+
+alert("Gracias por participar 🙂")
+
+}
+
+/* ===================== */
+/* WEEK NUMBER */
+/* ===================== */
+
+function getWeekNumber(date){
+const firstJan = new Date(date.getFullYear(),0,1)
+const pastDays = (date - firstJan) / 86400000
+return Math.ceil((pastDays + firstJan.getDay()+1)/7)
 }
 
 /* ===================== */
@@ -171,15 +176,8 @@ function daysAgo(date){
 
 if(!date) return 0
 
-const now = new Date()
-
-const created = new Date(date)
-
-const diff =
-now.getTime() - created.getTime()
-
 return Math.floor(
-diff / (1000 * 60 * 60 * 24)
+(new Date() - new Date(date)) / (1000*60*60*24)
 )
 
 }
@@ -191,200 +189,67 @@ diff / (1000 * 60 * 60 * 24)
 function render(){
 
 /* KPI TOTAL */
+document.getElementById("totalIncidencias").innerText = allData.length
 
-document.getElementById("totalIncidencias")
-.innerText = allData.length
-
-/* KPI TIEMPO */
-
-const resolved =
-allData.filter(i =>
-i.estado === "resuelto"
-)
+/* KPI MEDIA */
+const resolved = allData.filter(i => i.estado === "resuelto")
 
 let avg = 0
 
-if(resolved.length > 0){
-
-avg =
-resolved.reduce((acc,i)=>{
-
-return acc + daysAgo(i.created_at)
-
-},0) / resolved.length
-
+if(resolved.length){
+avg = resolved.reduce((a,b)=>a+daysAgo(b.created_at),0)/resolved.length
 }
 
-document.getElementById("avgTime")
-.innerText =
-Math.round(avg) + " días"
+document.getElementById("avgTime").innerText = Math.round(avg)+" días"
 
-/* ===================== */
-/* VALORACIONES */
-/* ===================== */
+/* RATINGS */
+const areas = ["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"]
 
-const areas = [
-"Movilidad",
-"Limpieza",
-"Urbanismo",
-"Cultura",
-"Seguridad"
-]
-
-const ratings =
-document.getElementById("ratings")
-
+const ratings = document.getElementById("ratings")
 ratings.innerHTML = ""
 
 areas.forEach(area=>{
 
-const records =
-allData.filter(i =>
-i.area === area
-)
+const n = allData.filter(i=>i.area===area).length
+const score = Math.max(1,5 - Math.floor(n/10))
 
-let score = 5
-
-if(records.length > 5) score = 4
-if(records.length > 10) score = 3
-if(records.length > 20) score = 2
-if(records.length > 30) score = 1
-
-const card =
-document.createElement("div")
-
-card.className =
-"bg-white shadow rounded-[24px] p-4 border"
-
-card.innerHTML = `
-
+ratings.innerHTML += `
+<div class="bg-white p-3 rounded-2xl shadow mb-2">
 <div class="flex justify-between">
-
-<div class="font-semibold text-sm text-slate-700">
-${area}
+<b>${area}</b>
+<span>${score}/5</span>
 </div>
-
-<div class="text-blue-500 font-bold">
-${score}/5
+<div class="h-2 bg-slate-200 rounded-full mt-2">
+<div class="h-2 bg-gradient-to-r from-blue-400 to-emerald-400 rounded-full" style="width:${score*20}%"></div>
 </div>
-
 </div>
-
-<div class="w-full bg-slate-200 h-3 rounded-full mt-3 overflow-hidden">
-
-<div
-class="bg-gradient-to-r from-blue-400 to-emerald-400 h-3 rounded-full"
-style="width:${score*20}%">
-</div>
-
-</div>
-
 `
-
-ratings.appendChild(card)
-
 })
 
-/* ===================== */
 /* MAPA */
-/* ===================== */
-
-map.eachLayer(layer=>{
-
-if(layer instanceof L.Marker){
-
-map.removeLayer(layer)
-
-}
-
-})
-
 allData.forEach(i=>{
-
 if(i.lat && i.lng){
-
-const color =
-i.estado === "resuelto"
-? "green"
-: "blue"
-
-const marker =
-L.circleMarker(
-[i.lat, i.lng],
-{
-radius:8,
-color:color,
+L.circleMarker([i.lat,i.lng],{
+radius:6,
+color:"#3b82f6",
 fillOpacity:0.7
+}).addTo(map)
 }
-)
-.addTo(map)
-
-marker.bindPopup(`
-
-<b>${i.area}</b><br>
-${i.resumen}<br>
-Estado: ${i.estado}
-
-`)
-
-}
-
 })
 
-/* ===================== */
 /* LATEST */
-/* ===================== */
-
-const latest =
-document.getElementById("latest")
-
+const latest = document.getElementById("latest")
 latest.innerHTML = ""
 
-allData
-.slice(0,5)
-.forEach(i=>{
+allData.slice(0,5).forEach(i=>{
 
-const card =
-document.createElement("div")
-
-card.className =
-"bg-[#F4F7FA] rounded-[26px] p-4 shadow"
-
-let estadoColor = "#3b82f6"
-
-if(i.estado==="resuelto")
-estadoColor = "#22c55e"
-
-if(i.estado==="pendiente")
-estadoColor = "#f59e0b"
-
-card.innerHTML = `
-
-<div class="flex justify-between items-start">
-
-<div class="text-xs text-slate-500">
-${i.area || ""}
+latest.innerHTML += `
+<div class="bg-slate-100 p-3 rounded-2xl mb-2">
+<b>${i.area}</b><br>
+${i.resumen}<br>
+<small>${daysAgo(i.created_at)} días</small>
 </div>
-
-<div
-class="text-[10px] font-bold"
-style="color:${estadoColor}">
-${i.estado || "pendiente"}
-</div>
-
-</div>
-
-<div class="font-semibold text-sm mt-1">
-${i.resumen || ""}
-</div>
-
-<div class="text-xs text-slate-500 mt-2">
-Hace ${daysAgo(i.created_at)} días
-</div>
-
 `
-
-latest.appendChild(card)
 
 })
 
