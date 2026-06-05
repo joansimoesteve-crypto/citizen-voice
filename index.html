@@ -19,7 +19,7 @@
 
 <body class="bg-green-50 flex justify-center min-h-screen p-2">
 
-<div class="w-full max-w-md h-[95vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+<div class="w-full max-w-md h-[95vh] bg-white rounded-3xl shadow-xl flex flex-col overflow-hidden">
 
 <!-- HEADER -->
 <div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4 text-center">
@@ -59,9 +59,10 @@ const chat = document.getElementById("chat")
 const controls = document.getElementById("controls")
 
 let formData = {}
+let map, marker
 
 /* ===================== */
-/* BOT NATURAL */
+/* BOT HUMANO (SVG AVATAR) */
 /* ===================== */
 
 function bot(text){
@@ -70,13 +71,16 @@ const row = document.createElement("div")
 row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("div")
-avatar.className =
-"w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow"
-avatar.innerHTML = "👤"
+avatar.className = "w-10 h-10 rounded-full bg-gradient-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow"
+
+avatar.innerHTML = `
+<svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+<path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/>
+</svg>
+`
 
 const bubble = document.createElement("div")
-bubble.className =
-"bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
+bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
 bubble.innerText = text
 
 row.appendChild(avatar)
@@ -93,8 +97,7 @@ chat.scrollTop = chat.scrollHeight
 function user(text){
 
 const d = document.createElement("div")
-d.className =
-"bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
+d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
 d.innerText = text
 
 chat.appendChild(d)
@@ -112,9 +115,7 @@ controls.innerHTML = ""
 list.forEach(o=>{
 
 const b = document.createElement("button")
-b.className =
-"bg-green-100 hover:bg-green-200 px-4 py-2 rounded-xl text-sm"
-
+b.className = "bg-green-100 hover:bg-green-200 px-4 py-2 rounded-xl text-sm"
 b.innerText = o
 
 b.onclick = ()=>{
@@ -130,30 +131,36 @@ controls.appendChild(b)
 }
 
 /* ===================== */
-/* START */
+/* START + PREGUNTA SEMANAL */
 /* ===================== */
 
 function start(){
 
-bot("Hola 👋 soy Citizen Voice. Vamos a registrar tu participación.")
+bot("Hola 👋 soy Citizen Voice, tu asistente ciudadano.")
+
+bot("Tardo menos de 30 segundos en ayudarte.")
+
+setTimeout(()=>{
 
 bot("#ConsultaSemanal-1")
-bot("Del 1 al 5, ¿qué importancia das a mejorar actividades culturales infantiles en la ciudad?")
+bot("Del 1 al 5: ¿qué importancia das a las actividades culturales infantiles en tu ciudad?")
 
 buttons(["1","2","3","4","5"], v=>{
 formData.weekly = v
 askType()
 })
 
+},800)
+
 }
 
 /* ===================== */
-/* TIPO */
+/* FLUJO */
 /* ===================== */
 
 function askType(){
 
-bot("¿Qué quieres hacer hoy?")
+bot("¿Qué quieres registrar?")
 
 buttons(["Incidencia","Mejora"], v=>{
 formData.tipo = v
@@ -162,13 +169,9 @@ askArea()
 
 }
 
-/* ===================== */
-/* AREA */
-/* ===================== */
-
 function askArea(){
 
-bot("¿En qué área ocurre o afecta?")
+bot("¿En qué área ocurre?")
 
 buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
 formData.area = v
@@ -177,13 +180,9 @@ askRate()
 
 }
 
-/* ===================== */
-/* VALORACION */
-/* ===================== */
-
 function askRate(){
 
-bot("Valora la situación del 1 al 5")
+bot("Valora la situación actual del 1 al 5")
 
 buttons(["1","2","3","4","5"], v=>{
 formData.valoracion = v
@@ -193,12 +192,12 @@ showMap()
 }
 
 /* ===================== */
-/* MAPA (MÁS GRANDE) */
+/* MAPA (ESTABLE - NO ROMPER DOM) */
 /* ===================== */
 
 function showMap(){
 
-bot("Marca o busca la ubicación")
+bot("Indica ubicación (busca o toca el mapa)")
 
 controls.innerHTML = ""
 
@@ -208,53 +207,19 @@ search.className = "border p-3 rounded-xl w-full text-sm"
 
 const mapDiv = document.createElement("div")
 mapDiv.id = "map"
-mapDiv.style.height = "520px"
-mapDiv.className = "rounded-2xl shadow mt-2"
+mapDiv.className = "w-full h-[420px] rounded-2xl shadow mt-2"
 
 chat.appendChild(search)
 chat.appendChild(mapDiv)
 
 setTimeout(()=>{
 
-const map = L.map('map').setView([39.47,-0.37],13)
+map = L.map('map').setView([39.47,-0.37],13)
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map)
 
-let marker
-
 const geocoder = L.Control.Geocoder.nominatim()
-
-search.addEventListener("keydown",(e)=>{
-
-if(e.key==="Enter"){
-
-geocoder.geocode(search.value, r=>{
-
-if(r.length){
-
-const p = r[0].center
-
-map.setView(p,16)
-
-if(marker) map.removeLayer(marker)
-
-marker = L.marker(p).addTo(map)
-
-formData.lat = p.lat
-formData.lng = p.lng
-
-bot("Ubicación registrada")
-
-askDescription()
-
-}
-
-})
-
-}
-
-})
 
 map.on("click", e=>{
 
@@ -265,13 +230,44 @@ marker = L.marker(e.latlng).addTo(map)
 formData.lat = e.latlng.lat
 formData.lng = e.latlng.lng
 
-bot("Ubicación guardada")
+bot("Ubicación registrada")
 
 askDescription()
 
 })
 
-},300)
+search.addEventListener("keydown",(e)=>{
+
+if(e.key === "Enter"){
+
+geocoder.geocode(search.value, res=>{
+
+if(res.length){
+
+const p = res[0].center
+
+map.setView(p,16)
+
+if(marker) map.removeLayer(marker)
+
+marker = L.marker(p).addTo(map)
+
+formData.lat = p.lat
+formData.lng = p.lng
+
+bot("Ubicación encontrada")
+
+askDescription()
+
+}
+
+})
+
+}
+
+})
+
+},400)
 
 }
 
@@ -281,7 +277,7 @@ askDescription()
 
 function askDescription(){
 
-bot("Describe la incidencia o propuesta")
+bot("Describe el problema o propuesta")
 
 controls.innerHTML = ""
 
@@ -292,7 +288,7 @@ const send = document.createElement("button")
 send.innerText = "Enviar"
 send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
 
-send.onclick = ()=>{
+send.onclick = async ()=>{
 
 if(!input.value) return
 
@@ -300,7 +296,7 @@ user(input.value)
 
 formData.descripcion = input.value
 
-save()
+await save()
 
 }
 
@@ -310,7 +306,7 @@ controls.appendChild(send)
 }
 
 /* ===================== */
-/* GUARDAR */
+/* SAVE */
 /* ===================== */
 
 async function save(){
@@ -319,9 +315,9 @@ await supabaseClient
 .from("incidencias")
 .insert([formData])
 
-bot("Registro completado ✅")
+bot("Gracias 🙌 registro completado")
 
-showFinal()
+setTimeout(showFinal,800)
 
 }
 
@@ -331,7 +327,7 @@ showFinal()
 
 function showFinal(){
 
-bot("Gracias por participar 🙌")
+bot("¿Qué quieres hacer ahora?")
 
 buttons([
 "Ir al cuadro de mando",
@@ -350,13 +346,13 @@ bot("Asistente cerrado 👋")
 }
 
 /* ===================== */
-/* START BUTTON */
+/* INIT BUTTON */
 /* ===================== */
 
 const startBtn = document.createElement("button")
+
 startBtn.innerText = "Empezar"
-startBtn.className =
-"w-full bg-green-600 text-white py-4 rounded-xl text-lg"
+startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 
 startBtn.onclick = ()=>{
 controls.innerHTML = ""
