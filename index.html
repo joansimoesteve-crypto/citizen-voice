@@ -2,60 +2,52 @@
 <html lang="es">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Citizen Voice · Open Data</title>
+<title>Citizen Voice · Bot</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 </head>
 
 <body class="bg-[#EEF2F5] min-h-screen flex justify-center">
 
-<div class="w-full max-w-md bg-white min-h-screen shadow-2xl overflow-hidden rounded-[35px]">
+<div class="w-full max-w-md bg-white min-h-screen shadow-2xl overflow-hidden rounded-[35px] flex flex-col">
 
-<!-- HEADER (más compacto) -->
-<div class="bg-gradient-to-br from-slate-700 to-slate-500 text-white p-4 rounded-b-[30px]">
+<!-- HEADER VERDE (BOT IDENTIDAD) -->
+<div class="bg-gradient-to-br from-emerald-600 to-green-500 text-white p-5 rounded-b-[30px]">
 
-<div class="text-2xl font-bold">
-Citizen Voice 🤝
+<div class="text-2xl font-bold flex items-center gap-2">
+Citizen Bot 🤖
 </div>
 
-<div class="text-xs opacity-90">
-Transparencia urbana · Ciudad inteligente
+<div class="text-xs opacity-90 mt-1">
+Asistente urbano inteligente
 </div>
 
 </div>
 
-<!-- CONSULTA SEMANAL -->
+<!-- CONSULTA SEMANAL (ENGAGEMENT) -->
 <div class="p-3">
 
-<div class="bg-gradient-to-r from-indigo-500 to-blue-500 text-white p-4 rounded-[25px] shadow">
+<div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-[25px] shadow">
 
 <div class="text-[11px] opacity-80">
 #ConsultaSemanal-1
 </div>
 
-<div class="font-semibold mt-1 text-sm leading-snug">
-¿Del 1 al 5, qué importancia das a crear más actividades culturales infantiles en la ciudad?
+<div class="font-semibold text-sm mt-1">
+¿Del 1 al 5, qué importancia das a mejorar los espacios culturales infantiles en tu ciudad?
 </div>
-
-<!-- ICONO MÁS HUMANO -->
-<div class="text-2xl mt-2">🙂</div>
 
 <div class="flex gap-2 mt-3">
 
-<button onclick="sendAnswer(1)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">1</button>
-<button onclick="sendAnswer(2)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">2</button>
-<button onclick="sendAnswer(3)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">3</button>
-<button onclick="sendAnswer(4)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">4</button>
-<button onclick="sendAnswer(5)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">5</button>
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl">1</button>
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl">2</button>
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl">3</button>
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl">4</button>
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl">5</button>
 
 </div>
 
@@ -63,199 +55,52 @@ Transparencia urbana · Ciudad inteligente
 
 </div>
 
-<!-- KPIS (compactos) -->
-<div class="px-4 flex flex-col gap-3">
+<!-- ZONA CHAT -->
+<div class="flex-1 p-4 overflow-y-auto">
 
-<div class="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-4 rounded-[28px] shadow">
-<div class="text-xs opacity-80">Incidencias registradas</div>
-<div id="totalIncidencias" class="text-3xl font-bold">0</div>
+<!-- MENSAJE BOT INICIAL -->
+<div class="bg-emerald-100 text-emerald-900 p-3 rounded-2xl mb-3 w-fit max-w-[85%]">
+Hola 👋 soy tu asistente ciudadano.  
+Puedo ayudarte a reportar incidencias o consultar información de tu ciudad.
 </div>
 
-<div class="bg-gradient-to-r from-emerald-500 to-green-400 text-white p-4 rounded-[28px] shadow">
-<div class="text-xs opacity-80">Tiempo medio resolución</div>
-<div id="avgTime" class="text-2xl font-bold">0 días</div>
-</div>
-
-</div>
-
-<!-- VALORACIONES -->
-<div class="px-4 mt-3">
-<div class="text-sm font-semibold mb-2">Valoración por áreas</div>
-<div id="ratings"></div>
-</div>
-
-<!-- MAPA (más pequeño y limpio) -->
-<div class="px-4 mt-3">
-<div id="map" class="w-full h-[200px] rounded-[25px] shadow"></div>
-</div>
-
-<!-- ULTIMAS -->
-<div class="px-4 mt-3 pb-6">
-<div class="text-sm font-semibold mb-2">Últimas incidencias</div>
-<div id="latest"></div>
+<!-- MENSAJE SISTEMA -->
+<div class="bg-slate-100 p-3 rounded-2xl mb-3 w-fit max-w-[85%]">
+Escribe algo como:  
+“hay basura en mi calle” o “farola rota”
 </div>
 
 </div>
 
-<script>
+<!-- INPUT ZONE -->
+<div class="p-3 border-t flex gap-2">
 
-/* ===================== */
-/* SUPABASE */
-/* ===================== */
+<input
+type="text"
+placeholder="Escribe tu mensaje..."
+class="flex-1 p-3 rounded-2xl bg-slate-100 outline-none"
+/>
 
-const { createClient } = supabase
+<button class="bg-emerald-600 text-white px-4 py-3 rounded-2xl">
+Enviar
+</button>
 
-const supabaseClient = createClient(
-"https://saiclsejxsycmeefuhvs.supabase.co",
-"sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
-)
-
-let allData = []
-
-/* ===================== */
-/* MAP */
-/* ===================== */
-
-const map = L.map('map').setView([39.47,-0.37],11)
-
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-).addTo(map)
-
-/* ===================== */
-/* LOAD */
-/* ===================== */
-
-loadData()
-
-async function loadData(){
-
-const { data } = await supabaseClient
-.from("incidencias")
-.select("*")
-
-allData = data || []
-render()
-
-}
-
-/* ===================== */
-/* WEEKLY ANSWER */
-/* ===================== */
-
-async function sendAnswer(value){
-
-await supabaseClient
-.from("weekly_engagement")
-.insert([{
-week: getWeekNumber(new Date()),
-question: "¿Qué importancia das a las actividades culturales infantiles?",
-area: "Cultura",
-answer: value
-}])
-
-alert("Gracias por participar 🙂")
-
-}
-
-/* ===================== */
-/* WEEK NUMBER */
-/* ===================== */
-
-function getWeekNumber(date){
-const firstJan = new Date(date.getFullYear(),0,1)
-const pastDays = (date - firstJan) / 86400000
-return Math.ceil((pastDays + firstJan.getDay()+1)/7)
-}
-
-/* ===================== */
-/* DAYS */
-/* ===================== */
-
-function daysAgo(date){
-
-if(!date) return 0
-
-return Math.floor(
-(new Date() - new Date(date)) / (1000*60*60*24)
-)
-
-}
-
-/* ===================== */
-/* RENDER */
-/* ===================== */
-
-function render(){
-
-/* KPI TOTAL */
-document.getElementById("totalIncidencias").innerText = allData.length
-
-/* KPI MEDIA */
-const resolved = allData.filter(i => i.estado === "resuelto")
-
-let avg = 0
-
-if(resolved.length){
-avg = resolved.reduce((a,b)=>a+daysAgo(b.created_at),0)/resolved.length
-}
-
-document.getElementById("avgTime").innerText = Math.round(avg)+" días"
-
-/* RATINGS */
-const areas = ["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"]
-
-const ratings = document.getElementById("ratings")
-ratings.innerHTML = ""
-
-areas.forEach(area=>{
-
-const n = allData.filter(i=>i.area===area).length
-const score = Math.max(1,5 - Math.floor(n/10))
-
-ratings.innerHTML += `
-<div class="bg-white p-3 rounded-2xl shadow mb-2">
-<div class="flex justify-between">
-<b>${area}</b>
-<span>${score}/5</span>
 </div>
-<div class="h-2 bg-slate-200 rounded-full mt-2">
-<div class="h-2 bg-gradient-to-r from-blue-400 to-emerald-400 rounded-full" style="width:${score*20}%"></div>
+
+<!-- BOTONES FINALES -->
+<div class="p-3 flex gap-2">
+
+<button class="flex-1 bg-slate-700 text-white p-3 rounded-2xl">
+Iniciar
+</button>
+
+<button class="flex-1 bg-slate-300 text-slate-700 p-3 rounded-2xl">
+Cerrar
+</button>
+
 </div>
+
 </div>
-`
-})
-
-/* MAPA */
-allData.forEach(i=>{
-if(i.lat && i.lng){
-L.circleMarker([i.lat,i.lng],{
-radius:6,
-color:"#3b82f6",
-fillOpacity:0.7
-}).addTo(map)
-}
-})
-
-/* LATEST */
-const latest = document.getElementById("latest")
-latest.innerHTML = ""
-
-allData.slice(0,5).forEach(i=>{
-
-latest.innerHTML += `
-<div class="bg-slate-100 p-3 rounded-2xl mb-2">
-<b>${i.area}</b><br>
-${i.resumen}<br>
-<small>${daysAgo(i.created_at)} días</small>
-</div>
-`
-
-})
-
-}
-
-</script>
 
 </body>
 
