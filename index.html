@@ -9,6 +9,7 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
@@ -16,7 +17,7 @@
 
 </head>
 
-<body class="bg-green-50 flex justify-center items-start min-h-screen p-2">
+<body class="bg-green-50 flex justify-center min-h-screen p-2">
 
 <div class="w-full max-w-md h-[95vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
@@ -60,17 +61,7 @@ const controls = document.getElementById("controls")
 let formData = {}
 
 /* ===================== */
-/* VOZ */
-/* ===================== */
-
-function speak(text){
-const msg = new SpeechSynthesisUtterance(text)
-msg.lang = "es-ES"
-speechSynthesis.speak(msg)
-}
-
-/* ===================== */
-/* BOT (MEJORADO HUMANO) */
+/* BOT NATURAL */
 /* ===================== */
 
 function bot(text){
@@ -80,24 +71,19 @@ row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("div")
 avatar.className =
-"w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white text-lg shadow"
-
+"w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow"
 avatar.innerHTML = "👤"
 
 const bubble = document.createElement("div")
 bubble.className =
 "bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
-
 bubble.innerText = text
 
 row.appendChild(avatar)
 row.appendChild(bubble)
 
 chat.appendChild(row)
-
 chat.scrollTop = chat.scrollHeight
-
-speak(text)
 }
 
 /* ===================== */
@@ -107,14 +93,11 @@ speak(text)
 function user(text){
 
 const d = document.createElement("div")
-
 d.className =
 "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
-
 d.innerText = text
 
 chat.appendChild(d)
-
 chat.scrollTop = chat.scrollHeight
 }
 
@@ -129,18 +112,15 @@ controls.innerHTML = ""
 list.forEach(o=>{
 
 const b = document.createElement("button")
-
 b.className =
-"bg-green-100 hover:bg-green-200 transition px-4 py-2 rounded-xl text-sm"
+"bg-green-100 hover:bg-green-200 px-4 py-2 rounded-xl text-sm"
 
 b.innerText = o
 
 b.onclick = ()=>{
-
 controls.innerHTML = ""
 user(o)
 callback(o)
-
 }
 
 controls.appendChild(b)
@@ -155,9 +135,27 @@ controls.appendChild(b)
 
 function start(){
 
-bot("Hola 👋 soy Citizen Voice. ¿Qué deseas registrar?")
+bot("Hola 👋 soy Citizen Voice. Vamos a registrar tu participación.")
 
-buttons(["Incidencia","Propuesta de mejora"], v=>{
+bot("#ConsultaSemanal-1")
+bot("Del 1 al 5, ¿qué importancia das a mejorar actividades culturales infantiles en la ciudad?")
+
+buttons(["1","2","3","4","5"], v=>{
+formData.weekly = v
+askType()
+})
+
+}
+
+/* ===================== */
+/* TIPO */
+/* ===================== */
+
+function askType(){
+
+bot("¿Qué quieres hacer hoy?")
+
+buttons(["Incidencia","Mejora"], v=>{
 formData.tipo = v
 askArea()
 })
@@ -170,9 +168,9 @@ askArea()
 
 function askArea(){
 
-bot("¿En qué área ocurre o afecta? ¿Qué opinas de su estado actual?")
+bot("¿En qué área ocurre o afecta?")
 
-buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"], v=>{
+buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
 formData.area = v
 askRate()
 })
@@ -180,12 +178,12 @@ askRate()
 }
 
 /* ===================== */
-/* VALORACIÓN */
+/* VALORACION */
 /* ===================== */
 
 function askRate(){
 
-bot("Valora del 1 al 5 la situación actual")
+bot("Valora la situación del 1 al 5")
 
 buttons(["1","2","3","4","5"], v=>{
 formData.valoracion = v
@@ -195,34 +193,33 @@ showMap()
 }
 
 /* ===================== */
-/* MAPA */
+/* MAPA (MÁS GRANDE) */
 /* ===================== */
 
 function showMap(){
 
-bot("Indica dónde ocurre (busca o toca el mapa)")
+bot("Marca o busca la ubicación")
 
 controls.innerHTML = ""
 
 const search = document.createElement("input")
 search.placeholder = "Buscar dirección..."
-search.className = "border p-3 rounded-xl w-full mb-2 text-sm"
+search.className = "border p-3 rounded-xl w-full text-sm"
 
 const mapDiv = document.createElement("div")
 mapDiv.id = "map"
-mapDiv.style.height = "420px"
-mapDiv.className = "rounded-2xl shadow"
+mapDiv.style.height = "520px"
+mapDiv.className = "rounded-2xl shadow mt-2"
 
-controls.appendChild(search)
+chat.appendChild(search)
 chat.appendChild(mapDiv)
 
 setTimeout(()=>{
 
 const map = L.map('map').setView([39.47,-0.37],13)
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-).addTo(map)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+.addTo(map)
 
 let marker
 
@@ -232,20 +229,20 @@ search.addEventListener("keydown",(e)=>{
 
 if(e.key==="Enter"){
 
-geocoder.geocode(search.value, results=>{
+geocoder.geocode(search.value, r=>{
 
-if(results.length>0){
+if(r.length){
 
-const r = results[0]
+const p = r[0].center
 
-map.setView(r.center,16)
+map.setView(p,16)
 
 if(marker) map.removeLayer(marker)
 
-marker = L.marker(r.center).addTo(map)
+marker = L.marker(p).addTo(map)
 
-formData.lat = r.center.lat
-formData.lng = r.center.lng
+formData.lat = p.lat
+formData.lng = p.lng
 
 bot("Ubicación registrada")
 
@@ -284,29 +281,12 @@ askDescription()
 
 function askDescription(){
 
-bot("Describe la incidencia o mejora")
+bot("Describe la incidencia o propuesta")
 
 controls.innerHTML = ""
 
 const input = document.createElement("input")
-input.placeholder = "Escribe o usa voz"
 input.className = "border p-3 rounded-xl flex-1 text-sm"
-
-const mic = document.createElement("button")
-mic.innerText = "🎤"
-mic.className = "bg-green-100 px-4 rounded-xl"
-
-mic.onclick = ()=>{
-
-const r = new webkitSpeechRecognition()
-r.lang = "es-ES"
-r.start()
-
-r.onresult = e=>{
-input.value = e.results[0][0].transcript
-}
-
-}
 
 const send = document.createElement("button")
 send.innerText = "Enviar"
@@ -320,58 +300,52 @@ user(input.value)
 
 formData.descripcion = input.value
 
-saveData()
+save()
 
 }
 
 controls.appendChild(input)
-controls.appendChild(mic)
 controls.appendChild(send)
 
 }
 
 /* ===================== */
-/* IA + SUPABASE */
+/* GUARDAR */
 /* ===================== */
 
-async function saveData(){
-
-try{
-
-const res = await fetch("/api/ai",{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({ description: formData.descripcion })
-})
-
-const ai = await res.json()
-
-const incidencia = {
-tipo: formData.tipo,
-area: formData.area,
-valoracion: formData.valoracion,
-descripcion: formData.descripcion,
-lat: formData.lat,
-lng: formData.lng,
-resumen: ai.resumen || "",
-acciones: ai.acciones || []
-}
+async function save(){
 
 await supabaseClient
 .from("incidencias")
-.insert([incidencia])
+.insert([formData])
 
-bot("Registrado correctamente ✅")
+bot("Registro completado ✅")
 
-setTimeout(()=>{
-bot("Puedes ver resultados en el panel o cerrar el asistente.")
-},1000)
-
-}catch(err){
-
-bot("Error al guardar la incidencia")
+showFinal()
 
 }
+
+/* ===================== */
+/* FINAL */
+/* ===================== */
+
+function showFinal(){
+
+bot("Gracias por participar 🙌")
+
+buttons([
+"Ir al cuadro de mando",
+"Cerrar asistente"
+], v=>{
+
+if(v==="Ir al cuadro de mando"){
+window.location.href = "/citizen.html"
+}else{
+chat.innerHTML = ""
+bot("Asistente cerrado 👋")
+}
+
+})
 
 }
 
@@ -380,7 +354,6 @@ bot("Error al guardar la incidencia")
 /* ===================== */
 
 const startBtn = document.createElement("button")
-
 startBtn.innerText = "Empezar"
 startBtn.className =
 "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
