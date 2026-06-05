@@ -21,40 +21,29 @@
 
 <div class="w-full max-w-md h-[95vh] bg-white rounded-3xl shadow-xl flex flex-col overflow-hidden">
 
-<!-- ===================== -->
-<!-- HEADER CREDIBILIDAD -->
-<!-- ===================== -->
-
+<!-- HEADER -->
 <div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4">
 
 <div class="flex items-center gap-3">
 
-<!-- AVATAR HUMANO (NO ICONOS LEÍBLES) -->
-<div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
-
-<!-- SVG cara humana simple -->
-<svg width="34" height="34" viewBox="0 0 24 24" fill="white">
+<!-- avatar humano -->
+<div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="white">
 <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5z"/>
 <path d="M4 21c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
 </svg>
-
 </div>
 
 <div>
 <div class="font-bold text-lg">Citizen Voice</div>
-<div class="text-xs opacity-90">
-Asistente virtual para participación ciudadana
-</div>
+<div class="text-xs opacity-90">Asistente de participación ciudadana</div>
 </div>
 
 </div>
 
 </div>
 
-<!-- ===================== -->
 <!-- CHAT -->
-<!-- ===================== -->
-
 <div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
 
 <!-- CONTROLES -->
@@ -63,6 +52,10 @@ Asistente virtual para participación ciudadana
 </div>
 
 <script>
+
+/* ===================== */
+/* SUPABASE */
+/* ===================== */
 
 const { createClient } = supabase
 
@@ -76,10 +69,10 @@ const controls = document.getElementById("controls")
 
 let formData = {}
 let map, marker
-let mapReady = false
+let mapInitialized = false
 
 /* ===================== */
-/* BOT (SIN ICONOS LEÍBLES) */
+/* BOT */
 /* ===================== */
 
 function bot(text){
@@ -88,8 +81,7 @@ const row = document.createElement("div")
 row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("div")
-avatar.className =
-"w-10 h-10 rounded-full bg-green-600 flex items-center justify-center"
+avatar.className = "w-10 h-10 rounded-full bg-green-600 flex items-center justify-center"
 
 avatar.innerHTML = `
 <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
@@ -135,7 +127,6 @@ list.forEach(t=>{
 
 const b = document.createElement("button")
 b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
-
 b.innerText = t
 
 b.onclick = ()=>{
@@ -156,9 +147,10 @@ controls.appendChild(b)
 
 function start(){
 
-bot("Vamos a registrar tu participación.")
+bot("Bienvenido a Citizen Voice")
 
-bot("#ConsultaSemanal-1 ¿Qué importancia das a mejorar actividades culturales infantiles?")
+bot("#ConsultaSemanal-1")
+bot("¿Qué importancia das a mejorar actividades culturales infantiles?")
 
 buttons(["1","2","3","4","5"], v=>{
 formData.weekly = v
@@ -168,28 +160,38 @@ askType()
 }
 
 /* ===================== */
-/* MAPA FIX (ESTE ES EL CLAVE) */
+/* FLUJO */
 /* ===================== */
 
-function initMap(){
+function askType(){
 
-if(mapReady) return
+bot("¿Qué quieres registrar: incidencia o mejora?")
 
-map = L.map('map').setView([39.47,-0.37],13)
+buttons(["Incidencia","Mejora"], v=>{
+formData.tipo = v
+askArea()
+})
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-.addTo(map)
+}
 
-mapReady = true
+function askArea(){
+
+bot("¿Cómo valoras esta área actualmente?")
+
+buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
+formData.area = v
+showMap()
+})
+
 }
 
 /* ===================== */
-/* MAPA STEP */
+/* MAPA FIX REAL */
 /* ===================== */
 
 function showMap(){
 
-bot("Indica ubicación")
+bot("Indica la ubicación")
 
 controls.innerHTML = ""
 
@@ -204,29 +206,51 @@ mapDiv.className = "w-full h-[480px] rounded-2xl shadow mt-2"
 chat.appendChild(search)
 chat.appendChild(mapDiv)
 
-setTimeout(()=>{
+/* 🔥 CLAVE: esperar render real */
+requestAnimationFrame(() => {
 
-initMap()
+setTimeout(() => {
 
-setTimeout(()=>{
+if (!mapInitialized) {
+
+map = L.map('map').setView([39.47, -0.37], 13)
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+.addTo(map)
+
+mapInitialized = true
+} else {
 map.invalidateSize()
-},200)
+}
 
-let geocoder = L.Control.Geocoder.nominatim()
+const geocoder = L.Control.Geocoder.nominatim()
 
-search.addEventListener("keydown",(e)=>{
+map.on("click", e => {
 
-if(e.key==="Enter"){
+if (marker) map.removeLayer(marker)
 
-geocoder.geocode(search.value, r=>{
+marker = L.marker(e.latlng).addTo(map)
 
-if(r.length){
+formData.lat = e.latlng.lat
+formData.lng = e.latlng.lng
 
-let p = r[0].center
+askDescription()
 
-map.setView(p,16)
+})
 
-if(marker) map.removeLayer(marker)
+search.addEventListener("keydown", e => {
+
+if (e.key === "Enter") {
+
+geocoder.geocode(search.value, res => {
+
+if (res.length) {
+
+const p = res[0].center
+
+map.setView(p, 16)
+
+if (marker) map.removeLayer(marker)
 
 marker = L.marker(p).addTo(map)
 
@@ -243,68 +267,42 @@ askDescription()
 
 })
 
-map.on("click", e=>{
-
-if(marker) map.removeLayer(marker)
-
-marker = L.marker(e.latlng).addTo(map)
-
-formData.lat = e.latlng.lat
-formData.lng = e.latlng.lng
-
-askDescription()
+}, 150)
 
 })
-
-},300)
 
 }
 
 /* ===================== */
-/* FLUJO (RESUMIDO) */
+/* DESCRIPCIÓN */
 /* ===================== */
-
-function askType(){
-bot("¿Incidencia o mejora?")
-buttons(["Incidencia","Mejora"], v=>{
-formData.tipo = v
-askArea()
-})
-}
-
-function askArea(){
-bot("¿En qué área?")
-buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
-formData.area = v
-showMap()
-})
-}
 
 function askDescription(){
 
-bot("Describe la situación")
+bot("Describe el problema o mejora")
 
 controls.innerHTML = ""
 
 const input = document.createElement("input")
-input.className = "border p-3 rounded-xl flex-1"
+input.className = "border p-3 rounded-xl flex-1 text-sm"
 
 const send = document.createElement("button")
 send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
 send.innerText = "Enviar"
 
-send.onclick = async ()=>{
+send.onclick = async () => {
 
-if(!input.value) return
+if (!input.value) return
 
 user(input.value)
+
 formData.descripcion = input.value
 
 await supabaseClient
 .from("incidencias")
 .insert([formData])
 
-bot("Registro completado")
+bot("Registro completado correctamente")
 
 }
 
@@ -314,15 +312,14 @@ controls.appendChild(send)
 }
 
 /* ===================== */
-/* START BUTTON */
+/* INIT */
 /* ===================== */
 
 const startBtn = document.createElement("button")
-
 startBtn.innerText = "Empezar"
 startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 
-startBtn.onclick = ()=>{
+startBtn.onclick = () => {
 controls.innerHTML = ""
 start()
 }
