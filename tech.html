@@ -2,6 +2,7 @@
 <html lang="es">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -9,47 +10,109 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<!-- LEAFLET -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 </head>
 
-<body class="bg-slate-100 flex justify-center min-h-screen">
+<body class="bg-blue-50 flex justify-center min-h-screen">
 
-<div class="w-full max-w-md h-screen bg-white flex flex-col shadow-xl">
+<div class="w-full max-w-md h-screen bg-white flex flex-col overflow-hidden shadow-2xl rounded-[35px]">
 
 <!-- HEADER -->
-<div class="bg-[#2F4A6D] text-white p-4 text-center">
-  <div class="text-xl font-bold">Citizen Voice</div>
-  <div class="text-xs opacity-90">Panel Técnico Municipal</div>
+<div class="bg-[#3C5A78] text-white p-5 text-center rounded-b-[30px]">
+
+<div class="text-2xl font-bold">
+Citizen Voice
+</div>
+
+<div class="text-xs opacity-90 mt-1">
+Panel Técnico Municipal
+</div>
+
 </div>
 
 <!-- FILTROS -->
-<div class="p-3 border-b bg-white">
+<div class="p-3 bg-white border-b flex flex-col gap-2">
 
 <!-- AREA -->
-<select id="areaSelect" class="w-full border p-2 rounded-xl text-sm mb-2">
-  <option value="">Todas las áreas</option>
-  <option>Movilidad</option>
-  <option>Limpieza</option>
-  <option>Urbanismo</option>
-  <option>Cultura</option>
-  <option>Seguridad</option>
-  <option>Otros</option>
+<select id="areaSelect"
+class="border p-3 rounded-2xl text-sm">
+
+<option value="">Todas las áreas</option>
+
+<option>Movilidad</option>
+<option>Limpieza</option>
+<option>Urbanismo</option>
+<option>Cultura</option>
+<option>Seguridad</option>
+<option>Otros</option>
+
 </select>
 
 <!-- ESTADO -->
-<select id="estadoSelect" class="w-full border p-2 rounded-xl text-sm">
-  <option value="">Todos los estados</option>
-  <option value="pendiente">Pendiente</option>
-  <option value="en_curso">En curso</option>
-  <option value="resuelto">Resuelto</option>
-  <option value="desestimado">Desestimado</option>
+<select id="estadoSelect"
+class="border p-3 rounded-2xl text-sm">
+
+<option value="">Todos los estados</option>
+
+<option value="pendiente">Pendiente</option>
+<option value="en_curso">En curso</option>
+<option value="resuelto">Resuelto</option>
+<option value="desestimado">Desestimado</option>
+
 </select>
 
-<div id="stats" class="text-xs text-slate-600 mt-2"></div>
+<!-- FECHA -->
+<select id="fechaSelect"
+class="border p-3 rounded-2xl text-sm">
+
+<option value="">Todas las fechas</option>
+
+<option value="1">Últimas 24h</option>
+<option value="7">Últimos 7 días</option>
+<option value="30">Últimos 30 días</option>
+
+</select>
+
+<!-- BOTONES VISTA -->
+<div class="flex gap-2 mt-1">
+
+<button id="cardsBtn"
+class="flex-1 bg-[#DCE7F2] p-3 rounded-2xl text-sm font-semibold">
+Etiquetas
+</button>
+
+<button id="mapBtn"
+class="flex-1 bg-[#DCE7F2] p-3 rounded-2xl text-sm font-semibold">
+Mapa
+</button>
+
+</div>
+
+<!-- STATS -->
+<div id="stats"
+class="text-xs text-slate-600 mt-1">
+</div>
 
 </div>
 
 <!-- LISTA -->
-<div id="list" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
+<div id="list"
+class="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
+</div>
+
+<!-- MAPA -->
+<div id="mapContainer"
+class="hidden flex-1">
+
+<div id="map"
+class="w-full h-full">
+</div>
+
+</div>
 
 </div>
 
@@ -71,58 +134,88 @@ const supabaseClient = createClient(
 /* ===================== */
 
 let allData = []
+
 let areaFilter = ""
 let estadoFilter = ""
+let fechaFilter = ""
+
+let currentView = "cards"
+
+let map
+let markers = []
 
 /* ===================== */
 /* INIT */
 /* ===================== */
 
-document.getElementById("areaSelect").addEventListener("change", e=>{
+document.getElementById("areaSelect")
+.addEventListener("change",e=>{
+
 areaFilter = e.target.value
-loadData()
+render()
+
 })
 
-document.getElementById("estadoSelect").addEventListener("change", e=>{
+document.getElementById("estadoSelect")
+.addEventListener("change",e=>{
+
 estadoFilter = e.target.value
 render()
+
 })
 
-setTimeout(()=>{
+document.getElementById("fechaSelect")
+.addEventListener("change",e=>{
+
+fechaFilter = e.target.value
+render()
+
+})
+
+document.getElementById("cardsBtn")
+.onclick = ()=>{
+
+currentView = "cards"
+
+document.getElementById("list").classList.remove("hidden")
+document.getElementById("mapContainer").classList.add("hidden")
+
+}
+
+document.getElementById("mapBtn")
+.onclick = ()=>{
+
+currentView = "map"
+
+document.getElementById("list").classList.add("hidden")
+document.getElementById("mapContainer").classList.remove("hidden")
+
+setTimeout(initMap,200)
+
+}
+
 loadData()
-},200)
 
 /* ===================== */
-/* LOAD DATA */
+/* LOAD */
 /* ===================== */
 
 async function loadData(){
 
-let query = supabaseClient
+const { data, error } = await supabaseClient
 .from("incidencias")
 .select("*")
-.order("created_at", { ascending: false })
+.order("id", { ascending:false })
 
-if(areaFilter){
-query = query.eq("area", areaFilter)
-}
+console.log(data)
+console.log(error)
 
-const { data, error } = await query
+allData = (data || []).map(i=>({
 
-/* 🔴 DEBUG CLAVE */
-console.log("SUPABASE DATA:", data)
-console.log("SUPABASE ERROR:", error)
+...i,
 
-if(error){
-alert("Error Supabase: " + error.message)
-return
-}
+estado: i.estado || "pendiente"
 
-/* NORMALIZAR */
-allData = (data || []).map(i => ({
-  ...i,
-  estado: i.estado || "pendiente",
-  tipo: i.tipo || "Incidencia"
 }))
 
 render()
@@ -130,15 +223,49 @@ render()
 }
 
 /* ===================== */
+/* DIAS */
+/* ===================== */
+
+function daysAgo(date){
+
+if(!date) return "-"
+
+const now = new Date()
+
+const created = new Date(date)
+
+const diff = now - created
+
+const days = Math.floor(
+diff / (1000 * 60 * 60 * 24)
+)
+
+return days
+
+}
+
+/* ===================== */
 /* UPDATE ESTADO */
 /* ===================== */
 
-async function updateEstado(id, newState){
+async function updateEstado(id){
+
+const select = document.getElementById("estado_"+id)
+
+const comment = document.getElementById("comment_"+id)
 
 await supabaseClient
 .from("incidencias")
-.update({ estado: newState })
-.eq("id", id)
+.update({
+
+estado: select.value,
+
+comentario_tecnico: comment.value
+
+})
+.eq("id",id)
+
+alert("Estado actualizado")
 
 loadData()
 
@@ -152,43 +279,109 @@ function render(){
 
 let data = [...allData]
 
-/* filtro estado */
-if(estadoFilter){
-data = data.filter(i => i.estado === estadoFilter)
+/* AREA */
+
+if(areaFilter){
+
+data = data.filter(i=>
+i.area === areaFilter
+)
+
 }
 
-/* stats */
-const total = allData.length
-const pendientes = allData.filter(i => i.estado === "pendiente").length
-const enCurso = allData.filter(i => i.estado === "en_curso").length
-const resueltas = allData.filter(i => i.estado === "resuelto").length
+/* ESTADO */
+
+if(estadoFilter){
+
+data = data.filter(i=>
+i.estado === estadoFilter
+)
+
+}
+
+/* FECHA */
+
+if(fechaFilter){
+
+data = data.filter(i=>{
+
+if(!i.created_at) return false
+
+const days = daysAgo(i.created_at)
+
+return days <= parseInt(fechaFilter)
+
+})
+
+}
+
+/* STATS */
 
 document.getElementById("stats").innerHTML = `
-Total: <b>${total}</b> |
-Pendientes: <b>${pendientes}</b> |
-En curso: <b>${enCurso}</b> |
-Resueltas: <b>${resueltas}</b>
+Total registros:
+<b>${data.length}</b>
 `
 
-/* list */
+/* LIST */
+
 const list = document.getElementById("list")
+
 list.innerHTML = ""
 
+/* MAP */
+
+markers.forEach(m=>{
+
+map?.removeLayer(m)
+
+})
+
+markers = []
+
 data.forEach(i=>{
+
+/* CARD */
 
 const card = document.createElement("div")
 
 card.className =
-"bg-[#EAF0F6] rounded-2xl p-3 shadow flex flex-col gap-2"
+"bg-[#EEF4FA] p-4 rounded-[28px] shadow flex flex-col gap-2"
+
+/* FECHA */
+
+const days =
+daysAgo(i.created_at)
+
+/* COLOR ESTADO */
 
 let estadoColor = "#64748b"
-if(i.estado === "pendiente") estadoColor = "#f59e0b"
-if(i.estado === "en_curso") estadoColor = "#3b82f6"
-if(i.estado === "resuelto") estadoColor = "#22c55e"
-if(i.estado === "desestimado") estadoColor = "#ef4444"
+
+if(i.estado==="pendiente")
+estadoColor = "#f59e0b"
+
+if(i.estado==="en_curso")
+estadoColor = "#3b82f6"
+
+if(i.estado==="resuelto")
+estadoColor = "#22c55e"
+
+if(i.estado==="desestimado")
+estadoColor = "#ef4444"
 
 card.innerHTML = `
-<div class="text-xs text-slate-500">${i.area || ""}</div>
+
+<div class="flex justify-between items-start">
+
+<div class="text-xs text-slate-500">
+${i.area || ""}
+</div>
+
+<div class="text-[10px]"
+style="color:${estadoColor}">
+${i.estado}
+</div>
+
+</div>
 
 <div class="font-semibold text-sm">
 ${i.resumen || ""}
@@ -198,24 +391,103 @@ ${i.resumen || ""}
 ${(i.acciones || []).join(" · ")}
 </div>
 
-<div class="text-[10px]" style="color:${estadoColor}">
-Estado: ${i.estado}
+<div class="text-[11px] text-slate-500">
+Fecha:
+${i.created_at
+? new Date(i.created_at)
+.toLocaleDateString()
+: "-"
+}
+·
+Hace ${days} días
 </div>
 
-<select onchange="updateEstado('${i.id}', this.value)"
-class="mt-2 p-2 border rounded-xl text-sm">
+<textarea
+id="comment_${i.id}"
+placeholder="Comentario técnico"
+class="border p-3 rounded-2xl text-sm"
+>${i.comentario_tecnico || ""}</textarea>
 
-<option value="pendiente" ${i.estado==="pendiente"?"selected":""}>Pendiente</option>
-<option value="en_curso" ${i.estado==="en_curso"?"selected":""}>En curso</option>
-<option value="resuelto" ${i.estado==="resuelto"?"selected":""}>Resuelto</option>
-<option value="desestimado" ${i.estado==="desestimado"?"selected":""}>Desestimado</option>
+<select
+id="estado_${i.id}"
+class="border p-3 rounded-2xl text-sm">
+
+<option value="pendiente"
+${i.estado==="pendiente"?"selected":""}>
+Pendiente
+</option>
+
+<option value="en_curso"
+${i.estado==="en_curso"?"selected":""}>
+En curso
+</option>
+
+<option value="resuelto"
+${i.estado==="resuelto"?"selected":""}>
+Resuelto
+</option>
+
+<option value="desestimado"
+${i.estado==="desestimado"?"selected":""}>
+Desestimado
+</option>
 
 </select>
+
+<button
+onclick="updateEstado('${i.id}')"
+class="bg-[#3C5A78] text-white p-3 rounded-2xl text-sm font-semibold">
+Actualizar estado
+</button>
+
 `
 
 list.appendChild(card)
 
+/* MAPA */
+
+if(i.lat && i.lng && map){
+
+const marker = L.marker([
+i.lat,
+i.lng
+])
+.addTo(map)
+
+marker.bindPopup(`
+<b>${i.area}</b><br>
+${i.resumen}
+`)
+
+markers.push(marker)
+
+}
+
 })
+
+}
+
+/* ===================== */
+/* MAPA */
+/* ===================== */
+
+function initMap(){
+
+if(map){
+
+map.invalidateSize()
+return
+
+}
+
+map = L.map('map')
+.setView([39.47,-0.37],11)
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(map)
+
+render()
 
 }
 
