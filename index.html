@@ -21,20 +21,40 @@
 
 <div class="w-full max-w-md h-[95vh] bg-white rounded-3xl shadow-xl flex flex-col overflow-hidden">
 
-<!-- HEADER -->
-<div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4 text-center">
+<!-- ===================== -->
+<!-- HEADER CREDIBILIDAD -->
+<!-- ===================== -->
 
-<div class="text-xl font-bold">
-Citizen Voice
+<div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4">
+
+<div class="flex items-center gap-3">
+
+<!-- AVATAR HUMANO (NO ICONOS LEÍBLES) -->
+<div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+
+<!-- SVG cara humana simple -->
+<svg width="34" height="34" viewBox="0 0 24 24" fill="white">
+<path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5z"/>
+<path d="M4 21c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+</svg>
+
 </div>
 
+<div>
+<div class="font-bold text-lg">Citizen Voice</div>
 <div class="text-xs opacity-90">
-Asistente virtual para participación activa · 30 segundos
+Asistente virtual para participación ciudadana
+</div>
 </div>
 
 </div>
 
+</div>
+
+<!-- ===================== -->
 <!-- CHAT -->
+<!-- ===================== -->
+
 <div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
 
 <!-- CONTROLES -->
@@ -43,10 +63,6 @@ Asistente virtual para participación activa · 30 segundos
 </div>
 
 <script>
-
-/* ===================== */
-/* SUPABASE */
-/* ===================== */
 
 const { createClient } = supabase
 
@@ -60,9 +76,10 @@ const controls = document.getElementById("controls")
 
 let formData = {}
 let map, marker
+let mapReady = false
 
 /* ===================== */
-/* BOT HUMANO (SVG AVATAR) */
+/* BOT (SIN ICONOS LEÍBLES) */
 /* ===================== */
 
 function bot(text){
@@ -71,11 +88,13 @@ const row = document.createElement("div")
 row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("div")
-avatar.className = "w-10 h-10 rounded-full bg-gradient-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow"
+avatar.className =
+"w-10 h-10 rounded-full bg-green-600 flex items-center justify-center"
 
 avatar.innerHTML = `
-<svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-<path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+<path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5z"/>
+<path d="M4 21c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
 </svg>
 `
 
@@ -108,20 +127,21 @@ chat.scrollTop = chat.scrollHeight
 /* BOTONES */
 /* ===================== */
 
-function buttons(list, callback){
+function buttons(list, cb){
 
 controls.innerHTML = ""
 
-list.forEach(o=>{
+list.forEach(t=>{
 
 const b = document.createElement("button")
-b.className = "bg-green-100 hover:bg-green-200 px-4 py-2 rounded-xl text-sm"
-b.innerText = o
+b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
+
+b.innerText = t
 
 b.onclick = ()=>{
 controls.innerHTML = ""
-user(o)
-callback(o)
+user(t)
+cb(t)
 }
 
 controls.appendChild(b)
@@ -131,73 +151,45 @@ controls.appendChild(b)
 }
 
 /* ===================== */
-/* START + PREGUNTA SEMANAL */
+/* START */
 /* ===================== */
 
 function start(){
 
-bot("Hola 👋 soy Citizen Voice, tu asistente ciudadano.")
+bot("Vamos a registrar tu participación.")
 
-bot("Tardo menos de 30 segundos en ayudarte.")
-
-setTimeout(()=>{
-
-bot("#ConsultaSemanal-1")
-bot("Del 1 al 5: ¿qué importancia das a las actividades culturales infantiles en tu ciudad?")
+bot("#ConsultaSemanal-1 ¿Qué importancia das a mejorar actividades culturales infantiles?")
 
 buttons(["1","2","3","4","5"], v=>{
 formData.weekly = v
 askType()
 })
 
-},800)
-
 }
 
 /* ===================== */
-/* FLUJO */
+/* MAPA FIX (ESTE ES EL CLAVE) */
 /* ===================== */
 
-function askType(){
+function initMap(){
 
-bot("¿Qué quieres registrar?")
+if(mapReady) return
 
-buttons(["Incidencia","Mejora"], v=>{
-formData.tipo = v
-askArea()
-})
+map = L.map('map').setView([39.47,-0.37],13)
 
-}
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+.addTo(map)
 
-function askArea(){
-
-bot("¿En qué área ocurre?")
-
-buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
-formData.area = v
-askRate()
-})
-
-}
-
-function askRate(){
-
-bot("Valora la situación actual del 1 al 5")
-
-buttons(["1","2","3","4","5"], v=>{
-formData.valoracion = v
-showMap()
-})
-
+mapReady = true
 }
 
 /* ===================== */
-/* MAPA (ESTABLE - NO ROMPER DOM) */
+/* MAPA STEP */
 /* ===================== */
 
 function showMap(){
 
-bot("Indica ubicación (busca o toca el mapa)")
+bot("Indica ubicación")
 
 controls.innerHTML = ""
 
@@ -207,44 +199,30 @@ search.className = "border p-3 rounded-xl w-full text-sm"
 
 const mapDiv = document.createElement("div")
 mapDiv.id = "map"
-mapDiv.className = "w-full h-[420px] rounded-2xl shadow mt-2"
+mapDiv.className = "w-full h-[480px] rounded-2xl shadow mt-2"
 
 chat.appendChild(search)
 chat.appendChild(mapDiv)
 
 setTimeout(()=>{
 
-map = L.map('map').setView([39.47,-0.37],13)
+initMap()
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-.addTo(map)
+setTimeout(()=>{
+map.invalidateSize()
+},200)
 
-const geocoder = L.Control.Geocoder.nominatim()
-
-map.on("click", e=>{
-
-if(marker) map.removeLayer(marker)
-
-marker = L.marker(e.latlng).addTo(map)
-
-formData.lat = e.latlng.lat
-formData.lng = e.latlng.lng
-
-bot("Ubicación registrada")
-
-askDescription()
-
-})
+let geocoder = L.Control.Geocoder.nominatim()
 
 search.addEventListener("keydown",(e)=>{
 
-if(e.key === "Enter"){
+if(e.key==="Enter"){
 
-geocoder.geocode(search.value, res=>{
+geocoder.geocode(search.value, r=>{
 
-if(res.length){
+if(r.length){
 
-const p = res[0].center
+let p = r[0].center
 
 map.setView(p,16)
 
@@ -255,8 +233,6 @@ marker = L.marker(p).addTo(map)
 formData.lat = p.lat
 formData.lng = p.lng
 
-bot("Ubicación encontrada")
-
 askDescription()
 
 }
@@ -267,36 +243,68 @@ askDescription()
 
 })
 
-},400)
+map.on("click", e=>{
+
+if(marker) map.removeLayer(marker)
+
+marker = L.marker(e.latlng).addTo(map)
+
+formData.lat = e.latlng.lat
+formData.lng = e.latlng.lng
+
+askDescription()
+
+})
+
+},300)
 
 }
 
 /* ===================== */
-/* DESCRIPCIÓN */
+/* FLUJO (RESUMIDO) */
 /* ===================== */
+
+function askType(){
+bot("¿Incidencia o mejora?")
+buttons(["Incidencia","Mejora"], v=>{
+formData.tipo = v
+askArea()
+})
+}
+
+function askArea(){
+bot("¿En qué área?")
+buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
+formData.area = v
+showMap()
+})
+}
 
 function askDescription(){
 
-bot("Describe el problema o propuesta")
+bot("Describe la situación")
 
 controls.innerHTML = ""
 
 const input = document.createElement("input")
-input.className = "border p-3 rounded-xl flex-1 text-sm"
+input.className = "border p-3 rounded-xl flex-1"
 
 const send = document.createElement("button")
-send.innerText = "Enviar"
 send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
+send.innerText = "Enviar"
 
 send.onclick = async ()=>{
 
 if(!input.value) return
 
 user(input.value)
-
 formData.descripcion = input.value
 
-await save()
+await supabaseClient
+.from("incidencias")
+.insert([formData])
+
+bot("Registro completado")
 
 }
 
@@ -306,47 +314,7 @@ controls.appendChild(send)
 }
 
 /* ===================== */
-/* SAVE */
-/* ===================== */
-
-async function save(){
-
-await supabaseClient
-.from("incidencias")
-.insert([formData])
-
-bot("Gracias 🙌 registro completado")
-
-setTimeout(showFinal,800)
-
-}
-
-/* ===================== */
-/* FINAL */
-/* ===================== */
-
-function showFinal(){
-
-bot("¿Qué quieres hacer ahora?")
-
-buttons([
-"Ir al cuadro de mando",
-"Cerrar asistente"
-], v=>{
-
-if(v==="Ir al cuadro de mando"){
-window.location.href = "/citizen.html"
-}else{
-chat.innerHTML = ""
-bot("Asistente cerrado 👋")
-}
-
-})
-
-}
-
-/* ===================== */
-/* INIT BUTTON */
+/* START BUTTON */
 /* ===================== */
 
 const startBtn = document.createElement("button")
