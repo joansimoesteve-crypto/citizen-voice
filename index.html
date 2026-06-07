@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Citizen Voice</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -22,27 +23,29 @@
 <div class="w-full max-w-md h-[95vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
 <!-- HEADER -->
-<div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4 text-center">
+<div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4">
 
-<div class="flex items-center justify-center gap-3">
+<div class="flex items-center gap-3">
 
-<div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+<div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center shadow-lg">
 
-<svg width="28" height="28" viewBox="0 0 64 64" fill="none">
-<circle cx="32" cy="32" r="30" fill="white" fill-opacity="0.2"/>
-<circle cx="32" cy="24" r="10" fill="white"/>
-<path d="M16 52c3-9 12-14 16-14s13 5 16 14" fill="white"/>
+<svg width="26" height="26" viewBox="0 0 64 64" fill="none">
+<circle cx="32" cy="20" r="10" fill="white"/>
+<path d="M18 52c4-10 12-15 14-15s10 5 14 15" fill="white"/>
+<circle cx="28" cy="18" r="1.8" fill="#10b981"/>
+<circle cx="36" cy="18" r="1.8" fill="#10b981"/>
+<path d="M28 24c2 2 6 2 8 0" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
 </svg>
 
 </div>
 
-<div class="text-left">
+<div>
 <div class="text-xl font-bold">
 Citizen Voice
 </div>
 
 <div class="text-xs opacity-90">
-Asistente virtual para participación activa
+Asistente virtual para participación ciudadana
 </div>
 </div>
 
@@ -89,7 +92,6 @@ const msg = new SpeechSynthesisUtterance(text)
 
 msg.lang = "es-ES"
 msg.rate = 1
-msg.pitch = 1
 
 speechSynthesis.speak(msg)
 
@@ -102,6 +104,7 @@ speechSynthesis.speak(msg)
 function bot(text){
 
 const row = document.createElement("div")
+
 row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("div")
@@ -110,9 +113,12 @@ avatar.className =
 "w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center shadow"
 
 avatar.innerHTML = `
-<svg width="22" height="22" viewBox="0 0 64 64" fill="none">
-<circle cx="32" cy="22" r="10" fill="white"/>
-<path d="M16 52c3-9 12-14 16-14s13 5 16 14" fill="white"/>
+<svg width="24" height="24" viewBox="0 0 64 64" fill="none">
+<circle cx="32" cy="20" r="10" fill="white"/>
+<path d="M18 52c4-10 12-15 14-15s10 5 14 15" fill="white"/>
+<circle cx="28" cy="18" r="1.8" fill="#10b981"/>
+<circle cx="36" cy="18" r="1.8" fill="#10b981"/>
+<path d="M28 24c2 2 6 2 8 0" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
 </svg>
 `
 
@@ -204,17 +210,21 @@ buttons([
 "😄 5"
 ], async (v)=>{
 
-const value = parseInt(v)
+try{
 
 await supabaseClient
 .from("weekly_engagement")
 .insert([{
 week: 1,
-question: "Espacios culturales infantiles",
+question: "¿Qué importancia das a mejorar los espacios culturales infantiles?",
 area: "Cultura",
-answer: value,
+answer: parseInt(v.charAt(v.length - 1)),
 created_at: new Date().toISOString()
 }])
+
+}catch(err){
+console.log(err)
+}
 
 bot("Y ahora, ¿qué deseas registrar?")
 
@@ -225,12 +235,15 @@ askType()
 }
 
 /* ===================== */
-/* START */
+/* TIPO */
 /* ===================== */
 
 function askType(){
 
-buttons(["Incidencia","Propuesta de mejora"], v=>{
+buttons([
+"Incidencia",
+"Propuesta de mejora"
+], v=>{
 
 formData.tipo = v
 
@@ -281,7 +294,8 @@ buttons([
 "😄 5"
 ], v=>{
 
-formData.valoracion = parseInt(v)
+formData.valoracion =
+parseInt(v.charAt(v.length - 1))
 
 showMap()
 
@@ -305,6 +319,7 @@ wrapper.className = "w-full"
 const search = document.createElement("input")
 
 search.placeholder = "Buscar dirección..."
+
 search.className =
 "border p-3 rounded-xl w-full mb-2 text-sm"
 
@@ -312,7 +327,7 @@ const mapDiv = document.createElement("div")
 
 mapDiv.id = "map"
 
-mapDiv.style.height = "320px"
+mapDiv.style.height = "340px"
 
 mapDiv.className = "rounded-2xl shadow"
 
@@ -497,6 +512,34 @@ acciones: ai.acciones || []
 }])
 
 bot("Registro completado correctamente.")
+
+controls.innerHTML = ""
+
+const close = document.createElement("button")
+
+close.className =
+"flex-1 bg-slate-200 text-slate-700 py-3 rounded-xl"
+
+close.innerText = "Cerrar"
+
+close.onclick = ()=> location.reload()
+
+const panel = document.createElement("button")
+
+panel.className =
+"flex-1 bg-green-600 text-white py-3 rounded-xl"
+
+panel.innerText = "Ver datos"
+
+panel.onclick = ()=>{
+
+window.location.href =
+"https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
+
+}
+
+controls.appendChild(close)
+controls.appendChild(panel)
 
 }catch(err){
 
