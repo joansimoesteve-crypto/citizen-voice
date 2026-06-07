@@ -13,30 +13,33 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
 </head>
 
 <body class="bg-green-50 flex justify-center min-h-screen p-2">
 
 <div class="w-full max-w-md h-[95vh] bg-white rounded-3xl shadow-xl flex flex-col overflow-hidden">
 
-<!-- HEADER (igual, estable) -->
+<!-- HEADER HUMANO -->
 <div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4">
 
 <div class="flex items-center gap-3">
 
-<div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-<svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-<path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5z"/>
-<path d="M4 21c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+<!-- 👤 BOT MÁS HUMANO -->
+<div class="w-12 h-12 rounded-full overflow-hidden bg-white flex items-center justify-center">
+
+<!-- cara humana ilustrada -->
+<svg width="34" height="34" viewBox="0 0 64 64">
+<circle cx="32" cy="32" r="30" fill="#f3d6b3"/>
+<circle cx="22" cy="26" r="3" fill="#333"/>
+<circle cx="42" cy="26" r="3" fill="#333"/>
+<path d="M22 42c5 6 15 6 20 0" stroke="#333" stroke-width="3" fill="none"/>
 </svg>
+
 </div>
 
 <div>
 <div class="font-bold text-lg">Citizen Voice</div>
-<div class="text-xs opacity-90">Asistente de participación ciudadana</div>
+<div class="text-xs opacity-90">Asistente ciudadano</div>
 </div>
 
 </div>
@@ -46,9 +49,9 @@
 <!-- CHAT -->
 <div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
 
-<!-- MAPA -->
-<div id="mapContainer" class="hidden p-3">
-<div id="map" class="w-full h-[480px] rounded-2xl shadow"></div>
+<!-- MAPA (NO BLOQUEANTE) -->
+<div id="mapContainer" class="hidden p-2">
+<div id="map" class="w-full h-[360px] rounded-2xl shadow"></div>
 </div>
 
 <!-- CONTROLES -->
@@ -57,10 +60,6 @@
 </div>
 
 <script>
-
-/* ===================== */
-/* SUPABASE */
-/* ===================== */
 
 const { createClient } = supabase
 
@@ -77,35 +76,30 @@ let formData = {}
 let map = null
 let marker = null
 
-/* ===================== */
-/* VOZ (FIABLE) */
-/* ===================== */
-
+/* VOZ */
 function speak(text){
 const msg = new SpeechSynthesisUtterance(text)
 msg.lang = "es-ES"
 msg.rate = 1
-msg.pitch = 1
 speechSynthesis.cancel()
 speechSynthesis.speak(msg)
 }
 
-/* ===================== */
-/* BOT */
-/* ===================== */
-
+/* BOT HUMANO (SIN ETIQUETAS) */
 function bot(text){
 
 const row = document.createElement("div")
 row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("div")
-avatar.className = "w-10 h-10 rounded-full bg-green-600 flex items-center justify-center"
+avatar.className = "w-10 h-10 rounded-full bg-green-600 flex items-center justify-center overflow-hidden"
 
 avatar.innerHTML = `
-<svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-<path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5z"/>
-<path d="M4 21c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+<svg width="22" height="22" viewBox="0 0 64 64">
+<circle cx="32" cy="32" r="30" fill="#f3d6b3"/>
+<circle cx="22" cy="26" r="3" fill="#333"/>
+<circle cx="42" cy="26" r="3" fill="#333"/>
+<path d="M22 42c5 6 15 6 20 0" stroke="#333" stroke-width="3" fill="none"/>
 </svg>
 `
 
@@ -117,29 +111,20 @@ row.appendChild(avatar)
 row.appendChild(bubble)
 
 chat.appendChild(row)
-
 chat.scrollTop = chat.scrollHeight
 speak(text)
 }
 
-/* ===================== */
 /* USER */
-/* ===================== */
-
 function user(text){
-
 const d = document.createElement("div")
 d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
 d.innerText = text
-
 chat.appendChild(d)
 chat.scrollTop = chat.scrollHeight
 }
 
-/* ===================== */
 /* BOTONES */
-/* ===================== */
-
 function buttons(list, cb){
 
 controls.innerHTML = ""
@@ -147,6 +132,7 @@ controls.innerHTML = ""
 list.forEach(t=>{
 
 const b = document.createElement("button")
+
 b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
 b.innerText = t
 
@@ -162,29 +148,25 @@ controls.appendChild(b)
 
 }
 
-/* ===================== */
 /* START */
-/* ===================== */
-
 function start(){
 
 formData = {}
 
-bot("Hola, soy Citizen Voice.")
+bot("Hola, soy Citizen Voice. Estoy aquí para ayudarte a mejorar tu ciudad.")
 
-bot("#ConsultaSemanal-1: ¿Cómo valoras actividades culturales infantiles?")
+bot("Primero quiero hacerte una pregunta rápida.")
 
-buttons(["1","2","3","4","5"], v=>{
+bot("¿Cómo valoras la importancia de actividades culturales para la ciudad?")
+
+buttons(["😡 1","😕 2","😐 3","🙂 4","😄 5"], v=>{
 formData.weekly = v
 askType()
 })
 
 }
 
-/* ===================== */
-/* FLUJO CORREGIDO */
-/* ===================== */
-
+/* TIPO */
 function askType(){
 
 bot("¿Qué quieres registrar?")
@@ -196,9 +178,10 @@ askArea()
 
 }
 
+/* AREA */
 function askArea(){
 
-bot("¿En qué área se sitúa?")
+bot("¿En qué área ocurre?")
 
 buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
 formData.area = v
@@ -207,24 +190,22 @@ askRating()
 
 }
 
+/* VALORACIÓN CON CARITAS */
 function askRating(){
 
 bot("¿Cómo valoras actualmente esta área?")
 
-buttons(["1","2","3","4","5"], v=>{
+buttons(["😡 1","😕 2","😐 3","🙂 4","😄 5"], v=>{
 formData.valoracion = v
 showMap()
 })
 
 }
 
-/* ===================== */
-/* MAPA (ARREGLADO DEFINITIVO) */
-/* ===================== */
-
+/* MAPA NO BLOQUEANTE */
 function showMap(){
 
-bot("Selecciona ubicación en el mapa")
+bot("Ahora selecciona la ubicación en el mapa.")
 
 controls.innerHTML = ""
 mapContainer.classList.remove("hidden")
@@ -240,11 +221,9 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 
 setTimeout(()=> map.invalidateSize(), 300)
 
-} else {
-map.invalidateSize()
 }
 
-map.off() // 🔥 evita duplicados
+map.off()
 
 map.on("click", e=>{
 
@@ -263,13 +242,10 @@ askDescription()
 
 }
 
-/* ===================== */
 /* DESCRIPCIÓN */
-/* ===================== */
-
 function askDescription(){
 
-bot("Describe la situación")
+bot("Descríbeme el problema o mejora.")
 
 controls.innerHTML = ""
 
@@ -291,7 +267,7 @@ await supabaseClient
 .from("incidencias")
 .insert([formData])
 
-bot("Registro completado correctamente")
+bot("Perfecto, registro enviado correctamente.")
 
 showFinal()
 
@@ -302,10 +278,7 @@ controls.appendChild(send)
 
 }
 
-/* ===================== */
-/* FINAL (IMPORTANTE) */
-/* ===================== */
-
+/* FINAL */
 function showFinal(){
 
 controls.innerHTML = ""
@@ -318,7 +291,7 @@ close.onclick = ()=> location.reload()
 
 const panel = document.createElement("button")
 panel.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
-panel.innerText = "Ver panel"
+panel.innerText = "Ver datos"
 
 panel.onclick = ()=> window.location.href = "/panel.html"
 
@@ -327,10 +300,7 @@ controls.appendChild(panel)
 
 }
 
-/* ===================== */
 /* INIT */
-/* ===================== */
-
 const startBtn = document.createElement("button")
 startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 startBtn.innerText = "Empezar"
