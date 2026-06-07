@@ -5,11 +5,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Citizen Voice</title>
+<title>Citizen Voice · Bot</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+
+<!-- SUPABASE -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
+<!-- LEAFLET -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -18,23 +21,50 @@
 
 </head>
 
-<body class="bg-green-50 flex justify-center min-h-screen p-2">
+<body class="bg-[#EEF2F5] min-h-screen flex justify-center">
 
-<div class="w-full max-w-md h-[95vh] bg-white rounded-3xl shadow-xl flex flex-col overflow-hidden">
+<div class="w-full max-w-md bg-white min-h-screen shadow-2xl overflow-hidden rounded-[35px] flex flex-col">
 
-<!-- HEADER HUMANO (MEJORADO) -->
-<div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4">
+<!-- HEADER HUMANO -->
+<div class="bg-gradient-to-br from-emerald-600 to-green-500 text-white p-5 rounded-b-[30px]">
 
-<div class="flex items-center gap-3">
+<div class="text-2xl font-bold flex items-center gap-3">
 
-<!-- 👤 avatar humano más realista -->
-<div class="w-11 h-11 rounded-full overflow-hidden bg-white">
-<img src="https://i.pravatar.cc/100?img=12" />
+<!-- 👤 avatar humano real -->
+<img src="https://i.pravatar.cc/80?img=32"
+class="w-10 h-10 rounded-full border border-white/40"/>
+
+Citizen Voice
+
 </div>
 
-<div>
-<div class="font-bold text-lg">Citizen Voice</div>
-<div class="text-xs opacity-90">Asistente de participación ciudadana</div>
+<div class="text-xs opacity-90 mt-1">
+Asistente urbano inteligente
+</div>
+
+</div>
+
+<!-- CONSULTA SEMANAL -->
+<div class="p-3">
+
+<div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-[25px] shadow">
+
+<div class="text-[11px] opacity-80">
+Consulta Semanal #1
+</div>
+
+<div class="font-semibold text-sm mt-1">
+¿Del 1 al 5, qué importancia das a mejorar los espacios culturales infantiles en tu ciudad?
+</div>
+
+<div class="flex gap-2 mt-3">
+
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(1)">😡</button>
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(2)">😕</button>
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(3)">😐</button>
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(4)">🙂</button>
+<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(5)">😄</button>
+
 </div>
 
 </div>
@@ -42,7 +72,7 @@
 </div>
 
 <!-- CHAT -->
-<div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
+<div id="chat" class="flex-1 p-4 overflow-y-auto flex flex-col gap-3"></div>
 
 <!-- MAPA -->
 <div id="mapContainer" class="hidden p-2">
@@ -50,14 +80,14 @@
 </div>
 
 <!-- CONTROLES -->
-<div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
+<div id="controls" class="p-3 border-t flex gap-2"></div>
 
 </div>
 
 <script>
 
 /* ===================== */
-/* SUPABASE (ROBUSTO) */
+/* SUPABASE */
 /* ===================== */
 
 const supabaseClient = supabase.createClient(
@@ -74,24 +104,21 @@ const controls = document.getElementById("controls")
 const mapContainer = document.getElementById("mapContainer")
 
 let formData = {}
-let map = null
-let marker = null
+let map, marker
 
 /* ===================== */
-/* VOZ (ESTABLE) */
+/* VOZ ESTABLE */
 /* ===================== */
 
 function speak(text){
-try{
 speechSynthesis.cancel()
 const msg = new SpeechSynthesisUtterance(text)
 msg.lang = "es-ES"
 speechSynthesis.speak(msg)
-}catch(e){}
 }
 
 /* ===================== */
-/* BOT */
+/* BOT HUMANO */
 /* ===================== */
 
 function bot(text){
@@ -100,11 +127,11 @@ const row = document.createElement("div")
 row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("img")
-avatar.src = "https://i.pravatar.cc/80?img=47"
+avatar.src = "https://i.pravatar.cc/80?img=12"
 avatar.className = "w-10 h-10 rounded-full"
 
 const bubble = document.createElement("div")
-bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
+bubble.className = "bg-emerald-100 p-3 rounded-2xl text-sm max-w-[85%]"
 bubble.innerText = text
 
 row.appendChild(avatar)
@@ -122,7 +149,7 @@ speak(text)
 
 function user(text){
 const d = document.createElement("div")
-d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
+d.className = "bg-emerald-600 text-white p-3 rounded-2xl text-sm ml-auto max-w-[85%]"
 d.innerText = text
 chat.appendChild(d)
 chat.scrollTop = chat.scrollHeight
@@ -138,7 +165,7 @@ controls.innerHTML = ""
 
 list.forEach(t=>{
 const b = document.createElement("button")
-b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
+b.className = "bg-emerald-100 px-4 py-2 rounded-xl text-sm"
 b.innerText = t
 
 b.onclick = ()=>{
@@ -152,18 +179,18 @@ controls.appendChild(b)
 }
 
 /* ===================== */
-/* WEEKLY SAFE SAVE */
+/* WEEKLY SUPABASE */
 /* ===================== */
 
-async function saveWeekly(value){
+async function weekly(value){
 
-await supabaseClient
-.from("weekly_consultations")
-.insert([{
-week_id: "week-1",
-question: "Importancia cultura infantil",
-answer: value
+await supabaseClient.from("weekly").insert([{
+question_id: 1,
+value: value
 }])
+
+bot("Gracias por tu respuesta 👍")
+
 }
 
 /* ===================== */
@@ -174,21 +201,10 @@ function start(){
 
 formData = {}
 
-bot("Hola, soy Citizen Voice. Estoy aquí para ayudarte a mejorar tu ciudad.")
+bot("Hola 👋 soy Citizen Voice, tu asistente de participación ciudadana.")
+bot("Vamos a empezar.")
 
-bot("Consulta semanal:")
-
-bot("¿Qué importancia das a mejorar actividades culturales para niños?")
-
-buttons([
-"😡 1","😕 2","😐 3","🙂 4","😄 5"
-], async v=>{
-
-await saveWeekly(v)
-formData.weekly = v
 askType()
-
-})
 
 }
 
@@ -198,7 +214,7 @@ askType()
 
 function askType(){
 
-bot("¿Quieres registrar una incidencia o una mejora?")
+bot("¿Qué quieres registrar?")
 
 buttons(["Incidencia","Mejora"], v=>{
 formData.tipo = v
@@ -218,17 +234,11 @@ askRating()
 
 }
 
-/* ===================== */
-/* RATING CON CARITAS (FIJO) */
-/* ===================== */
-
 function askRating(){
 
-bot("¿Cómo valoras actualmente esta área?")
+bot("¿Cómo valoras esta área actualmente?")
 
-buttons([
-"😡 1","😕 2","😐 3","🙂 4","😄 5"
-], v=>{
+buttons(["😡 1","😕 2","😐 3","🙂 4","😄 5"], v=>{
 formData.valoracion = v
 showMap()
 })
@@ -236,7 +246,7 @@ showMap()
 }
 
 /* ===================== */
-/* MAPA ROBUSTO (FIX REAL) */
+/* MAPA (FIX REAL ESTABLE) */
 /* ===================== */
 
 function showMap(){
@@ -250,11 +260,10 @@ setTimeout(()=>{
 
 if(!map){
 
-map = L.map('map').setView([39.47,-0.37],13)
+map = L.map("map").setView([39.47,-0.37],13)
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-).addTo(map)
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+.addTo(map)
 
 setTimeout(()=>map.invalidateSize(),300)
 
@@ -263,7 +272,6 @@ setTimeout(()=>map.invalidateSize(),300)
 map.invalidateSize()
 
 map.off()
-
 map.on("click", e=>{
 
 if(marker) map.removeLayer(marker)
@@ -273,10 +281,8 @@ marker = L.marker(e.latlng).addTo(map)
 formData.lat = e.latlng.lat
 formData.lng = e.latlng.lng
 
-setTimeout(()=>{
 mapContainer.classList.add("hidden")
 chat.scrollTop = chat.scrollHeight
-},400)
 
 askDescription()
 
@@ -304,28 +310,30 @@ mic.innerText = "🎤"
 mic.className = "bg-gray-200 px-3 rounded-xl"
 
 mic.onclick = ()=>{
+
 const r = new webkitSpeechRecognition()
 r.lang = "es-ES"
 r.start()
+
 r.onresult = e=>{
 input.value = e.results[0][0].transcript
 }
+
 }
 
 const send = document.createElement("button")
-send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
 send.innerText = "Enviar"
+send.className = "bg-emerald-600 text-white px-4 py-2 rounded-xl"
 
 send.onclick = async ()=>{
 
 if(!input.value) return
 
 user(input.value)
+
 formData.descripcion = input.value
 
-await supabaseClient
-.from("incidencias")
-.insert([formData])
+await supabaseClient.from("incidencias").insert([formData])
 
 bot("Registro guardado correctamente")
 
@@ -348,15 +356,13 @@ function showFinal(){
 controls.innerHTML = ""
 
 const close = document.createElement("button")
-close.className = "bg-gray-200 px-4 py-2 rounded-xl"
 close.innerText = "Cerrar"
-
-close.onclick = ()=> location.reload()
+close.className = "bg-gray-200 px-4 py-2 rounded-xl"
+close.onclick = ()=>location.reload()
 
 const panel = document.createElement("button")
-panel.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
 panel.innerText = "Ver datos"
-
+panel.className = "bg-emerald-600 text-white px-4 py-2 rounded-xl"
 panel.onclick = ()=>{
 window.location.href =
 "https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
@@ -372,8 +378,8 @@ controls.appendChild(panel)
 /* ===================== */
 
 const startBtn = document.createElement("button")
-startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 startBtn.innerText = "Empezar"
+startBtn.className = "w-full bg-emerald-600 text-white py-4 rounded-xl text-lg"
 
 startBtn.onclick = ()=>{
 controls.innerHTML = ""
