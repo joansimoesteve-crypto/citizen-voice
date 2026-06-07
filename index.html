@@ -15,18 +15,11 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
-<style>
-#map {
-  height: 320px;
-  width: 100%;
-}
-</style>
-
 </head>
 
 <body class="bg-[#EEF2F5] flex justify-center min-h-screen">
 
-<div class="w-full max-w-md bg-white shadow-xl rounded-[30px] overflow-hidden flex flex-col">
+<div class="w-full max-w-md bg-white flex flex-col min-h-screen rounded-[30px] overflow-hidden shadow-xl">
 
 <!-- HEADER -->
 <div class="bg-gradient-to-r from-emerald-600 to-green-500 text-white p-4">
@@ -46,7 +39,7 @@
 
 <!-- MAP -->
 <div id="mapContainer" class="hidden p-3">
-  <div id="map"></div>
+  <div id="map" class="h-[320px] w-full rounded-xl"></div>
 </div>
 
 <!-- CONTROLS -->
@@ -62,6 +55,28 @@ const supabaseClient = supabase.createClient(
   "https://saiclsejxsycmeefuhvs.supabase.co",
   "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
+
+/* ================= HUGGING FACE (IA) ================= */
+
+async function callAI(text){
+
+  try {
+    const res = await fetch("https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ inputs: text })
+    })
+
+    const data = await res.json()
+    return data.generated_text || "Sin respuesta IA"
+
+  } catch (e) {
+    console.log("AI error", e)
+    return "Error IA"
+  }
+}
 
 /* ================= STATE ================= */
 
@@ -85,10 +100,10 @@ function speak(t){
 
 function bot(t){
   const row = document.createElement("div")
-  row.className = "flex gap-2 items-start"
+  row.className = "flex gap-2"
 
   const avatar = document.createElement("div")
-  avatar.className = "w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white"
+  avatar.className = "w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center"
   avatar.innerHTML = "🙂"
 
   const bubble = document.createElement("div")
@@ -136,24 +151,10 @@ function start(){
 
   form = {}
 
-  bot("Hola, soy Citizen Voice. Asistente virtual para la participación ciudadana.")
+  bot("Hola, soy Citizen Voice. Asistente virtual ciudadano.")
 
-  bot("Consulta semanal activa")
-
-  bot("¿Qué importancia das del 1 al 5 a mejorar actividades culturales infantiles?")
-
-  buttons([
-    "1 😡","2 😕","3 😐","4 🙂","5 😄"
-  ], v=>{
-    form.weekly = v
-    askType()
-  })
-}
-
-/* ================= TYPE ================= */
-
-function askType(){
   bot("¿Qué quieres registrar?")
+
   buttons(["Incidencia","Mejora"], v=>{
     form.tipo = v
     askArea()
@@ -163,20 +164,12 @@ function askType(){
 /* ================= AREA ================= */
 
 function askArea(){
+
   bot("¿En qué área ocurre?")
+
   buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
     form.area = v
-    askRating()
-  })
-}
-
-/* ================= RATING ================= */
-
-function askRating(){
-  bot("¿Cómo valoras actualmente esta área?")
-  buttons(["1 😡","2 😕","3 😐","4 🙂","5 😄"], v=>{
-    form.valoracion = v
-    showMap()
+    askDescription()
   })
 }
 
@@ -184,24 +177,18 @@ function askRating(){
 
 function showMap(){
 
-  bot("Selecciona ubicación en el mapa")
-
   mapContainer.classList.remove("hidden")
 
   setTimeout(()=>{
 
     if(!map){
       map = L.map("map").setView([39.47,-0.37],13)
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-        attribution:""
-      }).addTo(map)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map)
     }
 
     map.invalidateSize()
 
     map.on("click", e=>{
-
       if(marker) map.removeLayer(marker)
 
       marker = L.marker(e.latlng).addTo(map)
@@ -209,15 +196,15 @@ function showMap(){
       form.lat = e.latlng.lat
       form.lng = e.latlng.lng
 
-      askDescription()
+      finish()
     })
 
-  },300)
+  },200)
 }
 
-/* ================= DESCRIPTION ================= */
+/* ================= IA + SAVE ================= */
 
-function askDescription(){
+async function askDescription(){
 
   bot("Describe la situación")
 
@@ -240,34 +227,22 @@ function askDescription(){
   }
 
   const send = document.createElement("button")
-  send.innerText = "Enviar"
-  send.className = "bg-emerald-600 text-white px-4 rounded-xl"
+  send.innerText = "Mapa"
+  send.className = "bg-emerald-600 text-white px-3 rounded-xl"
 
   send.onclick = async ()=>{
 
     if(!input.value) return
 
+    user(input.value)
     form.descripcion = input.value
 
-    user(input.value)
+    /* 🔥 IA RESTAURADA */
+    const ai = await callAI(input.value)
 
-    /* ================= SUPABASE INCIDENCIAS ================= */
+    form.resumen = ai
 
-    await supabaseClient
-      .from("incidencias")
-      .insert([form])
-
-    /* ================= SUPABASE WEEKLY ================= */
-
-    await supabaseClient
-      .from("weekly_engagement")
-      .insert([{
-        valoracion: form.weekly
-      }])
-
-    bot("Registro guardado correctamente")
-
-    finish()
+    showMap()
   }
 
   controls.appendChild(input)
@@ -275,17 +250,52 @@ function askDescription(){
   controls.appendChild(send)
 }
 
-/* ================= FIN ================= */
+/* ================= SAVE ================= */
 
-function finish(){
+async function finish(){
+
+  bot("Guardando registro...")
+
+  /* limpiar payload */
+  const payload = {
+    tipo: form.tipo,
+    area: form.area,
+    descripcion: form.descripcion,
+    lat: form.lat || null,
+    lng: form.lng || null,
+    resumen: form.resumen || ""
+  }
+
+  const { error } = await supabaseClient
+    .from("incidencias")
+    .insert([payload])
+
+  if(error){
+    console.log(error)
+    bot("Error guardando en Supabase")
+    return
+  }
+
+  await supabaseClient
+    .from("weekly_engagement")
+    .insert([{ created_at: new Date().toISOString() }])
+
+  bot("Registro completado correctamente")
+
+  showFinal()
+}
+
+/* ================= FINAL ================= */
+
+function showFinal(){
 
   controls.innerHTML = ""
 
-  const panel = document.createElement("button")
-  panel.className = "bg-emerald-600 text-white px-4 py-2 rounded-xl"
-  panel.innerText = "Ver datos"
+  const btn = document.createElement("button")
+  btn.className = "bg-emerald-600 text-white px-4 py-2 rounded-xl"
+  btn.innerText = "Ver datos"
 
-  panel.onclick = ()=>{
+  btn.onclick = ()=>{
     window.location.href =
     "https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
   }
@@ -296,7 +306,7 @@ function finish(){
 
   close.onclick = ()=> location.reload()
 
-  controls.appendChild(panel)
+  controls.appendChild(btn)
   controls.appendChild(close)
 }
 
