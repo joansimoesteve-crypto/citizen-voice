@@ -4,15 +4,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Citizen Voice</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<style>
+#map { height: 520px; }
+</style>
 
 </head>
 
@@ -22,19 +27,21 @@
 
 <!-- HEADER -->
 <div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4 text-center">
-
 <div class="text-xl font-bold">
 Citizen Voice
 </div>
-
 <div class="text-xs opacity-90">
 Asistente virtual para participación activa · 30 segundos
 </div>
-
 </div>
 
 <!-- CHAT -->
 <div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
+
+<!-- MAPA -->
+<div id="mapWrap" class="hidden p-2">
+<div id="map" class="rounded-2xl shadow"></div>
+</div>
 
 <!-- CONTROLES -->
 <div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
@@ -43,9 +50,7 @@ Asistente virtual para participación activa · 30 segundos
 
 <script>
 
-/* ===================== */
-/* SUPABASE */
-/* ===================== */
+/* ================= SUPABASE ================= */
 
 const { createClient } = supabase
 
@@ -54,24 +59,26 @@ const supabaseClient = createClient(
 "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
 
+/* ================= GLOBAL ================= */
+
 const chat = document.getElementById("chat")
 const controls = document.getElementById("controls")
+const mapWrap = document.getElementById("mapWrap")
 
 let formData = {}
+let map = null
+let marker = null
 
-/* ===================== */
-/* VOZ */
-/* ===================== */
+/* ================= VOZ ================= */
 
 function speak(text){
 const msg = new SpeechSynthesisUtterance(text)
 msg.lang = "es-ES"
+speechSynthesis.cancel()
 speechSynthesis.speak(msg)
 }
 
-/* ===================== */
-/* BOT (MEJORADO HUMANO) */
-/* ===================== */
+/* ================= BOT HUMANO ================= */
 
 function bot(text){
 
@@ -79,186 +86,159 @@ const row = document.createElement("div")
 row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("div")
-avatar.className =
-"w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white text-lg shadow"
+avatar.className = "w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center shadow"
 
-avatar.innerHTML = "👤"
+avatar.innerHTML = `
+<svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+<circle cx="12" cy="8" r="4"/>
+<path d="M4 20c2-4 14-4 16 0"/>
+</svg>
+`
 
 const bubble = document.createElement("div")
-bubble.className =
-"bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
-
+bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[85%]"
 bubble.innerText = text
 
 row.appendChild(avatar)
 row.appendChild(bubble)
 
 chat.appendChild(row)
-
 chat.scrollTop = chat.scrollHeight
 
 speak(text)
 }
 
-/* ===================== */
-/* USER */
-/* ===================== */
+/* ================= USER ================= */
 
 function user(text){
-
 const d = document.createElement("div")
-
-d.className =
-"bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
-
+d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[85%] ml-auto"
 d.innerText = text
-
 chat.appendChild(d)
-
 chat.scrollTop = chat.scrollHeight
 }
 
-/* ===================== */
-/* BOTONES */
-/* ===================== */
+/* ================= BOTONES ================= */
 
-function buttons(list, callback){
-
+function buttons(list, cb){
 controls.innerHTML = ""
 
-list.forEach(o=>{
-
+list.forEach(t=>{
 const b = document.createElement("button")
-
-b.className =
-"bg-green-100 hover:bg-green-200 transition px-4 py-2 rounded-xl text-sm"
-
-b.innerText = o
+b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
+b.innerText = t
 
 b.onclick = ()=>{
-
 controls.innerHTML = ""
-user(o)
-callback(o)
-
+user(t)
+cb(t)
 }
 
 controls.appendChild(b)
-
 })
-
 }
 
-/* ===================== */
-/* START */
-/* ===================== */
+/* ================= IA ================= */
+
+async function callAI(description){
+try{
+const res = await fetch("/api/ai",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body: JSON.stringify({ description })
+})
+return await res.json()
+}catch(e){
+return { resumen:"", acciones:[] }
+}
+}
+
+/* ================= START ================= */
 
 function start(){
 
-bot("Hola 👋 soy Citizen Voice. ¿Qué deseas registrar?")
+formData = {}
 
-buttons(["Incidencia","Propuesta de mejora"], v=>{
+bot("Hola, soy Citizen Voice. Asistente virtual para la participación ciudadana.")
+speak("Hola, soy Citizen Voice")
+
+/* WEEKLY */
+bot("📊 Consulta semanal: ¿Cómo valoras la importancia de mejorar actividades culturales infantiles?")
+
+buttons([
+"😡 1","😕 2","😐 3","🙂 4","😄 5"
+], async v=>{
+
+formData.weekly = v
+
+/* 🔥 SUPABASE WEEKLY */
+await supabaseClient
+.from("weekly_engagement")
+.insert([{
+value: v,
+question: "actividades culturales infantiles"
+}])
+
+askType()
+
+})
+}
+
+/* ================= TIPO ================= */
+
+function askType(){
+bot("¿Qué quieres registrar hoy?")
+buttons(["Incidencia","Mejora"], v=>{
 formData.tipo = v
 askArea()
 })
-
 }
 
-/* ===================== */
-/* AREA */
-/* ===================== */
+/* ================= AREA ================= */
 
 function askArea(){
-
-bot("¿En qué área ocurre o afecta? ¿Qué opinas de su estado actual?")
-
-buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"], v=>{
+bot("¿En qué área ocurre y cómo valoras su estado actual?")
+buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
 formData.area = v
 askRate()
 })
-
 }
 
-/* ===================== */
-/* VALORACIÓN */
-/* ===================== */
+/* ================= RATING ================= */
 
 function askRate(){
-
 bot("Valora del 1 al 5 la situación actual")
-
-buttons(["1","2","3","4","5"], v=>{
+buttons(["😡1","😕2","😐3","🙂4","😄5"], v=>{
 formData.valoracion = v
 showMap()
 })
-
 }
 
-/* ===================== */
-/* MAPA */
-/* ===================== */
+/* ================= MAPA FIX (NO ROMPE + MÁS GRANDE) ================= */
 
 function showMap(){
 
-bot("Indica dónde ocurre (busca o toca el mapa)")
+bot("Indica la ubicación (puedes buscar o tocar el mapa)")
 
 controls.innerHTML = ""
-
-const search = document.createElement("input")
-search.placeholder = "Buscar dirección..."
-search.className = "border p-3 rounded-xl w-full mb-2 text-sm"
-
-const mapDiv = document.createElement("div")
-mapDiv.id = "map"
-mapDiv.style.height = "420px"
-mapDiv.className = "rounded-2xl shadow"
-
-controls.appendChild(search)
-chat.appendChild(mapDiv)
+mapWrap.classList.remove("hidden")
 
 setTimeout(()=>{
 
-const map = L.map('map').setView([39.47,-0.37],13)
+if(!map){
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-).addTo(map)
+map = L.map('map').setView([39.47,-0.37],13)
 
-let marker
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+.addTo(map)
+
+}else{
+map.invalidateSize()
+}
 
 const geocoder = L.Control.Geocoder.nominatim()
 
-search.addEventListener("keydown",(e)=>{
-
-if(e.key==="Enter"){
-
-geocoder.geocode(search.value, results=>{
-
-if(results.length>0){
-
-const r = results[0]
-
-map.setView(r.center,16)
-
-if(marker) map.removeLayer(marker)
-
-marker = L.marker(r.center).addTo(map)
-
-formData.lat = r.center.lat
-formData.lng = r.center.lng
-
-bot("Ubicación registrada")
-
-askDescription()
-
-}
-
-})
-
-}
-
-})
-
+map.off()
 map.on("click", e=>{
 
 if(marker) map.removeLayer(marker)
@@ -268,19 +248,16 @@ marker = L.marker(e.latlng).addTo(map)
 formData.lat = e.latlng.lat
 formData.lng = e.latlng.lng
 
-bot("Ubicación guardada")
+mapWrap.classList.add("hidden")
 
 askDescription()
 
 })
 
-},300)
-
+},250)
 }
 
-/* ===================== */
-/* DESCRIPCIÓN */
-/* ===================== */
+/* ================= DESCRIPCIÓN ================= */
 
 function askDescription(){
 
@@ -289,101 +266,86 @@ bot("Describe la incidencia o mejora")
 controls.innerHTML = ""
 
 const input = document.createElement("input")
-input.placeholder = "Escribe o usa voz"
 input.className = "border p-3 rounded-xl flex-1 text-sm"
+input.placeholder = "Escribe o usa voz"
 
 const mic = document.createElement("button")
 mic.innerText = "🎤"
-mic.className = "bg-green-100 px-4 rounded-xl"
+mic.className = "bg-green-100 px-3 rounded-xl"
 
 mic.onclick = ()=>{
-
 const r = new webkitSpeechRecognition()
 r.lang = "es-ES"
 r.start()
-
 r.onresult = e=>{
 input.value = e.results[0][0].transcript
 }
-
 }
 
 const send = document.createElement("button")
 send.innerText = "Enviar"
 send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
 
-send.onclick = ()=>{
+send.onclick = async ()=>{
 
 if(!input.value) return
 
 user(input.value)
-
 formData.descripcion = input.value
 
-saveData()
+const ai = await callAI(input.value)
+
+/* ================= SUPABASE INCIDENCIAS ================= */
+
+await supabaseClient
+.from("incidencias")
+.insert([{
+...formData,
+resumen: ai.resumen || "",
+acciones: ai.acciones || []
+}])
+
+bot("Registro completado correctamente")
+
+showEnd()
 
 }
 
 controls.appendChild(input)
 controls.appendChild(mic)
 controls.appendChild(send)
-
 }
 
-/* ===================== */
-/* IA + SUPABASE */
-/* ===================== */
+/* ================= FINAL ================= */
 
-async function saveData(){
+function showEnd(){
 
-try{
+controls.innerHTML = ""
 
-const res = await fetch("/api/ai",{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({ description: formData.descripcion })
-})
+const panel = document.createElement("button")
+panel.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
+panel.innerText = "Ver datos"
 
-const ai = await res.json()
-
-const incidencia = {
-tipo: formData.tipo,
-area: formData.area,
-valoracion: formData.valoracion,
-descripcion: formData.descripcion,
-lat: formData.lat,
-lng: formData.lng,
-resumen: ai.resumen || "",
-acciones: ai.acciones || []
+panel.onclick = ()=>{
+window.location.href =
+"https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
 }
 
-await supabaseClient
-.from("incidencias")
-.insert([incidencia])
+const close = document.createElement("button")
+close.className = "bg-gray-200 px-4 py-2 rounded-xl"
+close.innerText = "Cerrar"
 
-bot("Registrado correctamente ✅")
+close.onclick = ()=>location.reload()
 
-setTimeout(()=>{
-bot("Puedes ver resultados en el panel o cerrar el asistente.")
-},1000)
-
-}catch(err){
-
-bot("Error al guardar la incidencia")
-
+controls.appendChild(panel)
+controls.appendChild(close)
 }
 
-}
-
-/* ===================== */
-/* START BUTTON */
-/* ===================== */
+/* ================= INIT ================= */
 
 const startBtn = document.createElement("button")
-
+startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 startBtn.innerText = "Empezar"
-startBtn.className =
-"w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 
 startBtn.onclick = ()=>{
 controls.innerHTML = ""
