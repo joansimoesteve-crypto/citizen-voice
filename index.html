@@ -1,63 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Citizen Voice</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
-</head>
-
-<body class="bg-green-50 flex justify-center min-h-screen p-2">
-
-<div class="w-full max-w-md h-[95vh] bg-white rounded-3xl shadow-xl flex flex-col overflow-hidden">
-
-<!-- HEADER -->
-<div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4">
-
-<div class="flex items-center gap-3">
-
-<div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
-<svg width="22" height="22" viewBox="0 0 64 64">
-<circle cx="32" cy="32" r="30" fill="#f3d6b3"/>
-<circle cx="22" cy="26" r="3" fill="#333"/>
-<circle cx="42" cy="26" r="3" fill="#333"/>
-<path d="M22 42c5 6 15 6 20 0" stroke="#333" stroke-width="3" fill="none"/>
-</svg>
-</div>
-
-<div>
-<div class="font-bold text-lg">Citizen Voice</div>
-<div class="text-xs opacity-90">Asistente de participación ciudadana</div>
-</div>
-
-</div>
-
-</div>
-
-<!-- CHAT -->
-<div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
-
-<!-- MAPA -->
-<div id="mapContainer" class="hidden p-2">
-<div id="map" class="w-full h-[340px] rounded-2xl shadow"></div>
-</div>
-
-<!-- CONTROLES -->
-<div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
-
-</div>
-
 <script>
 
 const { createClient } = supabase
@@ -67,274 +7,109 @@ const supabaseClient = createClient(
 "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
 
-const chat = document.getElementById("chat")
-const controls = document.getElementById("controls")
-const mapContainer = document.getElementById("mapContainer")
-
 let formData = {}
-let map = null
-let marker = null
+let weeklyData = {}
 
-/* VOZ */
-function speak(text){
-const msg = new SpeechSynthesisUtterance(text)
-msg.lang = "es-ES"
-speechSynthesis.cancel()
-speechSynthesis.speak(msg)
+/* ===================== */
+/* GUARDAR PREGUNTA SEMANAL */
+/* ===================== */
+
+async function saveWeekly(answer){
+
+weeklyData = {
+week_id: "week-1",
+question: "Importancia de actividades culturales",
+answer: answer
 }
 
-/* BOT */
-function bot(text){
+const { error } = await supabaseClient
+.from("weekly_consultations")
+.insert([weeklyData])
 
-const row = document.createElement("div")
-row.className = "flex items-start gap-2"
-
-const avatar = document.createElement("div")
-avatar.className = "w-10 h-10 rounded-full bg-green-600 flex items-center justify-center"
-
-avatar.innerHTML = `
-<svg width="20" height="20" viewBox="0 0 64 64">
-<circle cx="32" cy="32" r="30" fill="#f3d6b3"/>
-<circle cx="22" cy="26" r="3" fill="#333"/>
-<circle cx="42" cy="26" r="3" fill="#333"/>
-<path d="M22 42c5 6 15 6 20 0" stroke="#333" stroke-width="3" fill="none"/>
-</svg>
-`
-
-const bubble = document.createElement("div")
-bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
-bubble.innerText = text
-
-row.appendChild(avatar)
-row.appendChild(bubble)
-
-chat.appendChild(row)
-chat.scrollTop = chat.scrollHeight
-
-speak(text)
+if(error){
+console.log("Weekly error:", error)
+}
 }
 
-/* USER */
-function user(text){
-const d = document.createElement("div")
-d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
-d.innerText = text
-chat.appendChild(d)
-chat.scrollTop = chat.scrollHeight
+/* ===================== */
+/* GUARDAR INCIDENCIA */
+/* ===================== */
+
+async function saveIncidence(){
+
+const incidence = {
+tipo: formData.tipo || null,
+area: formData.area || null,
+valoracion: formData.valoracion || null,
+descripcion: formData.descripcion || null,
+lat: formData.lat || null,
+lng: formData.lng || null
 }
 
-/* BOTONES */
-function buttons(list, cb){
-controls.innerHTML = ""
+const { data, error } = await supabaseClient
+.from("incidencias")
+.insert([incidence])
 
-list.forEach(t=>{
-const b = document.createElement("button")
-b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
-b.innerText = t
-
-b.onclick = ()=>{
-controls.innerHTML = ""
-user(t)
-cb(t)
+if(error){
+console.log("Incidencia error:", error)
+bot("Error guardando la incidencia")
+return
 }
 
-controls.appendChild(b)
-})
+bot("Registro guardado correctamente")
 }
 
-/* START */
+/* ===================== */
+/* FLUJO CORREGIDO */
+/* ===================== */
+
 function start(){
 
 formData = {}
 
 bot("Hola, soy Citizen Voice, tu asistente virtual para la participación ciudadana.")
 
-bot("Vamos a empezar con una consulta rápida.")
+bot("Vamos a empezar con la consulta semanal.")
 
-bot("¿Cómo valoras la importancia de actividades culturales en tu ciudad?")
+buttons(["😡 1","😕 2","😐 3","🙂 4","😄 5"], async v=>{
 
-buttons(["😡 1","😕 2","😐 3","🙂 4","😄 5"], v=>{
+await saveWeekly(v)
+
 formData.weekly = v
+
 askType()
 })
 
 }
 
-/* TIPO */
-function askType(){
+/* ===================== */
+/* FINAL SAVE FIXED */
+/* ===================== */
 
-bot("¿Qué quieres registrar hoy?")
+async function finalSave(){
 
-buttons(["Incidencia","Mejora"], v=>{
-formData.tipo = v
-askArea()
-})
+await saveIncidence()
 
+/* AQUÍ YA PUEDES CONECTAR IA SI QUIERES */
 }
 
-/* AREA */
-function askArea(){
+/* ===================== */
+/* INTEGRACIÓN EN TU FLOW */
+/* ===================== */
 
-bot("¿En qué área se sitúa?")
-
-buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
-formData.area = v
-askRating()
-})
-
-}
-
-/* VALORACIÓN */
-function askRating(){
-
-bot("¿Cómo valoras actualmente esta área?")
-
-buttons(["😡 1","😕 2","😐 3","🙂 4","😄 5"], v=>{
-formData.valoracion = v
-showMap()
-})
-
-}
-
-/* MAPA - MINIMIZA DESPUÉS DE SELECCIÓN */
-function showMap(){
-
-bot("Selecciona la ubicación en el mapa.")
-
-controls.innerHTML = ""
-mapContainer.classList.remove("hidden")
-
-setTimeout(()=>{
-
-if(!map){
-
-map = L.map('map').setView([39.47,-0.37],13)
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-.addTo(map)
-
-setTimeout(()=> map.invalidateSize(), 300)
-
-}
-
-map.off()
-
-map.on("click", e=>{
-
-if(marker) map.removeLayer(marker)
-
-marker = L.marker(e.latlng).addTo(map)
-
-formData.lat = e.latlng.lat
-formData.lng = e.latlng.lng
-
-/* 🔥 CLAVE: minimizar mapa tras selección */
-setTimeout(()=>{
-mapContainer.classList.add("hidden")
-},400)
-
-setTimeout(()=>{
-chat.scrollIntoView({ behavior: "smooth" })
-},600)
-
-askDescription()
-
-})
-
-},200)
-
-}
-
-/* DESCRIPCIÓN */
-function askDescription(){
-
-bot("Describe la situación.")
-
-controls.innerHTML = ""
-
-const input = document.createElement("input")
-input.className = "border p-3 rounded-xl flex-1 text-sm"
-
-const send = document.createElement("button")
-send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
-send.innerText = "Enviar"
+/* SOLO CAMBIA EN TU BOTÓN FINAL: */
 
 send.onclick = async ()=>{
 
 if(!input.value) return
 
 user(input.value)
+
 formData.descripcion = input.value
 
-await supabaseClient
-.from("incidencias")
-.insert([formData])
-
-bot("Registro completado correctamente.")
+await finalSave()
 
 showFinal()
-
 }
-
-const mic = document.createElement("button")
-mic.innerText = "🎤"
-mic.className = "bg-gray-200 px-3 rounded-xl"
-
-mic.onclick = ()=>{
-
-const rec = new webkitSpeechRecognition()
-rec.lang = "es-ES"
-rec.start()
-
-rec.onresult = e=>{
-input.value = e.results[0][0].transcript
-}
-}
-
-controls.appendChild(input)
-controls.appendChild(mic)
-controls.appendChild(send)
-
-}
-
-/* FINAL */
-function showFinal(){
-
-controls.innerHTML = ""
-
-const close = document.createElement("button")
-close.className = "bg-gray-200 px-4 py-2 rounded-xl"
-close.innerText = "Cerrar"
-
-close.onclick = ()=> location.reload()
-
-const panel = document.createElement("button")
-panel.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
-panel.innerText = "Ver datos"
-
-panel.onclick = ()=>{
-window.location.href =
-"https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
-}
-
-controls.appendChild(close)
-controls.appendChild(panel)
-
-}
-
-/* INIT */
-const startBtn = document.createElement("button")
-startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
-startBtn.innerText = "Empezar"
-
-startBtn.onclick = ()=>{
-controls.innerHTML = ""
-start()
-}
-
-controls.appendChild(startBtn)
 
 </script>
-
-</body>
-</html>
