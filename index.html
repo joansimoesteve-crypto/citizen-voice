@@ -22,7 +22,7 @@
 
 <div class="w-full max-w-md h-[95vh] bg-white rounded-3xl shadow-xl flex flex-col overflow-hidden">
 
-<!-- HEADER -->
+<!-- HEADER (igual, estable) -->
 <div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4">
 
 <div class="flex items-center gap-3">
@@ -46,7 +46,7 @@
 <!-- CHAT -->
 <div id="chat" class="flex-1 overflow-y-auto p-3 flex flex-col gap-3"></div>
 
-<!-- MAPA FIJO (ESTO ES LO QUE ARREGLA TODO) -->
+<!-- MAPA -->
 <div id="mapContainer" class="hidden p-3">
 <div id="map" class="w-full h-[480px] rounded-2xl shadow"></div>
 </div>
@@ -78,7 +78,20 @@ let map = null
 let marker = null
 
 /* ===================== */
-/* BOT (SIN ICONOS LEÍBLES) */
+/* VOZ (FIABLE) */
+/* ===================== */
+
+function speak(text){
+const msg = new SpeechSynthesisUtterance(text)
+msg.lang = "es-ES"
+msg.rate = 1
+msg.pitch = 1
+speechSynthesis.cancel()
+speechSynthesis.speak(msg)
+}
+
+/* ===================== */
+/* BOT */
 /* ===================== */
 
 function bot(text){
@@ -104,7 +117,9 @@ row.appendChild(avatar)
 row.appendChild(bubble)
 
 chat.appendChild(row)
+
 chat.scrollTop = chat.scrollHeight
+speak(text)
 }
 
 /* ===================== */
@@ -153,10 +168,11 @@ controls.appendChild(b)
 
 function start(){
 
-bot("Bienvenido a Citizen Voice")
+formData = {}
 
-bot("#ConsultaSemanal-1")
-bot("¿Qué importancia das a mejorar actividades culturales infantiles?")
+bot("Hola, soy Citizen Voice.")
+
+bot("#ConsultaSemanal-1: ¿Cómo valoras actividades culturales infantiles?")
 
 buttons(["1","2","3","4","5"], v=>{
 formData.weekly = v
@@ -166,12 +182,12 @@ askType()
 }
 
 /* ===================== */
-/* FLUJO */
+/* FLUJO CORREGIDO */
 /* ===================== */
 
 function askType(){
 
-bot("¿Qué quieres registrar: incidencia o mejora?")
+bot("¿Qué quieres registrar?")
 
 buttons(["Incidencia","Mejora"], v=>{
 formData.tipo = v
@@ -182,17 +198,28 @@ askArea()
 
 function askArea(){
 
-bot("¿Cómo valoras esta área actualmente?")
+bot("¿En qué área se sitúa?")
 
 buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
 formData.area = v
+askRating()
+})
+
+}
+
+function askRating(){
+
+bot("¿Cómo valoras actualmente esta área?")
+
+buttons(["1","2","3","4","5"], v=>{
+formData.valoracion = v
 showMap()
 })
 
 }
 
 /* ===================== */
-/* MAPA FIX DEFINITIVO */
+/* MAPA (ARREGLADO DEFINITIVO) */
 /* ===================== */
 
 function showMap(){
@@ -206,18 +233,20 @@ setTimeout(()=>{
 
 if(!map){
 
-map = L.map('map').setView([39.47, -0.37], 13)
+map = L.map('map').setView([39.47,-0.37],13)
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 .addTo(map)
+
+setTimeout(()=> map.invalidateSize(), 300)
 
 } else {
 map.invalidateSize()
 }
 
-const geocoder = L.Control.Geocoder.nominatim()
+map.off() // 🔥 evita duplicados
 
-map.on("click", e => {
+map.on("click", e=>{
 
 if(marker) map.removeLayer(marker)
 
@@ -240,7 +269,7 @@ askDescription()
 
 function askDescription(){
 
-bot("Describe el problema o mejora")
+bot("Describe la situación")
 
 controls.innerHTML = ""
 
@@ -264,6 +293,8 @@ await supabaseClient
 
 bot("Registro completado correctamente")
 
+showFinal()
+
 }
 
 controls.appendChild(input)
@@ -272,12 +303,37 @@ controls.appendChild(send)
 }
 
 /* ===================== */
+/* FINAL (IMPORTANTE) */
+/* ===================== */
+
+function showFinal(){
+
+controls.innerHTML = ""
+
+const close = document.createElement("button")
+close.className = "bg-gray-200 px-4 py-2 rounded-xl"
+close.innerText = "Cerrar"
+
+close.onclick = ()=> location.reload()
+
+const panel = document.createElement("button")
+panel.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
+panel.innerText = "Ver panel"
+
+panel.onclick = ()=> window.location.href = "/panel.html"
+
+controls.appendChild(close)
+controls.appendChild(panel)
+
+}
+
+/* ===================== */
 /* INIT */
 /* ===================== */
 
 const startBtn = document.createElement("button")
-startBtn.innerText = "Empezar"
 startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
+startBtn.innerText = "Empezar"
 
 startBtn.onclick = ()=>{
 controls.innerHTML = ""
