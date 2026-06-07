@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,17 +20,17 @@
 
 <body class="bg-[#EEF2F5] flex justify-center min-h-screen">
 
-<div class="w-full max-w-md bg-white flex flex-col min-h-screen rounded-[30px] overflow-hidden shadow-xl">
+<div class="w-full max-w-md bg-white min-h-screen flex flex-col rounded-[30px] overflow-hidden">
 
 <!-- HEADER -->
 <div class="bg-gradient-to-r from-emerald-600 to-green-500 text-white p-4">
   <div class="flex items-center gap-3">
-    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
       👤
     </div>
     <div>
       <div class="font-bold">Citizen Voice</div>
-      <div class="text-xs opacity-80">Asistente ciudadano</div>
+      <div class="text-xs opacity-80">Asistente ciudadano activo</div>
     </div>
   </div>
 </div>
@@ -39,7 +40,7 @@
 
 <!-- MAP -->
 <div id="mapContainer" class="hidden p-3">
-  <div id="map" class="h-[320px] w-full rounded-xl"></div>
+  <div id="map" class="h-[380px] rounded-2xl"></div>
 </div>
 
 <!-- CONTROLS -->
@@ -56,28 +57,6 @@ const supabaseClient = supabase.createClient(
   "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
 
-/* ================= HUGGING FACE (IA) ================= */
-
-async function callAI(text){
-
-  try {
-    const res = await fetch("https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ inputs: text })
-    })
-
-    const data = await res.json()
-    return data.generated_text || "Sin respuesta IA"
-
-  } catch (e) {
-    console.log("AI error", e)
-    return "Error IA"
-  }
-}
-
 /* ================= STATE ================= */
 
 let form = {}
@@ -89,8 +68,8 @@ const mapContainer = document.getElementById("mapContainer")
 
 /* ================= VOZ ================= */
 
-function speak(t){
-  const msg = new SpeechSynthesisUtterance(t)
+function speak(text){
+  const msg = new SpeechSynthesisUtterance(text)
   msg.lang = "es-ES"
   speechSynthesis.cancel()
   speechSynthesis.speak(msg)
@@ -98,17 +77,17 @@ function speak(t){
 
 /* ================= BOT ================= */
 
-function bot(t){
+function bot(text){
+
   const row = document.createElement("div")
   row.className = "flex gap-2"
 
   const avatar = document.createElement("div")
-  avatar.className = "w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center"
-  avatar.innerHTML = "🙂"
+  avatar.className = "w-9 h-9 rounded-full bg-emerald-600"
 
   const bubble = document.createElement("div")
   bubble.className = "bg-emerald-100 p-3 rounded-2xl text-sm"
-  bubble.innerText = t
+  bubble.innerText = text
 
   row.appendChild(avatar)
   row.appendChild(bubble)
@@ -116,15 +95,15 @@ function bot(t){
   chat.appendChild(row)
   chat.scrollTop = chat.scrollHeight
 
-  speak(t)
+  speak(text)
 }
 
 /* ================= USER ================= */
 
-function user(t){
+function user(text){
   const d = document.createElement("div")
   d.className = "ml-auto bg-emerald-600 text-white p-3 rounded-2xl text-sm"
-  d.innerText = t
+  d.innerText = text
   chat.appendChild(d)
 }
 
@@ -145,18 +124,65 @@ function buttons(list, cb){
   })
 }
 
+/* ================= IA (ROBUSTA) ================= */
+
+async function callAI(text){
+
+  try {
+    const res = await fetch("https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inputs: text })
+    })
+
+    const data = await res.json()
+
+    return {
+      resumen: data.generated_text || "Sin resumen IA",
+      acciones: ["Revisar", "Inspección", "Seguimiento"]
+    }
+
+  } catch (e) {
+    return {
+      resumen: "IA no disponible",
+      acciones: []
+    }
+  }
+}
+
 /* ================= START ================= */
 
 function start(){
 
   form = {}
 
-  bot("Hola, soy Citizen Voice. Asistente virtual ciudadano.")
+  bot("Hola, soy Citizen Voice. Vamos a empezar.")
 
   bot("¿Qué quieres registrar?")
 
   buttons(["Incidencia","Mejora"], v=>{
     form.tipo = v
+    askWeekly()
+  })
+}
+
+/* ================= WEEKLY ================= */
+
+function askWeekly(){
+
+  bot("Consulta semanal: ¿cómo valoras la importancia de mejorar la ciudad?")
+
+  buttons(["1","2","3","4","5"], async v=>{
+
+    form.weekly = v
+
+    await supabaseClient
+      .from("weekly_engagement")
+      .insert([{
+        score: v,
+        created_at: new Date().toISOString()
+      }])
+
     askArea()
   })
 }
@@ -165,12 +191,55 @@ function start(){
 
 function askArea(){
 
-  bot("¿En qué área ocurre?")
+  bot("¿En qué área afecta?")
 
   buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
     form.area = v
     askDescription()
   })
+}
+
+/* ================= DESCRIPTION ================= */
+
+function askDescription(){
+
+  bot("Describe la situación")
+
+  controls.innerHTML = ""
+
+  const input = document.createElement("input")
+  input.className = "border p-2 rounded-xl flex-1"
+
+  const mic = document.createElement("button")
+  mic.innerText = "🎤"
+
+  mic.onclick = ()=>{
+    const r = new webkitSpeechRecognition()
+    r.lang = "es-ES"
+    r.start()
+    r.onresult = e=>{
+      input.value = e.results[0][0].transcript
+    }
+  }
+
+  const send = document.createElement("button")
+  send.innerText = "Mapa"
+  send.className = "bg-emerald-600 text-white px-3 rounded-xl"
+
+  send.onclick = async ()=>{
+
+    form.descripcion = input.value
+
+    const ai = await callAI(input.value)
+    form.resumen = ai.resumen
+    form.acciones = ai.acciones
+
+    showMap()
+  }
+
+  controls.appendChild(input)
+  controls.appendChild(mic)
+  controls.appendChild(send)
 }
 
 /* ================= MAP ================= */
@@ -189,6 +258,7 @@ function showMap(){
     map.invalidateSize()
 
     map.on("click", e=>{
+
       if(marker) map.removeLayer(marker)
 
       marker = L.marker(e.latlng).addTo(map)
@@ -196,124 +266,48 @@ function showMap(){
       form.lat = e.latlng.lat
       form.lng = e.latlng.lng
 
-      finish()
+      save()
     })
 
   },200)
 }
 
-/* ================= IA + SAVE ================= */
+/* ================= SAVE INCIDENCIA ================= */
 
-async function askDescription(){
+async function save(){
 
-  bot("Describe la situación")
-
-  controls.innerHTML = ""
-
-  const input = document.createElement("input")
-  input.className = "border p-2 rounded-xl flex-1 text-sm"
-
-  const mic = document.createElement("button")
-  mic.innerText = "🎤"
-  mic.className = "px-3 bg-gray-200 rounded-xl"
-
-  mic.onclick = ()=>{
-    const r = new webkitSpeechRecognition()
-    r.lang = "es-ES"
-    r.start()
-    r.onresult = e=>{
-      input.value = e.results[0][0].transcript
-    }
-  }
-
-  const send = document.createElement("button")
-  send.innerText = "Mapa"
-  send.className = "bg-emerald-600 text-white px-3 rounded-xl"
-
-  send.onclick = async ()=>{
-
-    if(!input.value) return
-
-    user(input.value)
-    form.descripcion = input.value
-
-    /* 🔥 IA RESTAURADA */
-    const ai = await callAI(input.value)
-
-    form.resumen = ai
-
-    showMap()
-  }
-
-  controls.appendChild(input)
-  controls.appendChild(mic)
-  controls.appendChild(send)
-}
-
-/* ================= SAVE ================= */
-
-async function finish(){
-
-  bot("Guardando registro...")
-
-  /* limpiar payload */
-  const payload = {
-    tipo: form.tipo,
-    area: form.area,
-    descripcion: form.descripcion,
-    lat: form.lat || null,
-    lng: form.lng || null,
-    resumen: form.resumen || ""
-  }
+  bot("Guardando...")
 
   const { error } = await supabaseClient
     .from("incidencias")
-    .insert([payload])
+    .insert([{
+      tipo: form.tipo,
+      area: form.area,
+      descripcion: form.descripcion,
+      lat: form.lat,
+      lng: form.lng,
+      weekly_score: form.weekly,
+      resumen: form.resumen,
+      acciones: form.acciones
+    }])
 
   if(error){
-    console.log(error)
     bot("Error guardando en Supabase")
+    console.log(error)
     return
   }
 
-  await supabaseClient
-    .from("weekly_engagement")
-    .insert([{ created_at: new Date().toISOString() }])
-
   bot("Registro completado correctamente")
 
-  showFinal()
-}
-
-/* ================= FINAL ================= */
-
-function showFinal(){
-
-  controls.innerHTML = ""
-
-  const btn = document.createElement("button")
-  btn.className = "bg-emerald-600 text-white px-4 py-2 rounded-xl"
-  btn.innerText = "Ver datos"
-
-  btn.onclick = ()=>{
-    window.location.href =
-    "https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
-  }
-
-  const close = document.createElement("button")
-  close.className = "bg-gray-200 px-4 py-2 rounded-xl"
-  close.innerText = "Cerrar"
-
-  close.onclick = ()=> location.reload()
-
-  controls.appendChild(btn)
-  controls.appendChild(close)
+  setTimeout(()=>{
+    bot("Puedes ver resultados en el panel.")
+  },1000)
 }
 
 /* ================= INIT ================= */
 
 const startBtn = document.createElement("button")
-startBtn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl"
+startBtn.className = "w-full bg-emerald-600 text-white p-4"
 startBtn.innerText = "Empezar"
 
 startBtn.onclick = ()=>{
