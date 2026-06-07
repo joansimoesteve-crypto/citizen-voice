@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,17 +19,17 @@
 
 <body class="bg-[#EEF2F5] flex justify-center min-h-screen">
 
-<div class="w-full max-w-md bg-white min-h-screen flex flex-col rounded-[30px] overflow-hidden">
+<div class="w-full max-w-md bg-white min-h-screen flex flex-col rounded-[28px] overflow-hidden">
 
 <!-- HEADER -->
-<div class="bg-gradient-to-r from-emerald-600 to-green-500 text-white p-4">
+<div class="bg-emerald-600 text-white p-4">
   <div class="flex items-center gap-3">
-    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
       👤
     </div>
     <div>
       <div class="font-bold">Citizen Voice</div>
-      <div class="text-xs opacity-80">Asistente ciudadano activo</div>
+      <div class="text-xs opacity-80">Asistente ciudadano</div>
     </div>
   </div>
 </div>
@@ -40,7 +39,7 @@
 
 <!-- MAP -->
 <div id="mapContainer" class="hidden p-3">
-  <div id="map" class="h-[380px] rounded-2xl"></div>
+  <div id="map" class="h-[360px] rounded-2xl"></div>
 </div>
 
 <!-- CONTROLS -->
@@ -78,7 +77,6 @@ function speak(text){
 /* ================= BOT ================= */
 
 function bot(text){
-
   const row = document.createElement("div")
   row.className = "flex gap-2"
 
@@ -111,34 +109,40 @@ function user(text){
 
 function buttons(list, cb){
   controls.innerHTML = ""
+
   list.forEach(v=>{
     const b = document.createElement("button")
     b.className = "bg-emerald-100 px-3 py-2 rounded-xl text-sm"
     b.innerText = v
+
     b.onclick = ()=>{
       user(v)
       controls.innerHTML = ""
       cb(v)
     }
+
     controls.appendChild(b)
   })
 }
 
-/* ================= IA (ROBUSTA) ================= */
+/* ================= IA (SEGURA) ================= */
 
 async function callAI(text){
 
   try {
-    const res = await fetch("https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inputs: text })
-    })
+    const res = await fetch(
+      "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inputs: text })
+      }
+    )
 
     const data = await res.json()
 
     return {
-      resumen: data.generated_text || "Sin resumen IA",
+      resumen: data?.generated_text || "Sin análisis IA",
       acciones: ["Revisar", "Inspección", "Seguimiento"]
     }
 
@@ -156,9 +160,9 @@ function start(){
 
   form = {}
 
-  bot("Hola, soy Citizen Voice. Vamos a empezar.")
+  bot("Hola 👤 soy Citizen Voice")
 
-  bot("¿Qué quieres registrar?")
+  bot("¿Qué deseas registrar?")
 
   buttons(["Incidencia","Mejora"], v=>{
     form.tipo = v
@@ -168,9 +172,9 @@ function start(){
 
 /* ================= WEEKLY ================= */
 
-function askWeekly(){
+async function askWeekly(){
 
-  bot("Consulta semanal: ¿cómo valoras la importancia de mejorar la ciudad?")
+  bot("Consulta semanal: del 1 al 5, ¿importancia de mejorar la ciudad?")
 
   buttons(["1","2","3","4","5"], async v=>{
 
@@ -191,7 +195,7 @@ function askWeekly(){
 
 function askArea(){
 
-  bot("¿En qué área afecta?")
+  bot("¿En qué área ocurre?")
 
   buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
     form.area = v
@@ -208,7 +212,7 @@ function askDescription(){
   controls.innerHTML = ""
 
   const input = document.createElement("input")
-  input.className = "border p-2 rounded-xl flex-1"
+  input.className = "border p-2 rounded-xl flex-1 text-sm"
 
   const mic = document.createElement("button")
   mic.innerText = "🎤"
@@ -272,11 +276,11 @@ function showMap(){
   },200)
 }
 
-/* ================= SAVE INCIDENCIA ================= */
+/* ================= SAVE ================= */
 
 async function save(){
 
-  bot("Guardando...")
+  bot("Guardando incidencia...")
 
   const { error } = await supabaseClient
     .from("incidencias")
@@ -292,30 +296,26 @@ async function save(){
     }])
 
   if(error){
-    bot("Error guardando en Supabase")
     console.log(error)
+    bot("Error en Supabase")
     return
   }
 
-  bot("Registro completado correctamente")
-
-  setTimeout(()=>{
-    bot("Puedes ver resultados en el panel.")
-  },1000)
+  bot("Registro completado ✔")
 }
 
 /* ================= INIT ================= */
 
-const startBtn = document.createElement("button")
-startBtn.className = "w-full bg-emerald-600 text-white p-4"
-startBtn.innerText = "Empezar"
+const btn = document.createElement("button")
+btn.className = "w-full bg-emerald-600 text-white p-4"
+btn.innerText = "Empezar"
 
-startBtn.onclick = ()=>{
+btn.onclick = ()=>{
   controls.innerHTML = ""
   start()
 }
 
-controls.appendChild(startBtn)
+controls.appendChild(btn)
 
 </script>
 
