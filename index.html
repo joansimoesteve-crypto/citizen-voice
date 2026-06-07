@@ -1,389 +1,314 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Citizen Voice · Bot</title>
+<title>Citizen Voice</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-
-<!-- SUPABASE -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-<!-- LEAFLET -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
+<style>
+#map {
+  height: 320px;
+  width: 100%;
+}
+</style>
+
 </head>
 
-<body class="bg-[#EEF2F5] min-h-screen flex justify-center">
+<body class="bg-[#EEF2F5] flex justify-center min-h-screen">
 
-<div class="w-full max-w-md bg-white min-h-screen shadow-2xl overflow-hidden rounded-[35px] flex flex-col">
+<div class="w-full max-w-md bg-white shadow-xl rounded-[30px] overflow-hidden flex flex-col">
 
-<!-- HEADER HUMANO -->
-<div class="bg-gradient-to-br from-emerald-600 to-green-500 text-white p-5 rounded-b-[30px]">
-
-<div class="text-2xl font-bold flex items-center gap-3">
-
-<!-- 👤 avatar humano real -->
-<img src="https://i.pravatar.cc/80?img=32"
-class="w-10 h-10 rounded-full border border-white/40"/>
-
-Citizen Voice
-
-</div>
-
-<div class="text-xs opacity-90 mt-1">
-Asistente urbano inteligente
-</div>
-
-</div>
-
-<!-- CONSULTA SEMANAL -->
-<div class="p-3">
-
-<div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-[25px] shadow">
-
-<div class="text-[11px] opacity-80">
-Consulta Semanal #1
-</div>
-
-<div class="font-semibold text-sm mt-1">
-¿Del 1 al 5, qué importancia das a mejorar los espacios culturales infantiles en tu ciudad?
-</div>
-
-<div class="flex gap-2 mt-3">
-
-<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(1)">😡</button>
-<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(2)">😕</button>
-<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(3)">😐</button>
-<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(4)">🙂</button>
-<button class="bg-white text-green-600 px-3 py-1 rounded-xl" onclick="weekly(5)">😄</button>
-
-</div>
-
-</div>
-
+<!-- HEADER -->
+<div class="bg-gradient-to-r from-emerald-600 to-green-500 text-white p-4">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+      👤
+    </div>
+    <div>
+      <div class="font-bold">Citizen Voice</div>
+      <div class="text-xs opacity-80">Asistente ciudadano</div>
+    </div>
+  </div>
 </div>
 
 <!-- CHAT -->
-<div id="chat" class="flex-1 p-4 overflow-y-auto flex flex-col gap-3"></div>
+<div id="chat" class="flex-1 p-3 overflow-y-auto flex flex-col gap-3"></div>
 
-<!-- MAPA -->
-<div id="mapContainer" class="hidden p-2">
-<div id="map" class="w-full h-[360px] rounded-2xl shadow"></div>
+<!-- MAP -->
+<div id="mapContainer" class="hidden p-3">
+  <div id="map"></div>
 </div>
 
-<!-- CONTROLES -->
-<div id="controls" class="p-3 border-t flex gap-2"></div>
+<!-- CONTROLS -->
+<div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
 
 </div>
 
 <script>
 
-/* ===================== */
-/* SUPABASE */
-/* ===================== */
+/* ================= SUPABASE ================= */
 
 const supabaseClient = supabase.createClient(
-"https://saiclsejxsycmeefuhvs.supabase.co",
-"sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
+  "https://saiclsejxsycmeefuhvs.supabase.co",
+  "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
 
-/* ===================== */
-/* STATE */
-/* ===================== */
+/* ================= STATE ================= */
+
+let form = {}
+let map, marker
 
 const chat = document.getElementById("chat")
 const controls = document.getElementById("controls")
 const mapContainer = document.getElementById("mapContainer")
 
-let formData = {}
-let map, marker
+/* ================= VOZ ================= */
 
-/* ===================== */
-/* VOZ ESTABLE */
-/* ===================== */
-
-function speak(text){
-speechSynthesis.cancel()
-const msg = new SpeechSynthesisUtterance(text)
-msg.lang = "es-ES"
-speechSynthesis.speak(msg)
+function speak(t){
+  const msg = new SpeechSynthesisUtterance(t)
+  msg.lang = "es-ES"
+  speechSynthesis.cancel()
+  speechSynthesis.speak(msg)
 }
 
-/* ===================== */
-/* BOT HUMANO */
-/* ===================== */
+/* ================= BOT ================= */
 
-function bot(text){
+function bot(t){
+  const row = document.createElement("div")
+  row.className = "flex gap-2 items-start"
 
-const row = document.createElement("div")
-row.className = "flex items-start gap-2"
+  const avatar = document.createElement("div")
+  avatar.className = "w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white"
+  avatar.innerHTML = "🙂"
 
-const avatar = document.createElement("img")
-avatar.src = "https://i.pravatar.cc/80?img=12"
-avatar.className = "w-10 h-10 rounded-full"
+  const bubble = document.createElement("div")
+  bubble.className = "bg-emerald-100 p-3 rounded-2xl text-sm"
+  bubble.innerText = t
 
-const bubble = document.createElement("div")
-bubble.className = "bg-emerald-100 p-3 rounded-2xl text-sm max-w-[85%]"
-bubble.innerText = text
+  row.appendChild(avatar)
+  row.appendChild(bubble)
 
-row.appendChild(avatar)
-row.appendChild(bubble)
+  chat.appendChild(row)
+  chat.scrollTop = chat.scrollHeight
 
-chat.appendChild(row)
-chat.scrollTop = chat.scrollHeight
-
-speak(text)
+  speak(t)
 }
 
-/* ===================== */
-/* USER */
-/* ===================== */
+/* ================= USER ================= */
 
-function user(text){
-const d = document.createElement("div")
-d.className = "bg-emerald-600 text-white p-3 rounded-2xl text-sm ml-auto max-w-[85%]"
-d.innerText = text
-chat.appendChild(d)
-chat.scrollTop = chat.scrollHeight
+function user(t){
+  const d = document.createElement("div")
+  d.className = "ml-auto bg-emerald-600 text-white p-3 rounded-2xl text-sm"
+  d.innerText = t
+  chat.appendChild(d)
 }
 
-/* ===================== */
-/* BOTONES */
-/* ===================== */
+/* ================= BUTTONS ================= */
 
 function buttons(list, cb){
-
-controls.innerHTML = ""
-
-list.forEach(t=>{
-const b = document.createElement("button")
-b.className = "bg-emerald-100 px-4 py-2 rounded-xl text-sm"
-b.innerText = t
-
-b.onclick = ()=>{
-controls.innerHTML = ""
-user(t)
-cb(t)
+  controls.innerHTML = ""
+  list.forEach(v=>{
+    const b = document.createElement("button")
+    b.className = "bg-emerald-100 px-3 py-2 rounded-xl text-sm"
+    b.innerText = v
+    b.onclick = ()=>{
+      user(v)
+      controls.innerHTML = ""
+      cb(v)
+    }
+    controls.appendChild(b)
+  })
 }
 
-controls.appendChild(b)
-})
-}
-
-/* ===================== */
-/* WEEKLY SUPABASE */
-/* ===================== */
-
-async function weekly(value){
-
-await supabaseClient.from("weekly").insert([{
-question_id: 1,
-value: value
-}])
-
-bot("Gracias por tu respuesta 👍")
-
-}
-
-/* ===================== */
-/* START */
-/* ===================== */
+/* ================= START ================= */
 
 function start(){
 
-formData = {}
+  form = {}
 
-bot("Hola 👋 soy Citizen Voice, tu asistente de participación ciudadana.")
-bot("Vamos a empezar.")
+  bot("Hola, soy Citizen Voice. Asistente virtual para la participación ciudadana.")
 
-askType()
+  bot("Consulta semanal activa")
 
+  bot("¿Qué importancia das del 1 al 5 a mejorar actividades culturales infantiles?")
+
+  buttons([
+    "1 😡","2 😕","3 😐","4 🙂","5 😄"
+  ], v=>{
+    form.weekly = v
+    askType()
+  })
 }
 
-/* ===================== */
-/* FLUJO */
-/* ===================== */
+/* ================= TYPE ================= */
 
 function askType(){
-
-bot("¿Qué quieres registrar?")
-
-buttons(["Incidencia","Mejora"], v=>{
-formData.tipo = v
-askArea()
-})
-
+  bot("¿Qué quieres registrar?")
+  buttons(["Incidencia","Mejora"], v=>{
+    form.tipo = v
+    askArea()
+  })
 }
+
+/* ================= AREA ================= */
 
 function askArea(){
-
-bot("¿En qué área se encuentra?")
-
-buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
-formData.area = v
-askRating()
-})
-
+  bot("¿En qué área ocurre?")
+  buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
+    form.area = v
+    askRating()
+  })
 }
+
+/* ================= RATING ================= */
 
 function askRating(){
-
-bot("¿Cómo valoras esta área actualmente?")
-
-buttons(["😡 1","😕 2","😐 3","🙂 4","😄 5"], v=>{
-formData.valoracion = v
-showMap()
-})
-
+  bot("¿Cómo valoras actualmente esta área?")
+  buttons(["1 😡","2 😕","3 😐","4 🙂","5 😄"], v=>{
+    form.valoracion = v
+    showMap()
+  })
 }
 
-/* ===================== */
-/* MAPA (FIX REAL ESTABLE) */
-/* ===================== */
+/* ================= MAP ================= */
 
 function showMap(){
 
-bot("Selecciona la ubicación en el mapa")
+  bot("Selecciona ubicación en el mapa")
 
-controls.innerHTML = ""
-mapContainer.classList.remove("hidden")
+  mapContainer.classList.remove("hidden")
 
-setTimeout(()=>{
+  setTimeout(()=>{
 
-if(!map){
+    if(!map){
+      map = L.map("map").setView([39.47,-0.37],13)
 
-map = L.map("map").setView([39.47,-0.37],13)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+        attribution:""
+      }).addTo(map)
+    }
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-.addTo(map)
+    map.invalidateSize()
 
-setTimeout(()=>map.invalidateSize(),300)
+    map.on("click", e=>{
 
+      if(marker) map.removeLayer(marker)
+
+      marker = L.marker(e.latlng).addTo(map)
+
+      form.lat = e.latlng.lat
+      form.lng = e.latlng.lng
+
+      askDescription()
+    })
+
+  },300)
 }
 
-map.invalidateSize()
-
-map.off()
-map.on("click", e=>{
-
-if(marker) map.removeLayer(marker)
-
-marker = L.marker(e.latlng).addTo(map)
-
-formData.lat = e.latlng.lat
-formData.lng = e.latlng.lng
-
-mapContainer.classList.add("hidden")
-chat.scrollTop = chat.scrollHeight
-
-askDescription()
-
-})
-
-},200)
-
-}
-
-/* ===================== */
-/* DESCRIPCIÓN */
-/* ===================== */
+/* ================= DESCRIPTION ================= */
 
 function askDescription(){
 
-bot("Describe lo que ocurre")
+  bot("Describe la situación")
 
-controls.innerHTML = ""
+  controls.innerHTML = ""
 
-const input = document.createElement("input")
-input.className = "border p-3 rounded-xl flex-1 text-sm"
+  const input = document.createElement("input")
+  input.className = "border p-2 rounded-xl flex-1 text-sm"
 
-const mic = document.createElement("button")
-mic.innerText = "🎤"
-mic.className = "bg-gray-200 px-3 rounded-xl"
+  const mic = document.createElement("button")
+  mic.innerText = "🎤"
+  mic.className = "px-3 bg-gray-200 rounded-xl"
 
-mic.onclick = ()=>{
+  mic.onclick = ()=>{
+    const r = new webkitSpeechRecognition()
+    r.lang = "es-ES"
+    r.start()
+    r.onresult = e=>{
+      input.value = e.results[0][0].transcript
+    }
+  }
 
-const r = new webkitSpeechRecognition()
-r.lang = "es-ES"
-r.start()
+  const send = document.createElement("button")
+  send.innerText = "Enviar"
+  send.className = "bg-emerald-600 text-white px-4 rounded-xl"
 
-r.onresult = e=>{
-input.value = e.results[0][0].transcript
+  send.onclick = async ()=>{
+
+    if(!input.value) return
+
+    form.descripcion = input.value
+
+    user(input.value)
+
+    /* ================= SUPABASE INCIDENCIAS ================= */
+
+    await supabaseClient
+      .from("incidencias")
+      .insert([form])
+
+    /* ================= SUPABASE WEEKLY ================= */
+
+    await supabaseClient
+      .from("weekly_engagement")
+      .insert([{
+        valoracion: form.weekly
+      }])
+
+    bot("Registro guardado correctamente")
+
+    finish()
+  }
+
+  controls.appendChild(input)
+  controls.appendChild(mic)
+  controls.appendChild(send)
 }
 
+/* ================= FIN ================= */
+
+function finish(){
+
+  controls.innerHTML = ""
+
+  const panel = document.createElement("button")
+  panel.className = "bg-emerald-600 text-white px-4 py-2 rounded-xl"
+  panel.innerText = "Ver datos"
+
+  panel.onclick = ()=>{
+    window.location.href =
+    "https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
+  }
+
+  const close = document.createElement("button")
+  close.className = "bg-gray-200 px-4 py-2 rounded-xl"
+  close.innerText = "Cerrar"
+
+  close.onclick = ()=> location.reload()
+
+  controls.appendChild(panel)
+  controls.appendChild(close)
 }
 
-const send = document.createElement("button")
-send.innerText = "Enviar"
-send.className = "bg-emerald-600 text-white px-4 py-2 rounded-xl"
-
-send.onclick = async ()=>{
-
-if(!input.value) return
-
-user(input.value)
-
-formData.descripcion = input.value
-
-await supabaseClient.from("incidencias").insert([formData])
-
-bot("Registro guardado correctamente")
-
-showFinal()
-
-}
-
-controls.appendChild(input)
-controls.appendChild(mic)
-controls.appendChild(send)
-
-}
-
-/* ===================== */
-/* FINAL */
-/* ===================== */
-
-function showFinal(){
-
-controls.innerHTML = ""
-
-const close = document.createElement("button")
-close.innerText = "Cerrar"
-close.className = "bg-gray-200 px-4 py-2 rounded-xl"
-close.onclick = ()=>location.reload()
-
-const panel = document.createElement("button")
-panel.innerText = "Ver datos"
-panel.className = "bg-emerald-600 text-white px-4 py-2 rounded-xl"
-panel.onclick = ()=>{
-window.location.href =
-"https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
-}
-
-controls.appendChild(close)
-controls.appendChild(panel)
-
-}
-
-/* ===================== */
-/* INIT */
-/* ===================== */
+/* ================= INIT ================= */
 
 const startBtn = document.createElement("button")
+startBtn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl"
 startBtn.innerText = "Empezar"
-startBtn.className = "w-full bg-emerald-600 text-white py-4 rounded-xl text-lg"
 
 startBtn.onclick = ()=>{
-controls.innerHTML = ""
-start()
+  controls.innerHTML = ""
+  start()
 }
 
 controls.appendChild(startBtn)
