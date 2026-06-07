@@ -23,7 +23,9 @@
 
 <!-- HEADER -->
 <div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4 text-center">
-<div class="text-xl font-bold">Citizen Voice</div>
+<div class="text-xl font-bold">
+Citizen Voice
+</div>
 <div class="text-xs opacity-90">
 Asistente virtual para participación activa · 30 segundos
 </div>
@@ -39,10 +41,10 @@ Asistente virtual para participación activa · 30 segundos
 
 <script>
 
-/* ===================== SUPABASE ===================== */
-
+/* ===================== */
+/* SUPABASE */
+/* ===================== */
 const { createClient } = supabase
-
 const supabaseClient = createClient(
 "https://saiclsejxsycmeefuhvs.supabase.co",
 "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
@@ -53,35 +55,30 @@ const controls = document.getElementById("controls")
 
 let formData = {}
 
-/* ===================== VOZ ===================== */
-
+/* ===================== */
+/* VOZ */
+/* ===================== */
 function speak(text){
 const msg = new SpeechSynthesisUtterance(text)
 msg.lang = "es-ES"
-speechSynthesis.cancel()
 speechSynthesis.speak(msg)
 }
 
-/* ===================== BOT HUMANO ===================== */
-
+/* ===================== */
+/* BOT */
+/* ===================== */
 function bot(text){
-
 const row = document.createElement("div")
 row.className = "flex items-start gap-2"
 
 const avatar = document.createElement("div")
 avatar.className =
 "w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white text-lg shadow"
-
-avatar.innerHTML = `
-<svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-<circle cx="12" cy="8" r="4"/>
-<path d="M4 20c2-4 14-4 16 0"/>
-</svg>
-`
+avatar.innerHTML = "👤"
 
 const bubble = document.createElement("div")
-bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
+bubble.className =
+"bg-green-100 p-3 rounded-2xl text-sm w-[80%]"
 bubble.innerText = text
 
 row.appendChild(avatar)
@@ -93,81 +90,87 @@ chat.scrollTop = chat.scrollHeight
 speak(text)
 }
 
-/* ===================== USER ===================== */
-
+/* ===================== */
+/* USER */
+/* ===================== */
 function user(text){
 const d = document.createElement("div")
-d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
+d.className =
+"bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
 d.innerText = text
 chat.appendChild(d)
 chat.scrollTop = chat.scrollHeight
 }
 
-/* ===================== BOTONES ===================== */
-
+/* ===================== */
+/* BOTONES */
+/* ===================== */
 function buttons(list, callback){
 controls.innerHTML = ""
-
 list.forEach(o=>{
 const b = document.createElement("button")
-b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
+b.className =
+"bg-green-100 hover:bg-green-200 transition px-4 py-2 rounded-xl text-sm"
 b.innerText = o
-
 b.onclick = ()=>{
 controls.innerHTML = ""
 user(o)
 callback(o)
 }
-
 controls.appendChild(b)
 })
 }
 
-/* ===================== START ===================== */
+/* ===================== */
+/* 🔥 NUEVO: CONSULTA SEMANAL */
+/* ===================== */
+function weeklyQuestion(){
 
-function start(){
+bot("📊 Consulta semanal")
 
-formData = {}
+bot("¿Qué importancia das a mejorar los espacios culturales infantiles?")
 
-bot("Hola, soy Citizen Voice. Asistente virtual para la participación ciudadana.")
+buttons([
+"😡 1",
+"😕 2",
+"😐 3",
+"🙂 4",
+"😄 5"
+], async (v)=>{
 
-bot("Vamos a empezar con una consulta rápida.")
-
-bot("¿Cómo valoras la importancia de actividades culturales infantiles?")
-
-buttons(["1","2","3","4","5"], async v=>{
-
-formData.weekly = v
-
-/* ===================== WEEKLY ENGAGEMENT (FIX REAL) ===================== */
+formData.weekly_answer = parseInt(v)
 
 await supabaseClient
 .from("weekly_engagement")
 .insert([{
-week: Math.ceil(Date.now() / (1000 * 60 * 60 * 24 * 7)),
-question: "actividades culturales infantiles",
-area: "cultura infantil",
-answer: parseInt(v),
+week: new Date().getWeek?.() || 1,
+question: "Espacios culturales infantiles",
+answer: formData.weekly_answer,
 created_at: new Date().toISOString()
 }])
 
-askType()
-
+start()   // seguimos flujo normal
 })
 }
 
-/* ===================== TYPE ===================== */
+/* ===================== */
+/* START */
+/* ===================== */
+function start(){
 
-function askType(){
-bot("¿Qué quieres registrar hoy?")
+formData = {}
+
+bot("Hola 👋 soy Citizen Voice. ¿Qué deseas registrar?")
+
 buttons(["Incidencia","Propuesta de mejora"], v=>{
 formData.tipo = v
 askArea()
 })
 }
 
-/* ===================== AREA ===================== */
-
+/* ===================== */
+/* AREA */
+/* ===================== */
 function askArea(){
 bot("¿En qué área ocurre o afecta? ¿Qué opinas de su estado actual?")
 buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"], v=>{
@@ -176,8 +179,9 @@ askRate()
 })
 }
 
-/* ===================== RATE ===================== */
-
+/* ===================== */
+/* VALORACIÓN */
+/* ===================== */
 function askRate(){
 bot("Valora del 1 al 5 la situación actual")
 buttons(["1","2","3","4","5"], v=>{
@@ -186,11 +190,9 @@ showMap()
 })
 }
 
-/* ===================== MAP ===================== */
-
-let map = null
-let marker = null
-
+/* ===================== */
+/* MAPA (SIN CAMBIAR TU BASE) */
+/* ===================== */
 function showMap(){
 
 bot("Indica dónde ocurre (busca o toca el mapa)")
@@ -203,7 +205,7 @@ search.className = "border p-3 rounded-xl w-full mb-2 text-sm"
 
 const mapDiv = document.createElement("div")
 mapDiv.id = "map"
-mapDiv.style.height = "450px"
+mapDiv.style.height = "420px"
 mapDiv.className = "rounded-2xl shadow"
 
 controls.appendChild(search)
@@ -211,64 +213,50 @@ chat.appendChild(mapDiv)
 
 setTimeout(()=>{
 
-if(!map){
+const map = L.map('map').setView([39.47,-0.37],13)
 
-map = L.map('map').setView([39.47,-0.37],13)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-.addTo(map)
+let marker
 
-}else{
-map.invalidateSize()
-}
-
-let geocoder = L.Control.Geocoder.nominatim()
-
-map.on("click", e=>{
-
-if(marker) map.removeLayer(marker)
-
-marker = L.marker(e.latlng).addTo(map)
-
-formData.lat = e.latlng.lat
-formData.lng = e.latlng.lng
-
-bot("Ubicación registrada")
-
-askDescription()
-
-})
+const geocoder = L.Control.Geocoder.nominatim()
 
 search.addEventListener("keydown",(e)=>{
 if(e.key==="Enter"){
 geocoder.geocode(search.value, results=>{
 if(results.length>0){
-
 const r = results[0]
-
 map.setView(r.center,16)
-
 if(marker) map.removeLayer(marker)
-
 marker = L.marker(r.center).addTo(map)
 
 formData.lat = r.center.lat
 formData.lng = r.center.lng
 
-bot("Ubicación encontrada")
-
+bot("Ubicación registrada")
 askDescription()
-
 }
 })
 }
+})
+
+map.on("click", e=>{
+if(marker) map.removeLayer(marker)
+marker = L.marker(e.latlng).addTo(map)
+
+formData.lat = e.latlng.lat
+formData.lng = e.latlng.lng
+
+bot("Ubicación guardada")
+askDescription()
 })
 
 },300)
 }
 
-/* ===================== DESCRIPTION ===================== */
-
+/* ===================== */
+/* DESCRIPCIÓN + SUPABASE INCIDENCIAS */
+/* ===================== */
 function askDescription(){
 
 bot("Describe la incidencia o mejora")
@@ -297,24 +285,38 @@ send.innerText = "Enviar"
 send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
 
 send.onclick = async ()=>{
-
 if(!input.value) return
 
 user(input.value)
-
 formData.descripcion = input.value
 
-await supabaseClient
-.from("incidencias")
-.insert([{
-...formData,
-created_at: new Date().toISOString()
+/* IA opcional */
+let ai = {resumen:"", acciones:[]}
+try{
+const res = await fetch("/api/ai",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body: JSON.stringify({ description: formData.descripcion })
+})
+ai = await res.json()
+}catch(e){}
+
+/* INCIDENCIA */
+await supabaseClient.from("incidencias").insert([{
+tipo: formData.tipo,
+area: formData.area,
+valoracion: formData.valoracion,
+descripcion: formData.descripcion,
+lat: formData.lat,
+lng: formData.lng,
+resumen: ai.resumen || "",
+acciones: ai.acciones || []
 }])
 
-bot("Registro completado correctamente")
+bot("Registrado correctamente ✅")
 
-showEnd()
-
+/* 🔥 después lanzamos weekly */
+setTimeout(()=> weeklyQuestion(), 800)
 }
 
 controls.appendChild(input)
@@ -322,36 +324,12 @@ controls.appendChild(mic)
 controls.appendChild(send)
 }
 
-/* ===================== FINAL ===================== */
-
-function showEnd(){
-
-controls.innerHTML = ""
-
-const panel = document.createElement("button")
-panel.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
-panel.innerText = "Ver datos"
-
-panel.onclick = ()=>{
-window.location.href =
-"https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
-}
-
-const close = document.createElement("button")
-close.className = "bg-gray-200 px-4 py-2 rounded-xl"
-close.innerText = "Cerrar"
-
-close.onclick = ()=>location.reload()
-
-controls.appendChild(panel)
-controls.appendChild(close)
-}
-
-/* ===================== INIT ===================== */
-
+/* ===================== */
+/* INIT */
+/* ===================== */
 const startBtn = document.createElement("button")
-startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 startBtn.innerText = "Empezar"
+startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 
 startBtn.onclick = ()=>{
 controls.innerHTML = ""
