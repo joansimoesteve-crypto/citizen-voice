@@ -17,297 +17,308 @@
 
 </head>
 
-<body class="bg-green-50 flex justify-center items-start min-h-screen p-2">
+<body class="bg-green-50 flex justify-center items-center min-h-screen p-2">
 
-<div class="w-full max-w-md h-[95vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+<div class="w-full max-w-md h-[95vh] bg-white rounded-3xl shadow-xl flex flex-col overflow-hidden">
 
-<!-- HEADER HUMANO -->
-<div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4">
-
-<div class="flex items-center gap-3">
-
-<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow">
-<svg width="26" height="26" viewBox="0 0 64 64">
-<circle cx="32" cy="20" r="10" fill="#10b981"/>
-<path d="M18 52c4-10 12-15 14-15s10 5 14 15" fill="#10b981"/>
-</svg>
+<!-- HEADER MINIMAL -->
+<div class="bg-gradient-to-r from-green-700 to-emerald-600 text-white p-4 text-center">
+  <div class="text-lg font-bold">Citizen Voice</div>
 </div>
 
-<div>
-<div class="text-xl font-bold">Citizen Voice</div>
-<div class="text-xs opacity-90">Asistente virtual ciudadano</div>
-</div>
+<!-- AVATAR AREA (AI STEVE STYLE) -->
+<div id="assistant" class="flex flex-col items-center justify-center flex-1 px-4">
+
+  <div id="avatar"
+       class="w-36 h-36 rounded-full bg-gradient-to-br from-emerald-500 to-green-700 flex items-center justify-center shadow-2xl animate-pulse">
+
+    <svg width="70" height="70" viewBox="0 0 64 64">
+      <circle cx="32" cy="24" r="14" fill="white"/>
+      <circle cx="27" cy="22" r="2.5" fill="#10b981"/>
+      <circle cx="37" cy="22" r="2.5" fill="#10b981"/>
+      <path d="M26 30c3 3 9 3 12 0" stroke="#10b981" stroke-width="2" fill="none"/>
+      <path d="M18 56c4-10 12-14 14-14s10 4 14 14" fill="white"/>
+    </svg>
+
+  </div>
+
+  <div id="subtitle" class="mt-5 text-center text-gray-600 text-sm px-4">
+    Pulsa empezar para hablar conmigo
+  </div>
 
 </div>
 
-</div>
-
-<!-- CHAT -->
-<div id="chat" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3"></div>
-
-<!-- CONTROLES -->
+<!-- CONTROLES (solo acciones puntuales) -->
 <div id="controls" class="p-3 border-t flex flex-wrap gap-2"></div>
 
 </div>
 
 <script>
 
-/* ================= SUPABASE ================= */
+/* ===================== */
+/* SUPABASE (NO TOCADO) */
+/* ===================== */
+
 const { createClient } = supabase
+
 const supabaseClient = createClient(
 "https://saiclsejxsycmeefuhvs.supabase.co",
 "sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
 )
 
-const chat = document.getElementById("chat")
-const controls = document.getElementById("controls")
-
 let formData = {}
 let currentMap = null
 
-/* ================= VOZ ================= */
+const controls = document.getElementById("controls")
+
+/* ===================== */
+/* VOZ */
+/* ===================== */
+
 function speak(text){
-speechSynthesis.cancel()
-const msg = new SpeechSynthesisUtterance(text)
-msg.lang = "es-ES"
-msg.rate = 1
-speechSynthesis.speak(msg)
+  speechSynthesis.cancel()
+  const msg = new SpeechSynthesisUtterance(text)
+  msg.lang = "es-ES"
+  speechSynthesis.speak(msg)
 }
 
-/* ================= BOT HUMANO ================= */
+/* ===================== */
+/* AVATAR TALK (CLAVE UX) */
+/* ===================== */
+
 function bot(text){
-
-const row = document.createElement("div")
-row.className = "flex items-start gap-2 opacity-0 animate-fade"
-
-const avatar = document.createElement("div")
-avatar.className = "w-10 h-10 rounded-full bg-emerald-600"
-
-const bubble = document.createElement("div")
-bubble.className = "bg-green-100 p-3 rounded-2xl text-sm w-[85%]"
-bubble.innerText = text
-
-row.appendChild(avatar)
-row.appendChild(bubble)
-
-chat.appendChild(row)
-chat.scrollTop = chat.scrollHeight
-
-setTimeout(()=> row.style.opacity = 1, 50)
-
-speak(text)
+  document.getElementById("subtitle").innerText = text
+  speak(text)
 }
 
-/* ================= USER ================= */
+/* ===================== */
+/* USER */
+/* ===================== */
+
 function user(text){
-const d = document.createElement("div")
-d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
-d.innerText = text
-chat.appendChild(d)
-chat.scrollTop = chat.scrollHeight
+  const d = document.createElement("div")
+  d.className = "bg-green-600 text-white p-3 rounded-2xl text-sm w-[80%] ml-auto"
+  d.innerText = text
+  document.getElementById("assistant").appendChild(d)
 }
 
-/* ================= BOTONES ================= */
+/* ===================== */
+/* BUTTONS (flotantes UX) */
+/* ===================== */
+
 function buttons(list, callback){
-controls.innerHTML = ""
-list.forEach(o=>{
-const b = document.createElement("button")
-b.className = "bg-green-100 px-4 py-2 rounded-xl text-sm"
-b.innerText = o
-b.onclick = ()=>{
-controls.innerHTML = ""
-user(o)
-callback(o)
-}
-controls.appendChild(b)
-})
+  controls.innerHTML = ""
+
+  list.forEach(o=>{
+    const b = document.createElement("button")
+    b.className = "bg-green-100 hover:bg-green-200 px-4 py-2 rounded-xl text-sm"
+    b.innerText = o
+    b.onclick = ()=>{
+      controls.innerHTML = ""
+      user(o)
+      callback(o)
+    }
+    controls.appendChild(b)
+  })
 }
 
-/* ================= PREGUNTA SEMANAL ================= */
+/* ===================== */
+/* START */
+/* ===================== */
+
+function start(){
+  bot("Hola, soy Citizen Voice. Vamos a empezar con una pregunta rápida.")
+
+  setTimeout(()=>{
+    weeklyQuestion()
+  }, 1200)
+}
+
+/* ===================== */
+/* WEEKLY (igual pero integrado UX) */
+/* ===================== */
+
 function weeklyQuestion(){
 
-bot("Antes de empezar, una pregunta rápida.")
+  bot("¿Qué importancia das a mejorar los espacios culturales infantiles?")
 
-bot("¿Qué importancia das a mejorar los espacios culturales infantiles?")
+  buttons(["1","2","3","4","5"], async (v)=>{
 
-buttons(["1","2","3","4","5"], async (v)=>{
+    await supabaseClient.from("weekly_engagement").insert([{
+      week: 1,
+      question: "Espacios culturales infantiles",
+      answer: parseInt(v),
+      created_at: new Date().toISOString()
+    }])
 
-await supabaseClient.from("weekly_engagement").insert([{
-week: 1,
-question: "Espacios culturales infantiles",
-answer: parseInt(v),
-created_at: new Date().toISOString()
-}])
+    bot("Perfecto. Y ahora, ¿qué quieres registrar?")
 
-bot("Perfecto. Vamos con tu incidencia.")
-
-startFlow()
-
-})
+    setTimeout(()=> askType(), 900)
+  })
 }
 
-/* ================= FLUJO ================= */
-function startFlow(){
+/* ===================== */
+/* FLUJO (igual lógica original) */
+/* ===================== */
 
-bot("Dime qué quieres registrar.")
-
-buttons(["Incidencia","Mejora"], v=>{
-formData.tipo = v
-askArea()
-})
-
+function askType(){
+  buttons(["Incidencia","Propuesta de mejora"], v=>{
+    formData.tipo = v
+    bot("¿En qué área ocurre?")
+    askArea()
+  })
 }
 
-/* ================= AREA ================= */
 function askArea(){
-bot("¿En qué zona ocurre?")
-buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"], v=>{
-formData.area = v
-askRate()
-})
+  buttons(["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad","Otros"], v=>{
+    formData.area = v
+    bot("¿Cómo lo valoras del 1 al 5?")
+    askRate()
+  })
 }
 
-/* ================= VALORACIÓN ================= */
 function askRate(){
-bot("¿Cómo lo valorarías?")
-buttons(["1","2","3","4","5"], v=>{
-formData.valoracion = parseInt(v)
-showMap()
-})
+  buttons(["1","2","3","4","5"], v=>{
+    formData.valoracion = v
+    showMap()
+  })
 }
 
-/* ================= MAPA (MÁS GRANDE) ================= */
+/* ===================== */
+/* MAPA (MISMO FUNCIONAMIENTO) */
+/* ===================== */
+
 function showMap(){
 
-bot("Indica el punto en el mapa o busca dirección.")
+  bot("Indica dónde ocurre")
 
-controls.innerHTML = ""
+  controls.innerHTML = ""
 
-const wrapper = document.createElement("div")
-wrapper.className = "w-full"
+  const search = document.createElement("input")
+  search.placeholder = "Buscar dirección..."
+  search.className = "border p-3 rounded-xl w-full mb-2 text-sm"
 
-const search = document.createElement("input")
-search.placeholder = "Buscar dirección..."
-search.className = "border p-2 rounded-xl w-full mb-2"
+  const mapDiv = document.createElement("div")
+  mapDiv.id = "map"
+  mapDiv.style.height = "300px"
+  mapDiv.className = "rounded-2xl shadow"
 
-const mapDiv = document.createElement("div")
-mapDiv.id = "map"
-mapDiv.style.height = "420px"
-mapDiv.className = "rounded-2xl"
+  controls.appendChild(search)
+  controls.appendChild(mapDiv)
 
-wrapper.appendChild(search)
-wrapper.appendChild(mapDiv)
-controls.appendChild(wrapper)
+  setTimeout(()=>{
 
-setTimeout(()=>{
+    if(currentMap) currentMap.remove()
 
-if(currentMap) currentMap.remove()
+    currentMap = L.map('map').setView([39.47,-0.37],13)
 
-currentMap = L.map("map").setView([39.47,-0.37],13)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(currentMap)
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-.addTo(currentMap)
+    let marker
 
-let marker
-const geocoder = L.Control.Geocoder.nominatim()
+    const geocoder = L.Control.Geocoder.nominatim()
 
-search.addEventListener("keydown",(e)=>{
-if(e.key==="Enter"){
-geocoder.geocode(search.value, res=>{
-if(res.length){
-const r = res[0]
-currentMap.setView(r.center,16)
-marker = L.marker(r.center).addTo(currentMap)
-formData.lat = r.center.lat
-formData.lng = r.center.lng
-bot("Ubicación registrada.")
-askDescription()
+    search.addEventListener("keydown",(e)=>{
+      if(e.key==="Enter"){
+        geocoder.geocode(search.value, results=>{
+          if(results.length>0){
+            const r = results[0]
+
+            currentMap.setView(r.center,16)
+
+            if(marker) currentMap.removeLayer(marker)
+            marker = L.marker(r.center).addTo(currentMap)
+
+            formData.lat = r.center.lat
+            formData.lng = r.center.lng
+
+            bot("Ubicación registrada")
+            askDescription()
+          }
+        })
+      }
+    })
+
+    currentMap.on("click", e=>{
+      if(marker) currentMap.removeLayer(marker)
+      marker = L.marker(e.latlng).addTo(currentMap)
+
+      formData.lat = e.latlng.lat
+      formData.lng = e.latlng.lng
+
+      bot("Ubicación guardada")
+      askDescription()
+    })
+
+  },300)
 }
-})
-}
-})
 
-currentMap.on("click", e=>{
-if(marker) currentMap.removeLayer(marker)
-marker = L.marker(e.latlng).addTo(currentMap)
-formData.lat = e.latlng.lat
-formData.lng = e.latlng.lng
-bot("Ubicación guardada.")
-askDescription()
-})
+/* ===================== */
+/* DESCRIPCIÓN + SUPABASE */
+/* ===================== */
 
-},300)
-}
-
-/* ================= DESCRIPCIÓN ================= */
 function askDescription(){
 
-bot("Describe brevemente lo ocurrido.")
+  bot("Descríbelo brevemente")
 
-controls.innerHTML = ""
+  controls.innerHTML = ""
 
-const input = document.createElement("input")
-input.className = "border p-3 rounded-xl flex-1 text-sm"
-input.placeholder = "Escribe aquí..."
+  const input = document.createElement("input")
+  input.className = "border p-3 rounded-xl flex-1 text-sm"
+  input.placeholder = "Escribe aquí..."
 
-const send = document.createElement("button")
-send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
-send.innerText = "Enviar"
+  const send = document.createElement("button")
+  send.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
+  send.innerText = "Enviar"
 
-send.onclick = async ()=>{
+  send.onclick = async ()=>{
 
-if(!input.value) return
+    if(!input.value) return
 
-user(input.value)
-formData.descripcion = input.value
+    user(input.value)
+    formData.descripcion = input.value
 
-await supabaseClient.from("incidencias").insert([formData])
+    await supabaseClient.from("incidencias").insert([{
+      tipo: formData.tipo,
+      area: formData.area,
+      valoracion: formData.valoracion,
+      descripcion: formData.descripcion,
+      lat: formData.lat,
+      lng: formData.lng
+    }])
 
-bot("Registrado correctamente.")
+    bot("Registro completado")
 
-controls.innerHTML = ""
+    controls.innerHTML = ""
 
-const close = document.createElement("button")
-close.innerText = "Cerrar"
-close.className = "bg-gray-200 px-4 py-2 rounded-xl"
+    const close = document.createElement("button")
+    close.className = "w-full bg-slate-200 p-3 rounded-xl"
+    close.innerText = "Cerrar"
+    close.onclick = ()=> location.reload()
 
-close.onclick = ()=> location.reload()
+    controls.appendChild(close)
+  }
 
-const view = document.createElement("button")
-view.innerText = "Ver datos"
-view.className = "bg-green-600 text-white px-4 py-2 rounded-xl"
-
-view.onclick = ()=> window.location.href = "/citizen.html"
-
-controls.appendChild(close)
-controls.appendChild(view)
+  controls.appendChild(input)
+  controls.appendChild(send)
 }
 
-controls.appendChild(input)
-controls.appendChild(send)
-}
+/* ===================== */
+/* INIT */
+/* ===================== */
 
-/* ================= START ================= */
 const startBtn = document.createElement("button")
+startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl text-lg"
 startBtn.innerText = "Empezar"
-startBtn.className = "w-full bg-green-600 text-white py-4 rounded-xl"
 
 startBtn.onclick = ()=>{
-controls.innerHTML = ""
-weeklyQuestion()
+  controls.innerHTML = ""
+  start()
 }
 
 controls.appendChild(startBtn)
 
 </script>
-
-<style>
-@keyframes fade {
-from { opacity: 0; transform: translateY(5px); }
-to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade { animation: fade 0.2s ease-out; }
-</style>
 
 </body>
 </html>
