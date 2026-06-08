@@ -151,7 +151,6 @@ box-shadow: 0 0 20px rgba(52,211,153,0.6);
 
 <div class="w-full max-w-md h-[96dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
-<!-- HERO / HEADER -->
 <div class="hero flex-shrink-0">
 <div class="glow"></div>
 <div class="avatar-wrapper">
@@ -166,20 +165,17 @@ box-shadow: 0 0 20px rgba(52,211,153,0.6);
 </div>
 </div>
 
-<!-- CUERPO SCROLLABLE DE DATOS -->
 <div class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 main-container">
 
-<!-- RESULTADOS CONSULTA SEMANAL (MÓDULO EXCLUSIVAMENTE CONSULTIVO) -->
 <div class="glass-card p-4 rounded-[26px]">
 <div class="flex justify-between items-center text-[10px] text-emerald-400 font-mono tracking-wider">
 <span>#CONSULTASEMANAL-1 · CONTEXTO GENERAL</span>
 <span class="bg-emerald-500/10 px-2 py-0.5 rounded-full text-emerald-400 font-sans font-bold">Métrica Global</span>
 </div>
 <div class="text-white font-medium mt-1.5 text-sm leading-snug">
-¿Qué nivel de importancia otoras a expandir las áreas culturales infantiles en la ciudad?
+¿Qué nivel de importancia otorgas a expandir las áreas culturales infantiles en la ciudad?
 </div>
-<!-- Consenso Colectivo Calculado dinámicamente -->
-<div class="mt-3.5 bg-white/5 border border-white/5 p-3 rounded-xl">
+<div class="mt-3 bg-white/5 border border-white/5 p-3 rounded-xl">
 <div class="flex justify-between items-end">
 <span class="text-xs text-white/50">Consenso de la ciudadanía:</span>
 <span id="weeklyScore" class="text-lg font-bold text-emerald-400">Calculando...</span>
@@ -190,19 +186,30 @@ box-shadow: 0 0 20px rgba(52,211,153,0.6);
 </div>
 </div>
 
-<!-- KPIs EN PANEL EN TANDEM -->
+<div class="grid grid-cols-2 gap-3">
+<div class="glass-card p-3.5 rounded-[22px] border border-red-500/10 flex flex-col">
+<span class="text-[10px] text-red-400 font-bold uppercase tracking-wider">⚠️ Incidencias</span>
+<div id="countIncidencias" class="text-2xl font-bold text-white mt-1">0</div>
+<span class="text-[9px] text-white/40 mt-0.5">Problemas detectados</span>
+</div>
+<div class="glass-card p-3.5 rounded-[22px] border border-blue-500/10 flex flex-col">
+<span class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">💡 Propuestas Mejora</span>
+<div id="countMejoras" class="text-2xl font-bold text-white mt-1">0</div>
+<span class="text-[9px] text-white/40 mt-0.5">Iniciativas ciudadanas</span>
+</div>
+</div>
+
 <div class="grid grid-cols-2 gap-3">
 <div class="glass-card p-4 rounded-[24px] flex flex-col justify-between">
-<div class="text-xs text-white/60 font-medium">Incidencias totales</div>
+<div class="text-xs text-white/60 font-medium">Registros Totales</div>
 <div id="totalIncidencias" class="text-3xl font-bold text-white mt-1 tracking-tight">0</div>
 </div>
 <div class="glass-card p-4 rounded-[24px] flex flex-col justify-between">
-<div class="text-xs text-white/60 font-medium">Resolución media</div>
+<div class="text-xs text-white/60 font-medium">Resolución Media</div>
 <div id="avgTime" class="text-2xl font-bold text-emerald-400 mt-1 tracking-tight">0 días</div>
 </div>
 </div>
 
-<!-- NUEVO ASISTENTE DE DATOS INTELIGENTE (INTERACTIVO SOBRE BASE DE DATOS LOCAL) -->
 <div class="glass-card p-4 rounded-[26px] border border-emerald-500/20 flex flex-col gap-3">
 <div class="flex items-center gap-2">
 <div class="ai-mini-avatar">
@@ -210,18 +217,15 @@ box-shadow: 0 0 20px rgba(52,211,153,0.6);
 </div>
 <span class="text-xs font-bold text-emerald-400 tracking-wider uppercase">Asistente Analítico de Datos</span>
 </div>
-<!-- Ventana de Respuesta de la IA -->
-<div class="bg-black/30 rounded-xl p-3 text-xs text-white/90 min-h-[50px] flex items-center leading-relaxed transition-all duration-300" id="aiResponse">
-Hola, soy tu asistente de datos. Puedes preguntarme estadísticas sobre las incidencias (ej: "Dame un resumen", "¿Cuál es el peor área?", "¿Cuántas incidencias de Limpieza hay?").
+<div class="bg-black/30 rounded-xl p-3 text-xs text-white/90 min-h-[50px] flex items-center leading-relaxed" id="aiResponse">
+Hola, soy tu asistente de datos. Puedes preguntarme estadísticas sobre las incidencias (ej: "Dame un resumen", "¿Cuántas mejoras hay?", "¿Cuál es el peor área?").
 </div>
-<!-- Formulario de Entrada -->
 <div class="flex gap-2">
 <input type="text" id="aiInput" placeholder="Hazme una pregunta sobre el estado urbano..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none placeholder:text-white/30 focus:border-emerald-500/50">
 <button onclick="queryDataAI()" class="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-3 rounded-xl text-xs transition flex items-center justify-center">✨</button>
 </div>
 </div>
 
-<!-- VALORACIÓN CIUDADANA POR ÁREAS -->
 <div class="flex flex-col gap-2">
 <div class="text-xs font-bold text-emerald-400/90 tracking-widest uppercase px-1">
 Valoración por Áreas
@@ -229,25 +233,38 @@ Valoración por Áreas
 <div id="ratings" class="flex flex-col gap-2"></div>
 </div>
 
-<!-- MAPA GEOLOCALIZADO -->
 <div class="flex flex-col gap-2">
 <div class="text-xs font-bold text-emerald-400/90 tracking-widest uppercase px-1">
-Mapa de Afectación Colectiva
+Mapa de Calor y Afectación Urbana
 </div>
 <div id="map" class="w-full h-[200px] rounded-[26px]"></div>
 </div>
 
-<!-- ÚLTIMAS REGISTRADAS (AL FINAL FIJADAS) -->
-<div class="flex flex-col gap-2 pb-2">
-<div class="text-xs font-bold text-emerald-400/90 tracking-widest uppercase px-1">
-Últimos Reportes de la Comunidad
+<div class="glass-card p-3 rounded-[22px] flex flex-col gap-2 mt-2">
+<div class="text-xs font-bold text-emerald-400 px-1 uppercase tracking-wider">Filtrar Historial Urbano</div>
+<div class="grid grid-cols-2 gap-2">
+<select id="filterArea" onchange="renderList()" class="bg-white/5 border border-white/10 text-white rounded-xl p-2 text-xs outline-none focus:border-emerald-500">
+<option value="todos" class="bg-slate-900 text-white">Todas las áreas</option>
+<option value="Movilidad" class="bg-slate-900 text-white">Movilidad</option>
+<option value="Limpieza" class="bg-slate-900 text-white">Limpieza</option>
+<option value="Urbanismo" class="bg-slate-900 text-white">Urbanismo</option>
+<option value="Cultura" class="bg-slate-900 text-white">Cultura</option>
+<option value="Seguridad" class="bg-slate-900 text-white">Seguridad</option>
+</select>
+<input type="date" id="filterFecha" onchange="renderList()" class="bg-white/5 border border-white/10 text-white rounded-xl p-2 text-xs outline-none focus:border-emerald-500">
+</div>
+</div>
+
+<div class="flex flex-col gap-2 pb-4">
+<div class="text-xs font-bold text-emerald-400/90 tracking-widest uppercase px-1 flex justify-between">
+<span>Reportes de la Comunidad</span>
+<span id="filteredCount" class="text-white/40 font-normal normal-case"></span>
 </div>
 <div id="latest" class="flex flex-col gap-2.5"></div>
 </div>
 
 </div>
 
-<!-- BOTÓN INFERIOR DE RETORNO AL CHAT CONVERSACIONAL -->
 <div class="p-3 bg-black/30 border-t border-white/5 flex-shrink-0">
 <button onclick="window.history.back()" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-90 transition">
 ← Volver al Asistente Conversacional
@@ -285,7 +302,6 @@ attribution: '© OpenStreetMap'
 loadData()
 
 async function loadData(){
-// Carga de incidencias generales
 const { data: dataIncidencias } = await supabaseClient
 .from("incidencias")
 .select("*")
@@ -311,7 +327,7 @@ const average = (total / weeklyData.length).toFixed(1)
 document.getElementById("weeklyScore").innerText = `${average} / 5`
 document.getElementById("weeklyBar").style.width = `${(average / 5) * 100}%`
 } else {
-document.getElementById("weeklyScore").innerText = "4.2 / 5" // Fallback elegante si está vacío
+document.getElementById("weeklyScore").innerText = "4.2 / 5"
 document.getElementById("weeklyBar").style.width = "84%"
 }
 } catch (e) {
@@ -320,13 +336,22 @@ document.getElementById("weeklyBar").style.width = "84%"
 }
 }
 
-function daysAgo(date){
-if(!date) return 0
-return Math.floor((new Date() - new Date(date)) / (1000*60*60*24))
+/* ===================== */
+/* CALCULO EXACTO DE DIAS (DESDE CREACIÓN HASTA HOY) */
+/* ===================== */
+function daysAgo(dateStr){
+if(!dateStr) return 0
+const created = new Date(dateStr)
+const today = new Date()
+// Resetear horas para cálculo limpio de días enteros
+created.setHours(0,0,0,0)
+today.setHours(0,0,0,0)
+const diffTime = Math.abs(today - created)
+return Math.floor(diffTime / (1000 * 60 * 60 * 24))
 }
 
 /* ===================== */
-/* MOTOR DEL ASISTENTE DE CONSULTAS DE DATOS INTERNAL */
+/* MOTOR DEL ASISTENTE DE DATOS DEL PANEL */
 /* ===================== */
 function queryDataAI() {
 const inputEl = document.getElementById("aiInput")
@@ -335,146 +360,22 @@ const query = inputEl.value.trim().toLowerCase()
 
 if(!query) return
 
-responseEl.innerText = "Procesando analíticas..."
+responseEl.innerText = "Calculando analíticas..."
 
 setTimeout(() => {
 let reply = ""
 const total = allData.length
-const areas = ["movilidad", "limpieza", "urbanismo", "cultura", "seguridad"]
+const incidencias = allData.filter(i => (i.tipo || '').toLowerCase().includes('incid') || !i.tipo).length
+const mejoras = allData.filter(i => (i.tipo || '').toLowerCase().includes('mejor')).length
 
-if (query.includes("resumen") || query.includes("resumir") || query.includes("general")) {
-reply = `Estatus global: Contamos con ${total} registros totales de participación. El tiempo medio de respuesta del ayuntamiento se sitúa en ${document.getElementById("avgTime").innerText}. Las áreas están operando con normalidad.`
+if (query.includes("resumen") || query.includes("general")) {
+reply = `Estatus global: Poseemos ${total} reportes mapeados (${incidencias} incidencias críticas y ${mejoras} sugerencias de mejora). El tiempo de respuesta es óptimo.`
 } 
-else if (query.includes("total") || query.includes("cuantas") || query.includes("cuántas") || query.includes("incidencias")) {
-reply = `La comunidad ha auditado y subido un total de ${total} registros de incidencias a la base de datos distribuida de Supabase.`
+else if (query.includes("mejoras") || query.includes("mejora") || query.includes("propuestas")) {
+reply = `La ciudadanía ha colaborado proactivamente con un total de ${mejoras} ideas de mejora para el espacio común.`
 }
-else if (query.includes("peor") || query.includes("critica") || query.includes("crítica") || query.includes("baja")) {
-// Buscar el área con el score más bajo o más reportes
-let worstArea = "Limpieza"
-let maxCount = 0
-areas.forEach(a => {
-const count = allData.filter(i => (i.area || "").toLowerCase() === a).length
-if(count > maxCount) { maxCount = count; worstArea = a; }
-})
-reply = `Analizando el volumen de insatisfacción, el área de "${worstArea.toUpperCase()}" es la que presenta mayor acumulación de reportes, requiriendo atención urgente.`
+else if (query.includes("incidencias") || query.includes("problemas") || query.includes("cuantas")) {
+reply = `Se registran actualmente ${incidencias} incidencias activas en el sistema.`
 }
-else if (query.includes("limpieza")) {
-const count = allData.filter(i => (i.area || "").toLowerCase() === "limpieza").length
-reply = `Para el sector de Limpieza se registran actualmente ${count} reportes ciudadanos activos.`
-}
-else if (query.includes("movilidad") || query.includes("tráfico") || query.includes("trafico")) {
-const count = allData.filter(i => (i.area || "").toLowerCase() === "movilidad").length
-reply = `Movilidad e infraestructura vial acumulan un total de ${count} incidencias en supervisión.`
-}
-else if (query.includes("seguridad")) {
-const count = allData.filter(i => (i.area || "").toLowerCase() === "seguridad").length
-reply = `Seguridad y orden comunitario reflejan ${count} observaciones mapeadas por el ecosistema.`
-}
-else if (query.includes("urbanismo") || query.includes("obras")) {
-const count = allData.filter(i => (i.area || "").toLowerCase() === "urbanismo").length
-reply = `Urbanismo y espacios verdes registran un acumulado histórico de ${count} reportes.`
-}
-else if (query.includes("cultura")) {
-const count = allData.filter(i => (i.area || "").toLowerCase() === "cultura").length
-reply = `Cultura cuenta con ${count} registros comunitarios en el sistema de transparencia.`
-}
-else {
-reply = `Hecho. El sistema cuenta con ${total} registros procesados y un promedio de resolución de ${document.getElementById("avgTime").innerText}. ¿Te gustaría profundizar en algún sector específico como Limpieza o Seguridad?`
-}
-
-responseEl.innerText = reply
-inputEl.value = ""
-}, 400)
-}
-
-// Permitir presionar "Enter" para enviar la consulta a la IA
-document.getElementById("aiInput")?.addEventListener("keypress", (e) => {
-if(e.key === "Enter") queryDataAI()
-})
-
-/* ===================== */
-/* RENDERIZADOR GENERAL DE INTERFAZ */
-/* ===================== */
-function render(){
-
-/* KPIs */
-document.getElementById("totalIncidencias").innerText = allData.length
-
-const resolved = allData.filter(i => i.estado === "resuelto")
-let avg = 0
-if(resolved.length){
-avg = resolved.reduce((a,b)=>a+daysAgo(b.created_at),0)/resolved.length
-}
-document.getElementById("avgTime").innerText = (Math.round(avg) || 3) + " días" // 3 días por defecto por simulación fluida
-
-/* RATING DINÁMICO POR ÁREAS (CONSULTIVO) */
-const areas = ["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"]
-const ratingsContainer = document.getElementById("ratings")
-ratingsContainer.innerHTML = ""
-
-areas.forEach(area=>{
-const n = allData.filter(i=>i.area===area).length
-const score = Math.max(1, 5 - Math.floor(n/10)) 
-
-ratingsContainer.innerHTML += `
-<div class="glass-card p-3 rounded-xl flex flex-col gap-1.5">
-<div class="flex justify-between items-center text-xs">
-<span class="text-white font-medium">${area}</span>
-<span class="text-emerald-400 font-semibold">${score} / 5</span>
-</div>
-<div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-<div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style="width:${score*20}%"></div>
-</div>
-</div>
-`
-})
-
-/* REDIBUJAR MAPA COHERENTE */
-map.eachLayer(layer=>{
-if(layer instanceof L.CircleMarker){
-map.removeLayer(layer)
-}
-})
-
-allData.forEach(i=>{
-if(i.lat && i.lng){
-L.circleMarker([i.lat,i.lng],{
-radius:6,
-color:"#10b981",
-fillColor:"#34d399",
-fillOpacity:0.8,
-weight: 2
-}).addTo(map)
-}
-})
-
-/* RENDER DE ÚLTIMAS INCIDENCIAS FIJADAS AL FINAL */
-const latestContainer = document.getElementById("latest")
-latestContainer.innerHTML = ""
-
-if(allData.length === 0){
-latestContainer.innerHTML = `<div class="text-xs text-white/40 p-4 text-center">No se registran incidencias recientes en la región.</div>`
-} else {
-allData.slice(0,5).forEach(i=>{
-const tiempo = daysAgo(i.created_at)
-const textTiempo = tiempo === 0 ? "Hoy mismo" : `Hace ${tiempo} días`
-
-latestContainer.innerHTML += `
-<div class="glass-card p-3 rounded-xl flex flex-col gap-1">
-<div class="flex justify-between items-center text-[11px]">
-<span class="text-emerald-400 font-bold tracking-wide uppercase">${i.area || "General"}</span>
-<span class="text-white/40">${textTiempo}</span>
-</div>
-<p class="text-white/90 text-xs leading-relaxed font-normal">
-${i.resumen || i.descripcion || "Incidencia registrada correctamente en el cuadrante."}
-</p>
-</div>
-`
-})
-}
-
-}
-
-</script>
-</body>
-</html>
+else if (query.includes("peor") || query.includes("critica") || query.includes("crítica")) {
+reply = `El área
