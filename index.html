@@ -3,7 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Citizen Voice AI</title>
 
@@ -20,21 +20,19 @@
 
 body{
 background:
-linear-gradient(
-180deg,
-#02120d 0%,
-#06281f 45%,
-#03140f 100%
-);
+linear-gradient(180deg,#02120d 0%,#06281f 45%,#03140f 100%);
 overflow:hidden;
 font-family:sans-serif;
-height: 100dvh;
 }
 
-/* HERO - Más compacto para garantizar espacio de botones en móvil */
+html, body{
+height:100dvh;
+}
+
+/* HERO */
 .hero{
 position:relative;
-height:140px;
+height:240px;
 overflow:hidden;
 background:
 radial-gradient(circle at top,#1dd1a1 0%,#065f46 45%,#02120d 100%);
@@ -45,105 +43,293 @@ position:absolute;
 width:260px;
 height:260px;
 background:rgba(16,185,129,.35);
-filter:blur(70px);
+filter:blur(80px);
 border-radius:9999px;
 top:-60px;
 left:50%;
 transform:translateX(-50%);
+animation: floatGlow 4s ease-in-out infinite;
 }
 
+@keyframes floatGlow{
+0%,100%{ transform:translateX(-50%) scale(1); opacity:.75; }
+50%{ transform:translateX(-50%) scale(1.15); opacity:1; }
+}
+
+/* AVATAR PROFESIONAL */
 .avatar-wrapper{
 position:absolute;
 left:50%;
-top:40%;
+top:50%;
 transform:translate(-50%,-50%);
 z-index:10;
 }
 
 .avatar-ring{
 position:absolute;
-inset:-10px;
+inset:-14px;
 border-radius:9999px;
-border:2px solid rgba(255,255,255,.15);
-animation:pulse 3s infinite;
+border:2px solid rgba(255,255,255,.14);
+animation:pulse 2.6s infinite;
 }
 
 .avatar{
-width:85px;
-height:85px;
+width:122px;
+height:122px;
 border-radius:9999px;
 overflow:hidden;
-border:4px solid rgba(255,255,255,.15);
-box-shadow:0 25px 60px rgba(0,0,0,.45);
+border:4px solid rgba(255,255,255,.20);
+box-shadow:0 25px 70px rgba(0,0,0,.45);
 position:relative;
 z-index:2;
+background:white;
 }
 
 .avatar img{
 width:100%;
 height:100%;
 object-fit:cover;
+transform:scale(1.02);
 }
 
+/* estado online */
 .status{
 position:absolute;
-bottom:4px;
-right:4px;
+bottom:6px;
+right:6px;
 width:16px;
 height:16px;
 background:#22c55e;
 border:3px solid white;
 border-radius:9999px;
-z-index:20;
+animation:pulseDot 2s infinite;
+}
+
+@keyframes pulseDot{
+0%,100%{ transform:scale(1); opacity:1; }
+50%{ transform:scale(1.35); opacity:.6; }
 }
 
 /* CHAT */
-
 #chat{
 scroll-behavior:smooth;
 }
 
-#chat::-webkit-scrollbar{
-width:4px;
-}
-
-#chat::-webkit-scrollbar-thumb{
-background:#10b981;
-border-radius:20px;
-}
-
 /* BURBUJAS */
-
 .bot-row{
 display:flex;
 gap:10px;
 align-items:flex-end;
-animation:fade .25s ease;
+animation:fade .2s ease;
 }
 
 .bot-mini{
-width:36px;
-height:36px;
+width:38px;
+height:38px;
 border-radius:9999px;
 overflow:hidden;
 flex-shrink:0;
-border:2px solid rgba(255,255,255,.15);
-}
-
-.bot-mini img{
-width:100%;
-height:100%;
-object-fit:cover;
+border:2px solid rgba(255,255,255,.2);
+box-shadow:0 8px 20px rgba(0,0,0,.25);
 }
 
 .bot-bubble{
-background:rgba(255,255,255,.11);
-backdrop-filter:blur(12px);
-border:1px solid rgba(255,255,255,.08);
+background:rgba(255,255,255,.12);
+backdrop-filter:blur(14px);
+border:1px solid rgba(255,255,255,.10);
 padding:14px;
 border-radius:22px;
 color:white;
 font-size:14px;
 line-height:1.5;
 max-width:80%;
-box-shadow:0 10px 35px rgba(0
+}
+
+.user-bubble{
+background:linear-gradient(135deg,#10b981,#059669);
+padding:14px;
+border-radius:22px;
+color:white;
+font-size:14px;
+max-width:80%;
+margin-left:auto;
+}
+
+/* CONTROLES */
+.controls{
+background:rgba(0,0,0,.18);
+backdrop-filter:blur(20px);
+border-top:1px solid rgba(255,255,255,.08);
+padding-bottom: calc(14px + env(safe-area-inset-bottom));
+}
+
+/* BOTONES */
+.option-btn{
+background:rgba(255,255,255,.10);
+border:1px solid rgba(255,255,255,.08);
+color:white;
+padding:12px 16px;
+border-radius:18px;
+font-size:14px;
+}
+
+/* INPUT */
+.input{
+background:rgba(255,255,255,.10);
+border:1px solid rgba(255,255,255,.08);
+padding:14px;
+border-radius:18px;
+color:white;
+width:100%;
+outline:none;
+}
+
+/* ANIM */
+@keyframes pulse{
+0%{transform:scale(1);opacity:1;}
+50%{transform:scale(1.1);opacity:.5;}
+100%{transform:scale(1);opacity:1;}
+}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(8px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+</style>
+
+</head>
+
+<body class="flex justify-center items-start min-h-screen p-2">
+
+<div class="w-full max-w-md h-[100dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
+
+<!-- HERO -->
+<div class="hero">
+
+<div class="glow"></div>
+
+<div class="avatar-wrapper">
+
+<div class="avatar-ring"></div>
+
+<div class="avatar">
+
+<!-- 👇 AVATAR PROFESIONAL (FUNCIONARIA / IA AYUNTAMIENTO) -->
+<img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1200&auto=format&fit=crop"/>
+
+</div>
+
+<div class="status"></div>
+
+</div>
+
+<div class="absolute bottom-5 left-0 right-0 text-center z-20">
+
+<div class="text-white text-2xl font-bold">
+Citizen Voice AI
+</div>
+
+<div class="text-emerald-100 text-sm opacity-90 mt-1">
+Asistente virtual de gestión ciudadana
+</div>
+
+</div>
+
+</div>
+
+<!-- CHAT -->
+<div id="chat" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
+
+<!-- CONTROLES -->
+<div id="controls" class="controls p-4 flex flex-wrap gap-2"></div>
+
+</div>
+
+<script>
+
+const { createClient } = supabase
+
+const supabaseClient = createClient(
+"https://saiclsejxsycmeefuhvs.supabase.co",
+"sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
+)
+
+const chat = document.getElementById("chat")
+const controls = document.getElementById("controls")
+
+let formData = {}
+
+function speak(text){
+speechSynthesis.cancel()
+const msg = new SpeechSynthesisUtterance(text)
+msg.lang = "es-ES"
+msg.rate = 1
+speechSynthesis.speak(msg)
+}
+
+function scrollChat(){
+setTimeout(()=>{
+chat.scrollTo({ top: chat.scrollHeight, behavior:"smooth" })
+},30)
+}
+
+/* BOT */
+function bot(text){
+
+const row = document.createElement("div")
+row.className = "bot-row"
+
+const avatar = document.createElement("div")
+avatar.className = "bot-mini"
+
+avatar.innerHTML = `
+<img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1200&auto=format&fit=crop"/>
+`
+
+const bubble = document.createElement("div")
+bubble.className = "bot-bubble"
+bubble.innerText = text
+
+row.appendChild(avatar)
+row.appendChild(bubble)
+
+chat.appendChild(row)
+
+scrollChat()
+speak(text)
+}
+
+/* USER */
+function user(text){
+const d = document.createElement("div")
+d.className = "user-bubble"
+d.innerText = text
+chat.appendChild(d)
+scrollChat()
+}
+
+/* BOTONES */
+function buttons(list, callback){
+
+controls.innerHTML = ""
+
+list.forEach(o=>{
+const b = document.createElement("button")
+b.className = "option-btn"
+b.innerText = o
+
+b.onclick = ()=>{
+controls.innerHTML = ""
+user(o)
+callback(o)
+}
+
+controls.appendChild(b)
+})
+}
+
+</script>
+
+</body>
+</html>
