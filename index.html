@@ -85,6 +85,13 @@ z-index:2;
 background: #0f172a;
 }
 
+.avatar img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+object-position: center;
+}
+
 .status{
 position:absolute;
 bottom:6px;
@@ -129,6 +136,13 @@ overflow:hidden;
 flex-shrink:0;
 border:2px solid rgba(255,255,255,.15);
 background: #0f172a;
+}
+
+.bot-mini img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+object-position: center;
 }
 
 .bot-bubble{
@@ -283,52 +297,8 @@ transform:translateY(0);
 <div id="ring" class="avatar-ring"></div>
 
 <div class="avatar">
-
-<!-- AVATAR VECTORIAL ESTILO 3D CORPORATIVO / PIXAR -->
-<svg viewBox="0 0 100 100" class="w-full h-full">
-<defs>
-<linearGradient id="corp-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" stop-color="#1e293b"/>
-<stop offset="100%" stop-color="#0f172a"/>
-</linearGradient>
-</defs>
-<circle cx="50" cy="50" r="50" fill="url(#corp-bg)"/>
-<!-- Pelo Trasero -->
-<path d="M24,55 C18,32 28,12 50,12 C72,12 82,32 76,55 C76,72 71,85 71,90 L29,90 C29,85 24,72 24,55 Z" fill="#2b1a11"/>
-<!-- Ropa Profesional -->
-<path d="M18,100 C18,83 28,73 50,73 C72,73 82,83 82,100 Z" fill="#1e293b"/>
-<path d="M36,74 L50,94 L64,74 Z" fill="#ffffff"/>
-<path d="M46,74 L50,86 L54,74 Z" fill="#cbd5e1"/>
-<path d="M26,74 L36,88 L32,100 L18,100 Z" fill="#0f172a"/>
-<path d="M74,74 L64,88 L68,100 L82,100 Z" fill="#0f172a"/>
-<!-- Cuello -->
-<path d="M43,63 L57,63 L55,76 L45,76 Z" fill="#eba882"/>
-<!-- Rostro -->
-<circle cx="50" cy="44" r="21" fill="#fcd3b6"/>
-<!-- Pelo Delantero / Peinado -->
-<path d="M27,38 C26,22 38,15 50,17 C65,15 73,25 72,40 C67,27 55,22 50,25 C41,22 32,30 27,38 Z" fill="#3a2518"/>
-<!-- Ojos Grandes Estilo 3D Animation -->
-<ellipse cx="40" cy="42" rx="4.5" ry="4.5" fill="#ffffff"/>
-<circle cx="40" cy="42" r="2.8" fill="#5c4033"/>
-<circle cx="41.2" cy="40.5" r="1" fill="#ffffff"/>
-<ellipse cx="60" cy="42" rx="4.5" ry="4.5" fill="#ffffff"/>
-<circle cx="60" cy="42" r="2.8" fill="#5c4033"/>
-<circle cx="61.2" cy="40.5" r="1" fill="#ffffff"/>
-<!-- Cejas Definitivas -->
-<path d="M33,35 Q39,32 45,36" stroke="#2b1a11" stroke-width="2" fill="none" stroke-linecap="round"/>
-<path d="M67,35 Q61,32 55,36" stroke="#2b1a11" stroke-width="2" fill="none" stroke-linecap="round"/>
-<!-- Gafas Redondas Modernas (Basado en las Capturas del usuario) -->
-<circle cx="40" cy="42" r="7.5" stroke="#1e293b" stroke-width="2" fill="none"/>
-<circle cx="60" cy="42" r="7.5" stroke="#1e293b" stroke-width="2" fill="none"/>
-<path d="M47.5,42 Q50,40 52.5,42" stroke="#1e293b" stroke-width="2" fill="none"/>
-<path d="M32.5,42 Q30,41 28,43" stroke="#1e293b" stroke-width="1.5" fill="none"/>
-<path d="M67.5,42 Q70,41 72,43" stroke="#1e293b" stroke-width="1.5" fill="none"/>
-<!-- Nariz y Sonrisa Profesional -->
-<path d="M49,46 Q50,49 51,46" stroke="#d58f66" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-<path d="M42,52 Q50,59 58,52" fill="none" stroke="#be123c" stroke-width="2" stroke-linecap="round"/>
-<path d="M43,53.2 Q50,57 57,53.2" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
-</svg>
-
+<!-- ENLACE LOCAL: Carga tu archivo retocado sin depender de internet -->
+<img src="avatar.png" alt="Citizen Voice Avatar">
 </div>
 
 <div class="status"></div>
@@ -436,22 +406,8 @@ const avatar = document.createElement("div")
 
 avatar.className = "bot-mini"
 
-// MINI AVATAR VECTORIAL ESTILO 3D COORDINADO
-avatar.innerHTML = `
-<svg viewBox="0 0 100 100" class="w-full h-full">
-<circle cx="50" cy="50" r="50" fill="#1e293b"/>
-<path d="M24,55 C18,32 28,12 50,12 C72,12 82,32 76,55 Z" fill="#2b1a11"/>
-<path d="M18,100 C18,83 28,73 50,73 C72,73 82,83 82,100 Z" fill="#1e293b"/>
-<path d="M36,74 L50,94 L64,74 Z" fill="#ffffff"/>
-<rect x="44" y="64" width="12" height="15" fill="#fcd3b6" rx="3"/>
-<circle cx="50" cy="44" r="21" fill="#fcd3b6"/>
-<path d="M27,38 C26,22 38,15 50,17 C65,15 73,25 72,40 Z" fill="#3a2518"/>
-<circle cx="40" cy="42" r="7.5" stroke="#1e293b" stroke-width="2" fill="none"/>
-<circle cx="60" cy="42" r="7.5" stroke="#1e293b" stroke-width="2" fill="none"/>
-<path d="M47.5,42 Q50,40 52.5,42" stroke="#1e293b" stroke-width="2" fill="none"/>
-<path d="M42,52 Q50,59 58,52" fill="none" stroke="#be123c" stroke-width="2" stroke-linecap="round"/>
-</svg>
-`
+// IMAGEN DEL MINI AVATAR VINCULADA LOCALMENTE TAMBIÉN
+avatar.innerHTML = `<img src="avatar.png" alt="AI">`
 
 const bubble = document.createElement("div")
 
