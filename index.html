@@ -3,7 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Citizen Voice AI</title>
 
@@ -28,12 +28,13 @@ linear-gradient(
 );
 overflow:hidden;
 font-family:sans-serif;
+height: 100dvh;
 }
 
-/* HERO - Ajustado a 170px para liberar espacio en pantallas móviles */
+/* HERO - Más compacto para garantizar espacio de botones en móvil */
 .hero{
 position:relative;
-height:170px;
+height:140px;
 overflow:hidden;
 background:
 radial-gradient(circle at top,#1dd1a1 0%,#065f46 45%,#02120d 100%);
@@ -54,7 +55,7 @@ transform:translateX(-50%);
 .avatar-wrapper{
 position:absolute;
 left:50%;
-top:45%;
+top:40%;
 transform:translate(-50%,-50%);
 z-index:10;
 }
@@ -68,8 +69,8 @@ animation:pulse 3s infinite;
 }
 
 .avatar{
-width:100px;
-height:100px;
+width:85px;
+height:85px;
 border-radius:9999px;
 overflow:hidden;
 border:4px solid rgba(255,255,255,.15);
@@ -86,10 +87,10 @@ object-fit:cover;
 
 .status{
 position:absolute;
-bottom:6px;
-right:6px;
-width:18px;
-height:18px;
+bottom:4px;
+right:4px;
+width:16px;
+height:16px;
 background:#22c55e;
 border:3px solid white;
 border-radius:9999px;
@@ -145,192 +146,4 @@ color:white;
 font-size:14px;
 line-height:1.5;
 max-width:80%;
-box-shadow:0 10px 35px rgba(0,0,0,.18);
-}
-
-.user-bubble{
-background:
-linear-gradient(
-135deg,
-#10b981,
-#059669
-);
-
-padding:14px;
-border-radius:22px;
-color:white;
-font-size:14px;
-max-width:80%;
-margin-left:auto;
-box-shadow:0 10px 35px rgba(16,185,129,.25);
-animation:fade .25s ease;
-}
-
-/* CONTROLES */
-
-.controls{
-background:rgba(0,0,0,.18);
-backdrop-filter:blur(20px);
-border-top:1px solid rgba(255,255,255,.08);
-}
-
-.option-btn{
-background:rgba(255,255,255,.10);
-border:1px solid rgba(255,255,255,.08);
-color:white;
-padding:12px 16px;
-border-radius:18px;
-font-size:14px;
-transition:.2s;
-backdrop-filter:blur(10px);
-}
-
-.option-btn:hover{
-transform:translateY(-2px);
-background:rgba(255,255,255,.16);
-}
-
-.input{
-background:rgba(255,255,255,.10);
-border:1px solid rgba(255,255,255,.08);
-padding:14px;
-border-radius:18px;
-color:white;
-width:100%;
-outline:none;
-}
-
-.input::placeholder{
-color:rgba(255,255,255,.45);
-}
-
-/* MAP */
-
-#map{
-border-radius:24px;
-overflow:hidden;
-box-shadow:0 15px 40px rgba(0,0,0,.35);
-}
-
-/* ANIMACIONES */
-
-@keyframes pulse{
-0%{
-transform:scale(1);
-opacity:1;
-}
-50%{
-transform:scale(1.08);
-opacity:.5;
-}
-100%{
-transform:scale(1);
-opacity:1;
-}
-}
-
-@keyframes fade{
-from{
-opacity:0;
-transform:translateY(10px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-</style>
-
-</head>
-
-<body class="flex justify-center items-start min-h-screen p-2">
-
-<div class="w-full max-w-md h-[88vh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
-
-<div class="hero">
-
-<div class="glow"></div>
-
-<div class="avatar-wrapper">
-
-<div class="avatar-ring"></div>
-
-<div class="avatar">
-
-<img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"/>
-
-</div>
-
-<div class="status"></div>
-
-</div>
-
-<div class="absolute bottom-3 left-0 right-0 text-center z-20">
-
-<div class="text-white text-xl font-bold tracking-wide">
-Citizen Voice AI
-</div>
-
-<div class="text-emerald-100 text-xs opacity-90 mt-0.5">
-Asistente virtual para participación ciudadana
-</div>
-
-</div>
-
-</div>
-
-<div
-id="chat"
-class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-0"
-></div>
-
-<div
-id="controls"
-class="controls p-4 flex flex-wrap gap-2"
-></div>
-
-</div>
-
-<script>
-
-const { createClient } = supabase
-
-const supabaseClient = createClient(
-"https://saiclsejxsycmeefuhvs.supabase.co",
-"sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
-)
-
-const chat = document.getElementById("chat")
-const controls = document.getElementById("controls")
-
-let formData = {}
-let currentMap = null
-
-// Función de scroll agresiva con triple ejecución garantizada
-function forzarScroll() {
-    chat.scrollTop = chat.scrollHeight;
-    setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 20);
-    setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 80);
-}
-
-function speak(text){
-
-speechSynthesis.cancel()
-
-const msg = new SpeechSynthesisUtterance(text)
-
-msg.lang = "es-ES"
-msg.rate = 1
-
-speechSynthesis.speak(msg)
-
-}
-
-function bot(text){
-
-const row = document.createElement("div")
-
-row.className = "bot-row"
-
-const avatar = document.createElement
+box-shadow:0 10px 35px rgba(0
