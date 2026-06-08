@@ -57,7 +57,6 @@ transform:translate(-50%,-50%);
 z-index:10;
 }
 
-/* MEJORADO: Anillo base más visible y con más presencia */
 .avatar-ring{
 position:absolute;
 inset:-10px;
@@ -68,7 +67,6 @@ animation:pulse 3s infinite ease-in-out;
 transition: all 0.3s ease;
 }
 
-/* MEJORADO: Dinamismo dinámico e intenso para respuestas/finalización */
 .avatar-ring.active {
 animation: pulse-intense 0.8s infinite ease-in-out;
 border-color: rgba(52,211,153,1);
@@ -296,8 +294,8 @@ transform:translateY(0);
 
 <div class="avatar">
 
-<!-- AVATAR MODIFICADO: Perfil institucional ultra-profesional de alta calidad con oficina limpia -->
-<img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"/>
+<!-- AVATAR MODIFICADO: Cara más cerca, muy profesional, sonrisa y pelo suelto natural -->
+<img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=400&auto=format&fit=crop"/>
 
 </div>
 
@@ -351,7 +349,18 @@ const ring = document.getElementById("ring")
 let formData = {}
 let currentMap = null
 
-// Función para activar/desactivar el dinamismo del anillo de forma temporal o fija
+// SOLUCIÓN HORARIA: Genera la estampa de tiempo exacta calculando el desfase de Madrid/Local
+function getLocalISOString() {
+const d = new Date();
+const pad = num => String(num).padStart(2, '0');
+const offset = -d.getTimezoneOffset();
+const sign = offset >= 0 ? '+' : '-';
+const offsetHours = pad(Math.floor(Math.abs(offset) / 60));
+const offsetMins = pad(Math.abs(offset) % 60);
+
+return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${sign}${offsetHours}:${offsetMins}`;
+}
+
 function pulseRing(activate, duration = 0) {
 if(activate) {
 ring.classList.add("active");
@@ -386,7 +395,6 @@ speechSynthesis.speak(msg)
 
 function bot(text){
 
-// Activa el dinamismo intenso brevemente mientras el bot introduce el mensaje
 pulseRing(true, 1500);
 
 const row = document.createElement("div")
@@ -399,7 +407,7 @@ avatar.className = "bot-mini"
 
 avatar.innerHTML = `
 <!-- MINI AVATAR MODIFICADO (Sincronizado) -->
-<img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"/>
+<img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=400&auto=format&fit=crop"/>
 `
 
 const bubble = document.createElement("div")
@@ -489,7 +497,7 @@ week: 1,
 question: "¿Qué importancia das a mejorar los espacios culturales infantiles?",
 area: "Cultura",
 answer: parseInt(v.charAt(v.length - 1)),
-created_at: new Date().toISOString()
+created_at: getLocalISOString() // Aplicado cambio de hora local
 }])
 
 }catch(err){
@@ -570,17 +578,15 @@ controls.innerHTML = ""
 const wrapper = document.createElement("div")
 wrapper.className = "w-full flex flex-col gap-2 relative"
 
-// Contenedor relativo para posicionar correctamente el desplegable flotante
 const searchBlock = document.createElement("div")
 searchBlock.className = "relative w-full z-[1100]"
 
 const search = document.createElement("input")
-search.placeholder = "Escribe una calle o dirección..."
+search.placeholder = "Escribe una calle de Valencia..."
 search.className = "input"
 
-// DESPLEGABLE FLOTANTE REAL
 const dropdown = document.createElement("div")
-dropdown.className = "absolute left-0 right-0 top-full mt-1 bg-zinc-950/95 backdrop-blur-xl border border-white/10 rounded-xl max-h-40 overflow-y-auto hidden flex flex-col shadow-2xl"
+dropdown.className = "absolute left-0 right-0 top-full mt-1 bg-zinc-950/95 backdrop-blur-xl border border-white/10 rounded-xl max-h-40 overflow-y-auto hidden flex flex-col shadow-2xl z-[1200]"
 
 searchBlock.appendChild(search)
 searchBlock.appendChild(dropdown)
@@ -601,7 +607,8 @@ if(currentMap){
 currentMap.remove()
 }
 
-currentMap = L.map('map').setView([39.47,-0.37],13)
+// Mapa centrado por defecto en Valencia
+currentMap = L.map('map').setView([39.4702,-0.3768],13)
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -610,7 +617,7 @@ L.tileLayer(
 let marker
 let debounceTimer
 
-// LÓGICA DE AUTOCOMPLETADO AUTOMÁTICO EN DESPLEGABLE
+// SOLUCIÓN DESPLEGABLE: Filtrado geográfico estricto para España y priorizado en Valencia
 search.addEventListener("input", ()=>{
 clearTimeout(debounceTimer);
 const val = search.value.trim();
@@ -622,7 +629,8 @@ return;
 }
 
 debounceTimer = setTimeout(() => {
-fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(val)}`)
+// Parámetros countrycodes=es (España) y viewbox delimitando el área metropolitana de Valencia
+fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=es&viewbox=-0.49,39.53,-0.31,39.41&bounded=0&q=${encodeURIComponent(val)}`)
 .then(res => res.json())
 .then(data => {
 dropdown.innerHTML = "";
@@ -631,7 +639,7 @@ dropdown.classList.remove("hidden");
 data.forEach(item => {
 const itemBtn = document.createElement("button");
 itemBtn.className = "w-full text-left px-3 py-2 text-xs text-white hover:bg-emerald-600/40 transition border-b border-white/5 last:border-none truncate";
-itemBtn.innerText = item.display_name;
+itemBtn.innerText = item.display_name.replace(", España", "");
 itemBtn.type = "button";
 
 itemBtn.onclick = () => {
@@ -647,9 +655,8 @@ formData.lat = lat;
 formData.lng = lon;
 
 dropdown.classList.add("hidden");
-search.value = item.display_name;
+search.value = item.display_name.split(",")[0];
 
-// Dinamismo del anillo al fijar dirección con éxito
 pulseRing(true, 1200);
 
 setTimeout(() => {
@@ -688,6 +695,13 @@ askDescription()
 },300)
 
 }
+
+document.addEventListener("click", (e) => {
+const dropdown = document.querySelector(".absolute.left-0.right-0.top-full");
+if(dropdown && !e.target.closest("#controls")) {
+dropdown.classList.add("hidden");
+}
+});
 
 function askDescription(){
 
@@ -791,7 +805,6 @@ resumen: ai.resumen || "",
 acciones: ai.acciones || []
 }])
 
-// MEJORADO: Dejamos el dinamismo del anillo activo de forma permanente al terminar con éxito la encuesta
 pulseRing(true);
 
 bot("Registro completado correctamente.")
