@@ -103,8 +103,6 @@ z-index:20;
 scroll-behavior:smooth;
 }
 
-/* SCROLLBAR */
-
 #chat::-webkit-scrollbar{
 width:4px;
 }
@@ -152,7 +150,13 @@ box-shadow:0 10px 35px rgba(0,0,0,.18);
 }
 
 .user-bubble{
-background:linear-gradient(135deg,#10b981,#059669);
+background:
+linear-gradient(
+135deg,
+#10b981,
+#059669
+);
+
 padding:14px;
 border-radius:22px;
 color:white;
@@ -201,17 +205,40 @@ outline:none;
 color:rgba(255,255,255,.45);
 }
 
+/* MAP */
+
+#map{
+border-radius:24px;
+overflow:hidden;
+box-shadow:0 15px 40px rgba(0,0,0,.35);
+}
+
 /* ANIMACIONES */
 
 @keyframes pulse{
-0%{transform:scale(1);opacity:1;}
-50%{transform:scale(1.08);opacity:.5;}
-100%{transform:scale(1);opacity:1;}
+0%{
+transform:scale(1);
+opacity:1;
+}
+50%{
+transform:scale(1.08);
+opacity:.5;
+}
+100%{
+transform:scale(1);
+opacity:1;
+}
 }
 
 @keyframes fade{
-from{opacity:0;transform:translateY(10px);}
-to{opacity:1;transform:translateY(0);}
+from{
+opacity:0;
+transform:translateY(10px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
 }
 
 </style>
@@ -223,6 +250,7 @@ to{opacity:1;transform:translateY(0);}
 <div class="w-full max-w-md h-[95vh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
 <!-- HERO -->
+
 <div class="hero">
 
 <div class="glow"></div>
@@ -233,8 +261,7 @@ to{opacity:1;transform:translateY(0);}
 
 <div class="avatar">
 
-<!-- 🔥 FOTO CAMBIADA -->
-<img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1200&auto=format&fit=crop"/>
+<img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200&auto=format&fit=crop"/>
 
 </div>
 
@@ -257,10 +284,18 @@ Asistente virtual para participación ciudadana
 </div>
 
 <!-- CHAT -->
-<div id="chat" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"></div>
+
+<div
+id="chat"
+class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"
+></div>
 
 <!-- CONTROLES -->
-<div id="controls" class="controls p-4 flex flex-wrap gap-2"></div>
+
+<div
+id="controls"
+class="controls p-4 flex flex-wrap gap-2"
+></div>
 
 </div>
 
@@ -279,23 +314,6 @@ const controls = document.getElementById("controls")
 let formData = {}
 let currentMap = null
 
-/* ===================== */
-/* SCROLL MEJORADO */
-/* ===================== */
-
-function scrollChat(){
-requestAnimationFrame(() => {
-chat.scrollTo({
-top: chat.scrollHeight,
-behavior: "smooth"
-})
-})
-}
-
-/* ===================== */
-/* VOZ */
-/* ===================== */
-
 function speak(text){
 
 speechSynthesis.cancel()
@@ -309,10 +327,6 @@ speechSynthesis.speak(msg)
 
 }
 
-/* ===================== */
-/* BOT */
-/* ===================== */
-
 function bot(text){
 
 const row = document.createElement("div")
@@ -324,7 +338,7 @@ const avatar = document.createElement("div")
 avatar.className = "bot-mini"
 
 avatar.innerHTML = `
-<img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1200&auto=format&fit=crop"/>
+<img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200&auto=format&fit=crop"/>
 `
 
 const bubble = document.createElement("div")
@@ -338,15 +352,11 @@ row.appendChild(bubble)
 
 chat.appendChild(row)
 
-scrollChat()
+chat.scrollTop = chat.scrollHeight
 
 speak(text)
 
 }
-
-/* ===================== */
-/* USER */
-/* ===================== */
 
 function user(text){
 
@@ -358,13 +368,9 @@ d.innerText = text
 
 chat.appendChild(d)
 
-scrollChat()
+chat.scrollTop = chat.scrollHeight
 
 }
-
-/* ===================== */
-/* BOTONES (SIN CAMBIOS) */
-/* ===================== */
 
 function buttons(list, callback){
 
@@ -394,11 +400,347 @@ controls.appendChild(b)
 
 }
 
-/* ===================== */
-/* TODO LO DEMÁS IGUAL */
-/* ===================== */
+function weeklyQuestion(){
 
-/* (NO he tocado Supabase, mapa, flujo ni lógica) */
+bot("Hola, soy Citizen Voice. Vamos a empezar con una pregunta rápida: ¿Qué importancia das a mejorar los espacios culturales infantiles?")
+
+buttons([
+"😡 1",
+"😕 2",
+"😐 3",
+"🙂 4",
+"😄 5"
+], async (v)=>{
+
+try{
+
+await supabaseClient
+.from("weekly_engagement")
+.insert([{
+week: 1,
+question: "¿Qué importancia das a mejorar los espacios culturales infantiles?",
+area: "Cultura",
+answer: parseInt(v.charAt(v.length - 1)),
+created_at: new Date().toISOString()
+}])
+
+}catch(err){
+console.log(err)
+}
+
+bot("Perfecto. ¿Qué deseas registrar?")
+
+askType()
+
+})
+
+}
+
+function askType(){
+
+buttons([
+"Incidencia",
+"Propuesta de mejora"
+], v=>{
+
+formData.tipo = v
+
+askArea()
+
+})
+
+}
+
+function askArea(){
+
+bot("¿En qué área ocurre o afecta?")
+
+buttons([
+"Movilidad",
+"Limpieza",
+"Urbanismo",
+"Cultura",
+"Seguridad",
+"Otros"
+], v=>{
+
+formData.area = v
+
+askRate()
+
+})
+
+}
+
+function askRate(){
+
+bot("¿Cómo valoras actualmente esta área?")
+
+buttons([
+"😡 1",
+"😕 2",
+"😐 3",
+"🙂 4",
+"😄 5"
+], v=>{
+
+formData.valoracion =
+parseInt(v.charAt(v.length - 1))
+
+showMap()
+
+})
+
+}
+
+function showMap(){
+
+bot("Indica dónde ocurre. Puedes buscar una dirección o tocar el mapa.")
+
+controls.innerHTML = ""
+
+const wrapper = document.createElement("div")
+wrapper.className = "w-full"
+
+const search = document.createElement("input")
+
+search.placeholder = "Buscar dirección..."
+
+search.className =
+"input mb-2"
+
+const mapDiv = document.createElement("div")
+
+mapDiv.id = "map"
+
+mapDiv.style.height = "340px"
+
+wrapper.appendChild(search)
+wrapper.appendChild(mapDiv)
+
+controls.appendChild(wrapper)
+
+setTimeout(()=>{
+
+if(currentMap){
+currentMap.remove()
+}
+
+currentMap = L.map('map').setView([39.47,-0.37],13)
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(currentMap)
+
+let marker
+
+const geocoder = L.Control.Geocoder.nominatim()
+
+search.addEventListener("keydown",(e)=>{
+
+if(e.key==="Enter"){
+
+geocoder.geocode(search.value, results=>{
+
+if(results.length>0){
+
+const r = results[0]
+
+currentMap.setView(r.center,16)
+
+if(marker) currentMap.removeLayer(marker)
+
+marker = L.marker(r.center).addTo(currentMap)
+
+formData.lat = r.center.lat
+formData.lng = r.center.lng
+
+wrapper.style.display = "none"
+
+bot("Ubicación registrada.")
+
+askDescription()
+
+}
+
+})
+
+}
+
+})
+
+currentMap.on("click", e=>{
+
+if(marker) currentMap.removeLayer(marker)
+
+marker = L.marker(e.latlng).addTo(currentMap)
+
+formData.lat = e.latlng.lat
+formData.lng = e.latlng.lng
+
+wrapper.style.display = "none"
+
+bot("Ubicación guardada.")
+
+askDescription()
+
+})
+
+},300)
+
+}
+
+function askDescription(){
+
+bot("Describe brevemente la situación.")
+
+controls.innerHTML = ""
+
+const input = document.createElement("input")
+
+input.placeholder = "Escribe o usa voz"
+
+input.className =
+"input flex-1"
+
+const mic = document.createElement("button")
+
+mic.innerText = "🎤"
+
+mic.className =
+"option-btn"
+
+mic.onclick = ()=>{
+
+const r = new webkitSpeechRecognition()
+
+r.lang = "es-ES"
+
+r.start()
+
+r.onresult = e=>{
+
+input.value = e.results[0][0].transcript
+
+}
+
+}
+
+const send = document.createElement("button")
+
+send.innerText = "Enviar"
+
+send.className =
+"option-btn"
+
+send.onclick = async ()=>{
+
+if(!input.value) return
+
+user(input.value)
+
+formData.descripcion = input.value
+
+saveData()
+
+}
+
+controls.appendChild(input)
+controls.appendChild(mic)
+controls.appendChild(send)
+
+}
+
+async function saveData(){
+
+try{
+
+let ai = {
+resumen:"",
+acciones:[]
+}
+
+try{
+
+const res = await fetch("/api/ai",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body: JSON.stringify({
+description: formData.descripcion
+})
+})
+
+ai = await res.json()
+
+}catch(e){}
+
+await supabaseClient
+.from("incidencias")
+.insert([{
+tipo: formData.tipo,
+area: formData.area,
+valoracion: formData.valoracion,
+descripcion: formData.descripcion,
+lat: formData.lat,
+lng: formData.lng,
+resumen: ai.resumen || "",
+acciones: ai.acciones || []
+}])
+
+bot("Registro completado correctamente.")
+
+controls.innerHTML = ""
+
+const close = document.createElement("button")
+
+close.className =
+"option-btn flex-1"
+
+close.innerText = "Cerrar"
+
+close.onclick = ()=> location.reload()
+
+const panel = document.createElement("button")
+
+panel.className =
+"option-btn flex-1"
+
+panel.innerText = "Ver datos"
+
+panel.onclick = ()=>{
+
+window.location.href =
+"https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
+
+}
+
+controls.appendChild(close)
+controls.appendChild(panel)
+
+}catch(err){
+
+bot("Ha ocurrido un error al guardar.")
+
+}
+
+}
+
+const startBtn = document.createElement("button")
+
+startBtn.innerText = "Empezar"
+
+startBtn.className =
+"w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white py-4 rounded-2xl text-lg shadow-2xl"
+
+startBtn.onclick = ()=>{
+
+controls.innerHTML = ""
+
+weeklyQuestion()
+
+}
+
+controls.appendChild(startBtn)
 
 </script>
 
