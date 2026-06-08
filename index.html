@@ -3,7 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Citizen Voice AI</title>
 
@@ -28,23 +28,15 @@ linear-gradient(
 );
 overflow:hidden;
 font-family:sans-serif;
-height: 100dvh;
 }
 
-/* HERO RESPONSIVO: 160px en móvil, 240px en ordenador */
+/* HERO */
 .hero{
 position:relative;
-height: 160px;
+height:150px;
 overflow:hidden;
 background:
 radial-gradient(circle at top,#1dd1a1 0%,#065f46 45%,#02120d 100%);
-transition: height 0.3s ease;
-}
-
-@media (min-width: 640px) {
-  .hero {
-    height: 240px;
-  }
 }
 
 .glow{
@@ -62,7 +54,7 @@ transform:translateX(-50%);
 .avatar-wrapper{
 position:absolute;
 left:50%;
-top:45%;
+top:42%;
 transform:translate(-50%,-50%);
 z-index:10;
 }
@@ -70,12 +62,11 @@ z-index:10;
 .avatar-ring{
 position:absolute;
 inset:-10px;
-border-radius9999px;
+border-radius:9999px;
 border:2px solid rgba(255,255,255,.15);
 animation:pulse 3s infinite;
 }
 
-/* AVATAR RESPONSIVO: 90px en móvil, 120px en ordenador */
 .avatar{
 width:90px;
 height:90px;
@@ -85,14 +76,12 @@ border:4px solid rgba(255,255,255,.15);
 box-shadow:0 25px 60px rgba(0,0,0,.45);
 position:relative;
 z-index:2;
-transition: all 0.3s ease;
 }
 
-@media (min-width: 640px) {
-  .avatar {
-    width: 120px;
-    height: 120px;
-  }
+.avatar img{
+width:100%;
+height:100%;
+object-fit:cover;
 }
 
 .status{
@@ -255,9 +244,12 @@ transform:translateY(0);
 
 </head>
 
-<body class="flex justify-center items-center min-h-screen p-2">
+<body class="flex justify-center items-start min-h-screen p-2">
 
-<div class="w-full max-w-md h-[92dvh] sm:h-[820px] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
+<!-- Reducido a h-[78vh] para acortar el chat central y subir los botones notablemente -->
+<div class="w-full max-w-md h-[78vh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
+
+<!-- HERO -->
 
 <div class="hero">
 
@@ -277,13 +269,13 @@ transform:translateY(0);
 
 </div>
 
-<div class="absolute bottom-3 left-0 right-0 text-center z-20">
+<div class="absolute bottom-2 left-0 right-0 text-center z-20">
 
-<div class="text-white text-xl sm:text-2xl font-bold tracking-wide">
+<div class="text-white text-xl font-bold tracking-wide">
 Citizen Voice AI
 </div>
 
-<div class="text-emerald-100 text-xs sm:text-sm opacity-90 mt-0.5">
+<div class="text-emerald-100 text-xs opacity-90 mt-0.5">
 Asistente virtual para participación ciudadana
 </div>
 
@@ -291,10 +283,13 @@ Asistente virtual para participación ciudadana
 
 </div>
 
+<!-- CHAT (min-h-0 le permite encogerse de forma controlada) -->
 <div
 id="chat"
-class="flex-1 overflow-y-auto px-4 py-3 sm:py-5 flex flex-col gap-2 sm:gap-4 min-h-0"
+class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-0"
 ></div>
+
+<!-- CONTROLES -->
 
 <div
 id="controls"
@@ -517,8 +512,7 @@ const mapDiv = document.createElement("div")
 
 mapDiv.id = "map"
 
-// Altura adaptativa del mapa para que nunca rompa el layout en móviles
-mapDiv.style.height = window.innerWidth < 640 ? "170px" : "300px"
+mapDiv.style.height = "220px"
 
 wrapper.appendChild(search)
 wrapper.appendChild(mapDiv)
@@ -621,4 +615,133 @@ const r = new webkitSpeechRecognition()
 
 r.lang = "es-ES"
 
-r
+r.start()
+
+r.onresult = e=>{
+
+input.value = e.results[0][0].transcript
+
+}
+
+}
+
+const send = document.createElement("button")
+
+send.innerText = "Enviar"
+
+send.className =
+"option-btn"
+
+send.onclick = async ()=>{
+
+if(!input.value) return
+
+user(input.value)
+
+formData.descripcion = input.value
+
+saveData()
+
+}
+
+controls.appendChild(input)
+controls.appendChild(mic)
+controls.appendChild(send)
+
+}
+
+async function saveData(){
+
+try{
+
+let ai = {
+resumen:"",
+acciones:[]
+}
+
+try{
+
+const res = await fetch("/api/ai",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body: JSON.stringify({
+description: formData.descripcion
+})
+})
+
+ai = await res.json()
+
+}catch(e){}
+
+await supabaseClient
+.from("incidencias")
+.insert([{
+tipo: formData.tipo,
+area: formData.area,
+valoracion: formData.valoracion,
+descripcion: formData.descripcion,
+lat: formData.lat,
+lng: formData.lng,
+resumen: ai.resumen || "",
+acciones: ai.acciones || []
+}])
+
+bot("Registro completado correctamente.")
+
+controls.innerHTML = ""
+
+const close = document.createElement("button")
+
+close.className =
+"option-btn flex-1"
+
+close.innerText = "Cerrar"
+
+close.onclick = ()=> location.reload()
+
+const panel = document.createElement("button")
+
+panel.className =
+"option-btn flex-1"
+
+panel.innerText = "Ver datos"
+
+panel.onclick = ()=>{
+
+window.location.href =
+"https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
+
+}
+
+controls.appendChild(close)
+controls.appendChild(panel)
+
+}catch(err){
+
+bot("Ha ocurrido un error al guardar.")
+
+}
+
+}
+
+const startBtn = document.createElement("button")
+
+startBtn.innerText = "Empezar"
+
+startBtn.className =
+"w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white py-4 rounded-2xl text-lg shadow-2xl"
+
+startBtn.onclick = ()=>{
+
+controls.innerHTML = ""
+
+weeklyQuestion()
+
+}
+
+controls.appendChild(startBtn)
+
+</script>
+
+</body>
+</html>
