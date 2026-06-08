@@ -244,12 +244,9 @@ transform:translateY(0);
 
 </head>
 
-<body class="flex justify-center items-start min-h-screen p-2">
+<body class="flex justify-center items-center min-h-screen p-2">
 
-<!-- Reducido a h-[78vh] para acortar el chat central y subir los botones notablemente -->
 <div class="w-full max-w-md h-[78vh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
-
-<!-- HERO -->
 
 <div class="hero">
 
@@ -261,7 +258,7 @@ transform:translateY(0);
 
 <div class="avatar">
 
-<img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"/>
+<img src="https://images.unsplash.com/photo-1573496799652-408c2ac9fe98?q=80&w=400&auto=format&fit=crop"/>
 
 </div>
 
@@ -283,13 +280,10 @@ Asistente virtual para participación ciudadana
 
 </div>
 
-<!-- CHAT (min-h-0 le permite encogerse de forma controlada) -->
 <div
 id="chat"
 class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-0"
 ></div>
-
-<!-- CONTROLES -->
 
 <div
 id="controls"
@@ -337,7 +331,7 @@ const avatar = document.createElement("div")
 avatar.className = "bot-mini"
 
 avatar.innerHTML = `
-<img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"/>
+<img src="https://images.unsplash.com/photo-1573496799652-408c2ac9fe98?q=80&w=400&auto=format&fit=crop"/>
 `
 
 const bubble = document.createElement("div")
