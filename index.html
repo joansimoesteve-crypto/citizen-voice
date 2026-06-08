@@ -3,7 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Citizen Voice AI</title>
 
@@ -28,12 +28,13 @@ linear-gradient(
 );
 overflow:hidden;
 font-family:sans-serif;
+height: 100dvh; /* Fuerza al cuerpo a ocupar el alto dinámico real en iOS */
 }
 
-/* HERO - Reducido de 240px a 150px para optimizar el espacio vertical */
+/* HERO - Reducido a 120px para recortar la distancia superior y subir los botones */
 .hero{
 position:relative;
-height:150px;
+height:120px;
 overflow:hidden;
 background:
 radial-gradient(circle at top,#1dd1a1 0%,#065f46 45%,#02120d 100%);
@@ -54,27 +55,27 @@ transform:translateX(-50%);
 .avatar-wrapper{
 position:absolute;
 left:50%;
-top:42%;
+top:38%;
 transform:translate(-50%,-50%);
 z-index:10;
 }
 
 .avatar-ring{
 position:absolute;
-inset:-10px;
+inset:-8px;
 border-radius:9999px;
 border:2px solid rgba(255,255,255,.15);
 animation:pulse 3s infinite;
 }
 
-/* AVATAR - Reducido de 120px a 90px */
+/* AVATAR - Más compacto (75px) para ganar espacio en pantallas verticales cortas */
 .avatar{
-width:90px;
-height:90px;
+width:75px;
+height:75px;
 border-radius:9999px;
 overflow:hidden;
-border:4px solid rgba(255,255,255,.15);
-box-shadow:0 25px 60px rgba(0,0,0,.45);
+border:3px solid rgba(255,255,255,.15);
+box-shadow:0 20px 50px rgba(0,0,0,.45);
 position:relative;
 z-index:2;
 }
@@ -87,12 +88,12 @@ object-fit:cover;
 
 .status{
 position:absolute;
-bottom:4px;
-right:4px;
-width:16px;
-height:16px;
+bottom:2px;
+right:2px;
+width:14px;
+height:14px;
 background:#22c55e;
-border:3px solid white;
+border:2px solid white;
 border-radius:9999px;
 z-index:20;
 }
@@ -245,9 +246,9 @@ transform:translateY(0);
 
 </head>
 
-<body class="flex justify-center items-start min-h-screen p-2">
+<body class="flex justify-center items-center min-h-screen p-2">
 
-<div class="w-full max-w-md h-[95vh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
+<div class="w-full max-w-md h-[90dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
 <div class="hero">
 
@@ -269,11 +270,11 @@ transform:translateY(0);
 
 <div class="absolute bottom-2 left-0 right-0 text-center z-20">
 
-<div class="text-white text-xl font-bold tracking-wide">
+<div class="text-white text-lg font-bold tracking-wide">
 Citizen Voice AI
 </div>
 
-<div class="text-emerald-100 text-xs opacity-90 mt-0.5">
+<div class="text-emerald-100 text-[11px] opacity-90 mt-0.5">
 Asistente virtual para participación ciudadana
 </div>
 
@@ -507,7 +508,7 @@ const mapDiv = document.createElement("div")
 
 mapDiv.id = "map"
 
-mapDiv.style.height = "200px" /* Reducido de 340px a 200px para que el mapa no empuje los controles fuera de la pantalla */
+mapDiv.style.height = "180px" /* Mapa compacto a 180px para evitar desbordamientos */
 
 wrapper.appendChild(search)
 wrapper.appendChild(mapDiv)
@@ -724,14 +725,17 @@ const startBtn = document.createElement("button")
 startBtn.innerText = "Empezar"
 
 startBtn.className =
-"w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white py-4 rounded-2xl text-lg shadow-2xl"
+"w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white py-4 rounded-2xl text-lg shadow-2xl font-medium"
 
 startBtn.onclick = ()=>{
+    // Forzar pantalla completa permitida en iOS/Android tras la interacción del usuario
+    const docElm = document.documentElement;
+    if (docElm.requestFullscreen) { docElm.requestFullscreen(); }
+    else if (docElm.webkitRequestFullscreen) { docElm.webkitRequestFullscreen(); }
+    else if (docElm.msRequestFullscreen) { docElm.msRequestFullscreen(); }
 
-controls.innerHTML = ""
-
-weeklyQuestion()
-
+    controls.innerHTML = ""
+    weeklyQuestion()
 }
 
 controls.appendChild(startBtn)
