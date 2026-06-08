@@ -294,8 +294,8 @@ transform:translateY(0);
 
 <div class="avatar">
 
-<!-- NUEVO AVATAR: Mujer morena, joven, inteligente, mirada súper resolutiva y fondo potente -->
-<img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=400&auto=format&fit=crop"/>
+<!-- AVATAR ACTUALIZADO: Opción 3 (Morena, joven, sonrisa empática y resolutiva) -->
+<img src="https://images.unsplash.com/photo-1594744803329-e58b31de215f?q=80&w=400&auto=format&fit=crop"/>
 
 </div>
 
@@ -405,8 +405,8 @@ const avatar = document.createElement("div")
 avatar.className = "bot-mini"
 
 avatar.innerHTML = `
-<!-- MINI AVATAR NUEVO (Sincronizado) -->
-<img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=400&auto=format&fit=crop"/>
+<!-- MINI AVATAR SINCRONIZADO: Opción 3 -->
+<img src="https://images.unsplash.com/photo-1594744803329-e58b31de215f?q=80&w=400&auto=format&fit=crop"/>
 `
 
 const bubble = document.createElement("div")
@@ -577,7 +577,6 @@ controls.innerHTML = ""
 const wrapper = document.createElement("div")
 wrapper.className = "w-full flex flex-col gap-2"
 
-// NUEVO: Botón destacado de Geolocalización nativa inmediata por satélite/red
 const geoBtn = document.createElement("button")
 geoBtn.type = "button"
 geoBtn.className = "w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-90 transition flex items-center justify-center gap-1"
@@ -599,7 +598,6 @@ if(currentMap){
 currentMap.remove()
 }
 
-// Centrado inicial por defecto en Valencia, España
 currentMap = L.map('map').setView([39.4702,-0.3768],13)
 
 L.tileLayer(
@@ -608,7 +606,6 @@ L.tileLayer(
 
 let marker
 
-// LÓGICA DE GEOLOCALIZACIÓN AL PULSAR EL BOTÓN
 geoBtn.onclick = () => {
 if (navigator.geolocation) {
 geoBtn.innerText = "Buscando señal GPS..."
@@ -644,7 +641,6 @@ alert("Tu dispositivo o navegador no soporta la función de geolocalización.")
 }
 }
 
-// TOQUE MANUAL DIRECTO EN EL MAPA
 currentMap.on("click", e=>{
 if(marker) currentMap.removeLayer(marker)
 
