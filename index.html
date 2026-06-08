@@ -28,16 +28,23 @@ linear-gradient(
 );
 overflow:hidden;
 font-family:sans-serif;
-height: 100dvh; /* Fuerza al cuerpo a ocupar el alto dinámico real en iOS */
+height: 100dvh;
 }
 
-/* HERO - Reducido a 120px para recortar la distancia superior y subir los botones */
+/* HERO RESPONSIVO: 160px en móvil, 240px en ordenador */
 .hero{
 position:relative;
-height:120px;
+height: 160px;
 overflow:hidden;
 background:
 radial-gradient(circle at top,#1dd1a1 0%,#065f46 45%,#02120d 100%);
+transition: height 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .hero {
+    height: 240px;
+  }
 }
 
 .glow{
@@ -55,45 +62,47 @@ transform:translateX(-50%);
 .avatar-wrapper{
 position:absolute;
 left:50%;
-top:38%;
+top:45%;
 transform:translate(-50%,-50%);
 z-index:10;
 }
 
 .avatar-ring{
 position:absolute;
-inset:-8px;
-border-radius:9999px;
+inset:-10px;
+border-radius9999px;
 border:2px solid rgba(255,255,255,.15);
 animation:pulse 3s infinite;
 }
 
-/* AVATAR - Más compacto (75px) para ganar espacio en pantallas verticales cortas */
+/* AVATAR RESPONSIVO: 90px en móvil, 120px en ordenador */
 .avatar{
-width:75px;
-height:75px;
+width:90px;
+height:90px;
 border-radius:9999px;
 overflow:hidden;
-border:3px solid rgba(255,255,255,.15);
-box-shadow:0 20px 50px rgba(0,0,0,.45);
+border:4px solid rgba(255,255,255,.15);
+box-shadow:0 25px 60px rgba(0,0,0,.45);
 position:relative;
 z-index:2;
+transition: all 0.3s ease;
 }
 
-.avatar img{
-width:100%;
-height:100%;
-object-fit:cover;
+@media (min-width: 640px) {
+  .avatar {
+    width: 120px;
+    height: 120px;
+  }
 }
 
 .status{
 position:absolute;
-bottom:2px;
-right:2px;
-width:14px;
-height:14px;
+bottom:4px;
+right:4px;
+width:16px;
+height:16px;
 background:#22c55e;
-border:2px solid white;
+border:3px solid white;
 border-radius:9999px;
 z-index:20;
 }
@@ -248,7 +257,7 @@ transform:translateY(0);
 
 <body class="flex justify-center items-center min-h-screen p-2">
 
-<div class="w-full max-w-md h-[90dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
+<div class="w-full max-w-md h-[92dvh] sm:h-[820px] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
 <div class="hero">
 
@@ -268,13 +277,13 @@ transform:translateY(0);
 
 </div>
 
-<div class="absolute bottom-2 left-0 right-0 text-center z-20">
+<div class="absolute bottom-3 left-0 right-0 text-center z-20">
 
-<div class="text-white text-lg font-bold tracking-wide">
+<div class="text-white text-xl sm:text-2xl font-bold tracking-wide">
 Citizen Voice AI
 </div>
 
-<div class="text-emerald-100 text-[11px] opacity-90 mt-0.5">
+<div class="text-emerald-100 text-xs sm:text-sm opacity-90 mt-0.5">
 Asistente virtual para participación ciudadana
 </div>
 
@@ -284,7 +293,7 @@ Asistente virtual para participación ciudadana
 
 <div
 id="chat"
-class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-0"
+class="flex-1 overflow-y-auto px-4 py-3 sm:py-5 flex flex-col gap-2 sm:gap-4 min-h-0"
 ></div>
 
 <div
@@ -508,7 +517,8 @@ const mapDiv = document.createElement("div")
 
 mapDiv.id = "map"
 
-mapDiv.style.height = "180px" /* Mapa compacto a 180px para evitar desbordamientos */
+// Altura adaptativa del mapa para que nunca rompa el layout en móviles
+mapDiv.style.height = window.innerWidth < 640 ? "170px" : "300px"
 
 wrapper.appendChild(search)
 wrapper.appendChild(mapDiv)
@@ -611,136 +621,4 @@ const r = new webkitSpeechRecognition()
 
 r.lang = "es-ES"
 
-r.start()
-
-r.onresult = e=>{
-
-input.value = e.results[0][0].transcript
-
-}
-
-}
-
-const send = document.createElement("button")
-
-send.innerText = "Enviar"
-
-send.className =
-"option-btn"
-
-send.onclick = async ()=>{
-
-if(!input.value) return
-
-user(input.value)
-
-formData.descripcion = input.value
-
-saveData()
-
-}
-
-controls.appendChild(input)
-controls.appendChild(mic)
-controls.appendChild(send)
-
-}
-
-async function saveData(){
-
-try{
-
-let ai = {
-resumen:"",
-acciones:[]
-}
-
-try{
-
-const res = await fetch("/api/ai",{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({
-description: formData.descripcion
-})
-})
-
-ai = await res.json()
-
-}catch(e){}
-
-await supabaseClient
-.from("incidencias")
-.insert([{
-tipo: formData.tipo,
-area: formData.area,
-valoracion: formData.valoracion,
-descripcion: formData.descripcion,
-lat: formData.lat,
-lng: formData.lng,
-resumen: ai.resumen || "",
-acciones: ai.acciones || []
-}])
-
-bot("Registro completado correctamente.")
-
-controls.innerHTML = ""
-
-const close = document.createElement("button")
-
-close.className =
-"option-btn flex-1"
-
-close.innerText = "Cerrar"
-
-close.onclick = ()=> location.reload()
-
-const panel = document.createElement("button")
-
-panel.className =
-"option-btn flex-1"
-
-panel.innerText = "Ver datos"
-
-panel.onclick = ()=>{
-
-window.location.href =
-"https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
-
-}
-
-controls.appendChild(close)
-controls.appendChild(panel)
-
-}catch(err){
-
-bot("Ha ocurrido un error al guardar.")
-
-}
-
-}
-
-const startBtn = document.createElement("button")
-
-startBtn.innerText = "Empezar"
-
-startBtn.className =
-"w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white py-4 rounded-2xl text-lg shadow-2xl font-medium"
-
-startBtn.onclick = ()=>{
-    // Forzar pantalla completa permitida en iOS/Android tras la interacción del usuario
-    const docElm = document.documentElement;
-    if (docElm.requestFullscreen) { docElm.requestFullscreen(); }
-    else if (docElm.webkitRequestFullscreen) { docElm.webkitRequestFullscreen(); }
-    else if (docElm.msRequestFullscreen) { docElm.msRequestFullscreen(); }
-
-    controls.innerHTML = ""
-    weeklyQuestion()
-}
-
-controls.appendChild(startBtn)
-
-</script>
-
-</body>
-</html>
+r
