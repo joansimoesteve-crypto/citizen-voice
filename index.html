@@ -5,10 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<!-- Meta tags para ayudar a simular App en iPhone si se añade a inicio -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 <title>Citizen Voice AI</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -177,28 +173,27 @@ animation:fade .25s ease;
 background:rgba(0,0,0,.18);
 backdrop-filter:blur(20px);
 border-top:1px solid rgba(255,255,255,.08);
-/* Forzar barra en una sola línea con scroll táctil */
-display:flex;
-flex-wrap:nowrap !important;
-overflow-x:auto;
--webkit-overflow-scrolling:touch;
 }
 
-/* Ocultar la barra de scroll visual para mantener estética premium */
-.controls::-webkit-scrollbar {
-display:none;
+/* Ocultar barra de scroll en la línea de botones flotantes */
+.no-scrollbar::-webkit-scrollbar {
+display: none;
+}
+.no-scrollbar {
+-ms-overflow-style: none;
+scrollbar-width: none;
 }
 
 .option-btn{
 background:rgba(255,255,255,.10);
 border:1px solid rgba(255,255,255,.08);
 color:white;
-padding:10px 14px; /* Un poco más compacto */
+padding:10px 14px;
 border-radius:16px;
-font-size:13px; /* Reducido de 14px a 13px */
+font-size:13px;
 transition:.2s;
 backdrop-filter:blur(10px);
-flex-shrink:0; /* Evita que los botones se deformen o aplasten */
+flex-shrink: 0; /* Evita que el iPhone aplaste los botones */
 }
 
 .option-btn:hover{
@@ -261,11 +256,9 @@ transform:translateY(0);
 
 </head>
 
-<body class="flex justify-center items-center min-h-screen p-2">
+<body class="flex justify-center items-center min-h-[100dvh] p-2">
 
-<div class="w-full max-w-md h-[82vh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
-
-<!-- HERO -->
+<div class="w-full max-w-md h-[78dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
 <div class="hero">
 
@@ -299,18 +292,14 @@ Asistente virtual para participación ciudadana
 
 </div>
 
-<!-- CHAT -->
-
 <div
 id="chat"
 class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"
 ></div>
 
-<!-- CONTROLES (Cambiado p-4 por p-3 y flex-wrap por flex-nowrap) -->
-
 <div
 id="controls"
-class="controls p-3 flex flex-nowrap gap-2"
+class="controls p-3 flex flex-col gap-2"
 ></div>
 
 </div>
@@ -388,15 +377,20 @@ chat.scrollTop = chat.scrollHeight
 
 }
 
+// Optimizado: Crea una sub-línea horizontal estricta con scroll táctil invisible sólo para los botones
 function buttons(list, callback){
 
 controls.innerHTML = ""
+
+const btnRow = document.createElement("div")
+btnRow.className = "flex flex-row flex-nowrap gap-2 overflow-x-auto w-full no-scrollbar py-1"
+btnRow.style.webkitOverflowScrolling = "touch"
 
 list.forEach(o=>{
 
 const b = document.createElement("button")
 
-b.className = "option-btn"
+b.className = "option-btn flex-shrink-0"
 
 b.innerText = o
 
@@ -410,9 +404,11 @@ callback(o)
 
 }
 
-controls.appendChild(b)
+btnRow.appendChild(b)
 
 })
+
+controls.appendChild(btnRow)
 
 }
 
@@ -529,7 +525,7 @@ const mapDiv = document.createElement("div")
 
 mapDiv.id = "map"
 
-mapDiv.style.height = "260px"
+mapDiv.style.height = "240px"
 
 wrapper.appendChild(search)
 wrapper.appendChild(mapDiv)
@@ -612,19 +608,22 @@ bot("Describe brevemente la situación.")
 
 controls.innerHTML = ""
 
+const row = document.createElement("div")
+row.className = "flex flex-row w-full gap-2 items-center"
+
 const input = document.createElement("input")
 
 input.placeholder = "Escribe o usa voz"
 
 input.className =
-"input flex-1"
+"input flex-1 min-w-0"
 
 const mic = document.createElement("button")
 
 mic.innerText = "🎤"
 
 mic.className =
-"option-btn"
+"option-btn flex-shrink-0"
 
 mic.onclick = ()=>{
 
@@ -647,7 +646,7 @@ const send = document.createElement("button")
 send.innerText = "Enviar"
 
 send.className =
-"option-btn"
+"option-btn flex-shrink-0"
 
 send.onclick = async ()=>{
 
@@ -661,9 +660,10 @@ saveData()
 
 }
 
-controls.appendChild(input)
-controls.appendChild(mic)
-controls.appendChild(send)
+row.appendChild(input)
+row.appendChild(mic)
+row.appendChild(send)
+controls.appendChild(row)
 
 }
 
@@ -707,6 +707,9 @@ bot("Registro completado correctamente.")
 
 controls.innerHTML = ""
 
+const row = document.createElement("div")
+row.className = "flex flex-row w-full gap-2"
+
 const close = document.createElement("button")
 
 close.className =
@@ -730,8 +733,9 @@ window.location.href =
 
 }
 
-controls.appendChild(close)
-controls.appendChild(panel)
+row.appendChild(close)
+row.appendChild(panel)
+controls.appendChild(row)
 
 }catch(err){
 
