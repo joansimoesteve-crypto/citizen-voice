@@ -30,10 +30,10 @@ overflow:hidden;
 font-family:sans-serif;
 }
 
-/* HERO - Ajustado para optimizar espacio en móviles */
+/* HERO - Ajustado a 170px para liberar espacio en pantallas móviles */
 .hero{
 position:relative;
-height:180px;
+height:170px;
 overflow:hidden;
 background:
 radial-gradient(circle at top,#1dd1a1 0%,#065f46 45%,#02120d 100%);
@@ -61,7 +61,7 @@ z-index:10;
 
 .avatar-ring{
 position:absolute;
-inset:-8px;
+inset:-10px;
 border-radius:9999px;
 border:2px solid rgba(255,255,255,.15);
 animation:pulse 3s infinite;
@@ -86,10 +86,10 @@ object-fit:cover;
 
 .status{
 position:absolute;
-bottom:4px;
-right:4px;
-width:16px;
-height:16px;
+bottom:6px;
+right:6px;
+width:18px;
+height:18px;
 background:#22c55e;
 border:3px solid white;
 border-radius:9999px;
@@ -97,6 +97,7 @@ z-index:20;
 }
 
 /* CHAT */
+
 #chat{
 scroll-behavior:smooth;
 }
@@ -111,6 +112,7 @@ border-radius:20px;
 }
 
 /* BURBUJAS */
+
 .bot-row{
 display:flex;
 gap:10px;
@@ -153,6 +155,7 @@ linear-gradient(
 #10b981,
 #059669
 );
+
 padding:14px;
 border-radius:22px;
 color:white;
@@ -164,6 +167,7 @@ animation:fade .25s ease;
 }
 
 /* CONTROLES */
+
 .controls{
 background:rgba(0,0,0,.18);
 backdrop-filter:blur(20px);
@@ -186,11 +190,6 @@ transform:translateY(-2px);
 background:rgba(255,255,255,.16);
 }
 
-/* WOW Toque sofisticado al presionar botones */
-.option-btn:active{
-transform:scale(0.95);
-}
-
 .input{
 background:rgba(255,255,255,.10);
 border:1px solid rgba(255,255,255,.08);
@@ -206,6 +205,7 @@ color:rgba(255,255,255,.45);
 }
 
 /* MAP */
+
 #map{
 border-radius:24px;
 overflow:hidden;
@@ -213,6 +213,7 @@ box-shadow:0 15px 40px rgba(0,0,0,.35);
 }
 
 /* ANIMACIONES */
+
 @keyframes pulse{
 0%{
 transform:scale(1);
@@ -237,19 +238,6 @@ to{
 opacity:1;
 transform:translateY(0);
 }
-}
-
-/* WOW Animación sutil de brillo para el botón empezar */
-@keyframes pulse-glow {
-0%, 100% { box-shadow: 0 0 15px rgba(16,185,129,0.4); }
-50% { box-shadow: 0 0 30px rgba(16,185,129,0.8); }
-}
-.btn-wow {
-animation: pulse-glow 2s infinite;
-transition: all 0.3s ease;
-}
-.btn-wow:hover {
-transform: translateY(-2px) scale(1.02);
 }
 
 </style>
@@ -294,7 +282,7 @@ Asistente virtual para participación ciudadana
 
 <div
 id="chat"
-class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"
+class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-0"
 ></div>
 
 <div
@@ -319,14 +307,11 @@ const controls = document.getElementById("controls")
 let formData = {}
 let currentMap = null
 
-// Función auxiliar para un scroll suave y forzado al fondo de manera efectiva
-function scrollToBottom() {
-setTimeout(() => {
-chat.scrollTo({
-top: chat.scrollHeight,
-behavior: 'smooth'
-});
-}, 60);
+// Función de scroll agresiva con triple ejecución garantizada
+function forzarScroll() {
+    chat.scrollTop = chat.scrollHeight;
+    setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 20);
+    setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 80);
 }
 
 function speak(text){
@@ -348,363 +333,4 @@ const row = document.createElement("div")
 
 row.className = "bot-row"
 
-const avatar = document.createElement("div")
-
-avatar.className = "bot-mini"
-
-// Imagen cambiada también aquí para los mensajes del chat
-avatar.innerHTML = `
-<img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"/>
-`
-
-const bubble = document.createElement("div")
-
-bubble.className = "bot-bubble"
-
-bubble.innerText = text
-
-row.appendChild(avatar)
-row.appendChild(bubble)
-
-chat.appendChild(row)
-
-scrollToBottom();
-
-speak(text)
-
-}
-
-function user(text){
-
-const d = document.createElement("div")
-
-d.className = "user-bubble"
-
-d.innerText = text
-
-chat.appendChild(d)
-
-scrollToBottom();
-
-}
-
-function buttons(list, callback){
-
-controls.innerHTML = ""
-
-list.forEach(o=>{
-
-const b = document.createElement("button")
-
-b.className = "option-btn"
-
-b.innerText = o
-
-b.onclick = ()=>{
-
-controls.innerHTML = ""
-
-user(o)
-
-callback(o)
-
-}
-
-controls.appendChild(b)
-
-})
-
-}
-
-function weeklyQuestion(){
-
-bot("Hola, soy Citizen Voice. Vamos a empezar con una pregunta rápida: ¿Qué importancia das a mejorar los espacios culturales infantiles?")
-
-buttons([
-"😡 1",
-"😕 2",
-"😐 3",
-"🙂 4",
-"😄 5"
-], async (v)=>{
-
-try{
-
-await supabaseClient
-.from("weekly_engagement")
-.insert([{
-week: 1,
-question: "¿Qué importancia das a mejorar los espacios culturales infantiles?",
-area: "Cultura",
-answer: parseInt(v.charAt(v.length - 1)),
-created_at: new Date().toISOString()
-}])
-
-}catch(err){
-console.log(err)
-}
-
-bot("Perfecto. ¿Qué deseas registrar?")
-
-askType()
-
-})
-
-}
-
-function askType(){
-
-buttons([
-"Incidencia",
-"Propuesta de mejora"
-], v=>{
-
-formData.tipo = v
-
-askArea()
-
-})
-
-}
-
-function askArea(){
-
-bot("¿En qué área ocurre o afecta?")
-
-buttons([
-"Movilidad",
-"Limpieza",
-"Urbanismo",
-"Cultura",
-"Seguridad",
-"Otros"
-], v=>{
-
-formData.area = v
-
-askRate()
-
-})
-
-}
-
-function askRate(){
-
-bot("¿Cómo valoras actualmente esta área?")
-
-buttons([
-"😡 1",
-"😕 2",
-"😐 3",
-"🙂 4",
-"😄 5"
-], v=>{
-
-formData.valoracion =
-parseInt(v.charAt(v.length - 1))
-
-showMap()
-
-})
-
-}
-
-function showMap(){
-
-bot("Indica dónde ocurre. Puedes buscar una dirección o tocar el mapa.")
-
-controls.innerHTML = ""
-
-const wrapper = document.createElement("div")
-wrapper.className = "w-full"
-
-const search = document.createElement("input")
-
-search.placeholder = "Buscar dirección..."
-
-search.className =
-"input mb-2"
-
-const mapDiv = document.createElement("div")
-
-mapDiv.id = "map"
-
-mapDiv.style.height = "260px" // Reducido ligeramente para evitar desbordes en pantallas pequeñas
-
-wrapper.appendChild(search)
-wrapper.appendChild(mapDiv)
-
-controls.appendChild(wrapper)
-
-scrollToBottom();
-
-setTimeout(()=>{
-
-if(currentMap){
-currentMap.remove()
-}
-
-currentMap = L.map('map').setView([39.47,-0.37],13)
-
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-).addTo(currentMap)
-
-let marker
-
-const geocoder = L.Control.Geocoder.nominatim()
-
-search.addEventListener("keydown",(e)=>{
-
-if(e.key==="Enter"){
-
-geocoder.geocode(search.value, results=>{
-
-if(results.length>0){
-
-const r = results[0]
-
-currentMap.setView(r.center,16)
-
-if(marker) currentMap.removeLayer(marker)
-
-marker = L.marker(r.center).addTo(currentMap)
-
-formData.lat = r.center.lat
-formData.lng = r.center.lng
-
-wrapper.style.display = "none"
-
-bot("Ubicación registrada.")
-
-askDescription()
-
-}
-
-})
-
-}
-
-})
-
-currentMap.on("click", e=>{
-
-if(marker) currentMap.removeLayer(marker)
-
-marker = L.marker(e.latlng).addTo(currentMap)
-
-formData.lat = e.latlng.lat
-formData.lng = e.latlng.lng
-
-wrapper.style.display = "none"
-
-bot("Ubicación guardada.")
-
-askDescription()
-
-})
-
-},300)
-
-}
-
-function askDescription(){
-
-bot("Describe brevemente la situación.")
-
-controls.innerHTML = ""
-
-const input = document.createElement("input")
-
-input.placeholder = "Escribe o usa voz"
-
-input.className =
-"input flex-1"
-
-const mic = document.createElement("button")
-
-mic.innerText = "🎤"
-
-mic.className =
-"option-btn"
-
-mic.onclick = ()=>{
-
-const r = new webkitSpeechRecognition()
-
-r.lang = "es-ES"
-
-r.start()
-
-r.onresult = e=>{
-
-input.value = e.results[0][0].transcript
-
-}
-
-}
-
-const send = document.createElement("button")
-
-send.innerText = "Enviar"
-
-send.className =
-"option-btn"
-
-send.onclick = async ()=>{
-
-if(!input.value) return
-
-user(input.value)
-
-formData.descripcion = input.value
-
-saveData()
-
-}
-
-controls.appendChild(input)
-controls.appendChild(mic)
-controls.appendChild(send)
-
-scrollToBottom();
-
-}
-
-async function saveData(){
-
-try{
-
-let ai = {
-resumen:"",
-acciones:[]
-}
-
-try{
-
-const res = await fetch("/api/ai",{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({
-description: formData.descripcion
-})
-})
-
-ai = await res.json()
-
-}catch(e){}
-
-await supabaseClient
-.from("incidencias")
-.insert([{
-tipo: formData.tipo,
-area: formData.area,
-valoracion: formData.valoracion,
-descripcion: formData.descripcion,
-lat: formData.lat,
-lng: formData.lng,
-resumen: ai.resumen || "",
-acciones: ai.acciones || []
-}])
-
-bot("Registro completado
+const avatar = document.createElement
