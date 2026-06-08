@@ -82,12 +82,7 @@ border:4px solid rgba(255,255,255,.15);
 box-shadow:0 25px 60px rgba(0,0,0,.45);
 position:relative;
 z-index:2;
-}
-
-.avatar img{
-width:100%;
-height:100%;
-object-fit:cover;
+background: #022c22;
 }
 
 .status{
@@ -133,12 +128,7 @@ border-radius:9999px;
 overflow:hidden;
 flex-shrink:0;
 border:2px solid rgba(255,255,255,.15);
-}
-
-.bot-mini img{
-width:100%;
-height:100%;
-object-fit:cover;
+background: #022c22;
 }
 
 .bot-bubble{
@@ -294,8 +284,30 @@ transform:translateY(0);
 
 <div class="avatar">
 
-<!-- AVATAR ACTUALIZADO: Opción 3 (Morena, joven, sonrisa empática y resolutiva) -->
-<img src="https://images.unsplash.com/photo-1594744803329-e58b31de215f?q=80&w=400&auto=format&fit=crop"/>
+<!-- AVATAR VECTORIAL EN CÓDIGO PURO: Nunca falla y es ultra limpio -->
+<svg viewBox="0 0 100 100" class="w-full h-full">
+<defs>
+<linearGradient id="av-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#064e3b"/>
+<stop offset="100%" stop-color="#022c22"/>
+</linearGradient>
+</defs>
+<circle cx="50" cy="50" r="50" fill="url(#av-bg)"/>
+<path d="M26,50 Q16,75 20,100 L80,100 Q84,75 74,50 Z" fill="#1c1917"/>
+<path d="M22,100 L78,100 L72,76 L28,76 Z" fill="#0f172a"/>
+<path d="M42,76 L50,91 L58,76 Z" fill="#ffffff"/>
+<path d="M30,76 L45,95 L26,100 Z" fill="#1e293b"/>
+<path d="M70,76 L55,95 L74,100 Z" fill="#1e293b"/>
+<rect x="44" y="64" width="12" height="15" fill="#fddfbc" rx="3"/>
+<circle cx="50" cy="44" r="20" fill="#fddfbc"/>
+<path d="M29,40 Q31,18 50,18 Q69,18 71,40 Q72,62 67,74 Q64,50 60,44 Q50,22 40,44 Q36,50 33,74 Q28,62 29,40 Z" fill="#1c1917"/>
+<ellipse cx="43" cy="42" rx="2" ry="2.5" fill="#1e293b"/>
+<ellipse cx="57" cy="42" rx="2" ry="2.5" fill="#1e293b"/>
+<path d="M39,37 Q43,35 47,38" stroke="#1c1917" stroke-width="1.5" fill="none"/>
+<path d="M61,37 Q57,35 53,38" stroke="#1c1917" stroke-width="1.5" fill="none"/>
+<path d="M43,52 Q50,58 57,52" stroke="#991b1b" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="M44,52 Q50,56 56,52" stroke="#ffffff" stroke-width="1" fill="none"/>
+</svg>
 
 </div>
 
@@ -404,9 +416,20 @@ const avatar = document.createElement("div")
 
 avatar.className = "bot-mini"
 
+// MINI AVATAR VECTORIAL SINCRONIZADO EN CÓDIGO PURO
 avatar.innerHTML = `
-<!-- MINI AVATAR SINCRONIZADO: Opción 3 -->
-<img src="https://images.unsplash.com/photo-1594744803329-e58b31de215f?q=80&w=400&auto=format&fit=crop"/>
+<svg viewBox="0 0 100 100" class="w-full h-full">
+<circle cx="50" cy="50" r="50" fill="#022c22"/>
+<path d="M26,50 Q16,75 20,100 L80,100 Q84,75 74,50 Z" fill="#1c1917"/>
+<path d="M22,100 L78,100 L72,76 L28,76 Z" fill="#0f172a"/>
+<path d="M42,76 L50,91 L58,76 Z" fill="#ffffff"/>
+<rect x="44" y="64" width="12" height="15" fill="#fddfbc" rx="3"/>
+<circle cx="50" cy="44" r="20" fill="#fddfbc"/>
+<path d="M29,40 Q31,18 50,18 Q69,18 71,40 Q72,62 67,74 Q64,50 60,44 Q50,22 40,44 Q36,50 33,74 Q28,62 29,40 Z" fill="#1c1917"/>
+<ellipse cx="43" cy="42" rx="2" ry="2.5" fill="#1e293b"/>
+<ellipse cx="57" cy="42" rx="2" ry="2.5" fill="#1e293b"/>
+<path d="M43,52 Q50,58 57,52" stroke="#991b1b" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>
 `
 
 const bubble = document.createElement("div")
