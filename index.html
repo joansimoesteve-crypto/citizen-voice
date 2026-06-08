@@ -31,9 +31,10 @@ font-family:sans-serif;
 }
 
 /* HERO */
+
 .hero{
 position:relative;
-height:150px;
+height:240px;
 overflow:hidden;
 background:
 radial-gradient(circle at top,#1dd1a1 0%,#065f46 45%,#02120d 100%);
@@ -54,7 +55,7 @@ transform:translateX(-50%);
 .avatar-wrapper{
 position:absolute;
 left:50%;
-top:42%;
+top:50%;
 transform:translate(-50%,-50%);
 z-index:10;
 }
@@ -68,8 +69,8 @@ animation:pulse 3s infinite;
 }
 
 .avatar{
-width:90px;
-height:90px;
+width:120px;
+height:120px;
 border-radius:9999px;
 overflow:hidden;
 border:4px solid rgba(255,255,255,.15);
@@ -86,10 +87,10 @@ object-fit:cover;
 
 .status{
 position:absolute;
-bottom:4px;
-right:4px;
-width:16px;
-height:16px;
+bottom:6px;
+right:6px;
+width:18px;
+height:18px;
 background:#22c55e;
 border:3px solid white;
 border-radius:9999px;
@@ -244,9 +245,13 @@ transform:translateY(0);
 
 </head>
 
+<!-- Cambiado items-start por items-center para centrar verticalmente y proteger el título del borde superior -->
 <body class="flex justify-center items-center min-h-screen p-2">
 
-<div class="w-full max-w-md h-[78vh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
+<!-- Reducido a h-[82vh] para encoger sutilmente el chat del medio y subir los controles de abajo -->
+<div class="w-full max-w-md h-[82vh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
+
+<!-- HERO -->
 
 <div class="hero">
 
@@ -258,7 +263,7 @@ transform:translateY(0);
 
 <div class="avatar">
 
-<img src="https://images.unsplash.com/photo-1573496799652-408c2ac9fe98?q=80&w=400&auto=format&fit=crop"/>
+<img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200&auto=format&fit=crop"/>
 
 </div>
 
@@ -266,13 +271,13 @@ transform:translateY(0);
 
 </div>
 
-<div class="absolute bottom-2 left-0 right-0 text-center z-20">
+<div class="absolute bottom-5 left-0 right-0 text-center z-20">
 
-<div class="text-white text-xl font-bold tracking-wide">
+<div class="text-white text-2xl font-bold tracking-wide">
 Citizen Voice AI
 </div>
 
-<div class="text-emerald-100 text-xs opacity-90 mt-0.5">
+<div class="text-emerald-100 text-sm opacity-90 mt-1">
 Asistente virtual para participación ciudadana
 </div>
 
@@ -280,10 +285,14 @@ Asistente virtual para participación ciudadana
 
 </div>
 
+<!-- CHAT -->
+
 <div
 id="chat"
-class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-0"
+class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"
 ></div>
+
+<!-- CONTROLES -->
 
 <div
 id="controls"
@@ -331,7 +340,7 @@ const avatar = document.createElement("div")
 avatar.className = "bot-mini"
 
 avatar.innerHTML = `
-<img src="https://images.unsplash.com/photo-1573496799652-408c2ac9fe98?q=80&w=400&auto=format&fit=crop"/>
+<img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1200&auto=format&fit=crop"/>
 `
 
 const bubble = document.createElement("div")
@@ -506,7 +515,7 @@ const mapDiv = document.createElement("div")
 
 mapDiv.id = "map"
 
-mapDiv.style.height = "220px"
+mapDiv.style.height = "340px"
 
 wrapper.appendChild(search)
 wrapper.appendChild(mapDiv)
