@@ -2,11 +2,10 @@
 <html lang="es">
 
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>Citizen Voice · Ciudadano</title>
+<title>Citizen Voice · Panel Ciudadano</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -14,94 +13,228 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+<style>
+
+body{
+background:
+linear-gradient(
+180deg,
+#02120d 0%,
+#06281f 45%,
+#03140f 100%
+);
+font-family:sans-serif;
+}
+
+/* CONTENEDOR PRINCIPAL CON SCROLL ESTILIZADO */
+.main-container {
+scroll-behavior: smooth;
+}
+.main-container::-webkit-scrollbar {
+width: 4px;
+}
+.main-container::-webkit-scrollbar-thumb {
+background: #10b981;
+border-radius: 20px;
+}
+
+/* HERO TRANSMEDIA */
+.hero{
+position:relative;
+height:200px;
+overflow:hidden;
+background:
+radial-gradient(circle at top,#1dd1a1 0%,#065f46 45%,#02120d 100%);
+}
+
+.glow{
+position:absolute;
+width:220px;
+height:220px;
+background:rgba(16,185,129,.35);
+filter:blur(60px);
+border-radius:9999px;
+top:-50px;
+left:50%;
+transform:translateX(-50%);
+}
+
+.avatar-wrapper{
+position:absolute;
+left:50%;
+top:42%;
+transform:translate(-50%,-50%);
+z-index:10;
+}
+
+.avatar-ring{
+position:absolute;
+inset:-8px;
+border-radius:9999px;
+border:3px solid rgba(52,211,153,1);
+box-shadow: 0 0 25px rgba(52,211,153,.8);
+animation: pulse-intense 1.5s infinite ease-in-out;
+}
+
+.avatar{
+width:90px;
+height:90px;
+border-radius:9999px;
+overflow:hidden;
+border:3px solid rgba(255,255,255,.15);
+box-shadow:0 15px 40px rgba(0,0,0,.45);
+position:relative;
+z-index:2;
+background: #0f172a;
+}
+
+.avatar img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+object-position: center;
+}
+
+/* CRISTAL TRANSLÚCIDO (GLASSMORPHISM) */
+.glass-card {
+background: rgba(255, 255, 255, 0.06);
+backdrop-filter: blur(16px);
+-webkit-backdrop-filter: blur(16px);
+border: 1px solid rgba(255, 255, 255, 0.08);
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.glass-input-btn {
+background: rgba(255, 255, 255, 0.10);
+border: 1px solid rgba(255, 255, 255, 0.08);
+transition: all 0.2s ease;
+}
+.glass-input-btn:hover {
+background: rgba(255, 255, 255, 0.20);
+transform: translateY(-1px);
+}
+
+/* MAPA INTEGRADO EN EL ENTORNO */
+#map {
+border: 1px solid rgba(255, 255, 255, 0.1);
+box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+/* OCULTAR SCROLLBARS AUXILIARES */
+.no-scrollbar::-webkit-scrollbar {
+display: none;
+}
+.no-scrollbar {
+-ms-overflow-style: none;
+scrollbar-width: none;
+}
+
+/* ANIMACIÓN DINÁMICA DEL ANILLO */
+@keyframes pulse-intense{
+0%{
+transform:scale(1);
+opacity:1;
+box-shadow: 0 0 20px rgba(52,211,153,0.6);
+}
+50%{
+transform:scale(1.12);
+opacity:0.4;
+box-shadow: 0 0 35px rgba(52,211,153,0.9);
+}
+100%{
+transform:scale(1);
+opacity:1;
+box-shadow: 0 0 20px rgba(52,211,153,0.6);
+}
+}
+
+</style>
 </head>
 
-<body class="bg-[#EEF2F5] min-h-screen flex justify-center">
+<body class="flex justify-center items-center min-h-[100dvh] p-2">
 
-<div class="w-full max-w-md bg-white min-h-screen shadow-2xl overflow-hidden rounded-[35px]">
+<div class="w-full max-w-md h-[96dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
-<!-- HEADER (compacto) -->
-<div class="bg-gradient-to-br from-slate-700 to-slate-500 text-white p-4 rounded-b-[30px]">
-
-<div class="text-2xl font-bold flex items-center gap-2">
-Citizen Voice <span>🙂</span>
+<!-- HERO / HEADER -->
+<div class="hero flex-shrink-0">
+<div class="glow"></div>
+<div class="avatar-wrapper">
+<div class="avatar-ring"></div>
+<div class="avatar">
+<!-- Cargará perfectamente tu avatar.png en GitHub local -->
+<img src="avatar.png" alt="Citizen Voice Avatar">
+</div>
+</div>
+<div class="absolute bottom-3 left-0 right-0 text-center z-20">
+<div class="text-white text-xl font-bold tracking-wide">Citizen Voice</div>
+<div class="text-emerald-100 text-xs opacity-80 mt-0.5">Transparencia Urbana & Datos Libres</div>
+</div>
 </div>
 
-<div class="text-xs opacity-90">
-Transparencia urbana · Participación ciudadana
+<!-- CUERPO SCROLLABLE DE DATOS -->
+<div class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 main-container">
+
+<!-- CONSULTA SEMANAL INTEGRADA -->
+<div class="glass-card p-4 rounded-[26px]">
+<div class="flex justify-between items-center text-[10px] text-emerald-400 font-mono tracking-wider">
+<span>#CONSULTASEMANAL-1</span>
+<span class="bg-emerald-500/20 px-2 py-0.5 rounded-full text-emerald-300">Activa</span>
+</div>
+<div class="text-white font-medium mt-1.5 text-sm leading-snug">
+¿Qué nivel de importancia otorgas a expandir las áreas culturales infantiles en la ciudad?
+</div>
+<div class="flex justify-between gap-2 mt-3.5">
+<button onclick="sendAnswer(1)" class="glass-input-btn flex-1 text-white py-2 rounded-xl text-xs font-semibold">😡 1</button>
+<button onclick="sendAnswer(2)" class="glass-input-btn flex-1 text-white py-2 rounded-xl text-xs font-semibold">😕 2</button>
+<button onclick="sendAnswer(3)" class="glass-input-btn flex-1 text-white py-2 rounded-xl text-xs font-semibold">😐 3</button>
+<button onclick="sendAnswer(4)" class="glass-input-btn flex-1 text-white py-2 rounded-xl text-xs font-semibold">🙂 4</button>
+<button onclick="sendAnswer(5)" class="glass-input-btn flex-1 text-white py-2 rounded-xl text-xs font-semibold">😄 5</button>
+</div>
+</div>
+
+<!-- KPIs EN PANEL EN TANDEM -->
+<div class="grid grid-cols-2 gap-3">
+<div class="glass-card p-4 rounded-[24px] flex flex-col justify-between">
+<div class="text-xs text-white/60 font-medium">Incidencias totales</div>
+<div id="totalIncidencias" class="text-3xl font-bold text-white mt-1 tracking-tight">0</div>
+</div>
+<div class="glass-card p-4 rounded-[24px] flex flex-col justify-between">
+<div class="text-xs text-white/60 font-medium">Resolución media</div>
+<div id="avgTime" class="text-2xl font-bold text-emerald-400 mt-1 tracking-tight">0 días</div>
+</div>
+</div>
+
+<!-- VALORACIÓN CIUDADANA POR ÁREAS -->
+<div class="flex flex-col gap-2">
+<div class="text-xs font-bold text-emerald-400/90 tracking-widest uppercase px-1">
+Valoración por Áreas
+</div>
+<div id="ratings" class="flex flex-col gap-2"></div>
+</div>
+
+<!-- MAPA GEOLOCALIZADO -->
+<div class="flex flex-col gap-2">
+<div class="text-xs font-bold text-emerald-400/90 tracking-widest uppercase px-1">
+Mapa de Afectación Colectiva
+</div>
+<div id="map" class="w-full h-[220px] rounded-[26px]"></div>
+</div>
+
+<!-- ÚLTIMAS REGISTRADAS -->
+<div class="flex flex-col gap-2 pb-4">
+<div class="text-xs font-bold text-emerald-400/90 tracking-widest uppercase px-1">
+Últimos Reportes de la Comunidad
+</div>
+<div id="latest" class="flex flex-col gap-2.5"></div>
 </div>
 
 </div>
 
-<!-- CONSULTA SEMANAL -->
-<div class="p-3">
-
-<div class="bg-gradient-to-r from-indigo-500 to-blue-500 text-white p-4 rounded-[25px] shadow">
-
-<div class="text-[11px] opacity-80">
-#ConsultaSemanal-1
-</div>
-
-<div class="font-semibold mt-1 text-sm leading-snug">
-¿Del 1 al 5, qué importancia das a crear más actividades culturales infantiles en la ciudad?
-</div>
-
-<div class="flex gap-2 mt-3">
-
-<button onclick="sendAnswer(1)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">1</button>
-<button onclick="sendAnswer(2)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">2</button>
-<button onclick="sendAnswer(3)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">3</button>
-<button onclick="sendAnswer(4)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">4</button>
-<button onclick="sendAnswer(5)" class="bg-white text-blue-600 px-3 py-1 rounded-xl">5</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- KPIs -->
-<div class="px-4 flex flex-col gap-3">
-
-<div class="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-4 rounded-[28px] shadow">
-<div class="text-xs opacity-80">Incidencias registradas</div>
-<div id="totalIncidencias" class="text-3xl font-bold">0</div>
-</div>
-
-<div class="bg-gradient-to-r from-emerald-500 to-green-400 text-white p-4 rounded-[28px] shadow">
-<div class="text-xs opacity-80">Tiempo medio de resolución</div>
-<div id="avgTime" class="text-2xl font-bold">0 días</div>
-</div>
-
-</div>
-
-<!-- VALORACIÓN POR ÁREAS -->
-<div class="px-4 mt-3">
-
-<div class="text-sm font-semibold mb-2">
-Valoración ciudadana por áreas
-</div>
-
-<div id="ratings"></div>
-
-</div>
-
-<!-- MAPA -->
-<div class="px-4 mt-3">
-
-<div id="map" class="w-full h-[220px] rounded-[25px] shadow"></div>
-
-</div>
-
-<!-- ÚLTIMAS -->
-<div class="px-4 mt-3 pb-6">
-
-<div class="text-sm font-semibold mb-2">
-Últimas incidencias
-</div>
-
-<div id="latest"></div>
-
+<!-- BOTÓN INFERIOR DE RETORNO AL CHAT -->
+<div class="p-3 bg-black/30 border-t border-white/5 flex-shrink-0">
+<button onclick="window.history.back()" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-90 transition">
+← Volver al Asistente Conversacional
+</button>
 </div>
 
 </div>
@@ -109,9 +242,8 @@ Valoración ciudadana por áreas
 <script>
 
 /* ===================== */
-/* SUPABASE */
+/* CONFIGURACIÓN SUPABASE */
 /* ===================== */
-
 const { createClient } = supabase
 
 const supabaseClient = createClient(
@@ -122,39 +254,33 @@ const supabaseClient = createClient(
 let allData = []
 
 /* ===================== */
-/* MAPA */
+/* INICIALIZACIÓN MAPA */
 /* ===================== */
+const map = L.map('map', { zoomControl: false }).setView([39.4702,-0.3768],12)
 
-const map = L.map('map').setView([39.47,-0.37],11)
-
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-).addTo(map)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+attribution: '© OpenStreetMap'
+}).addTo(map)
 
 /* ===================== */
-/* INIT */
+/* CARGA DE DATOS */
 /* ===================== */
-
 loadData()
 
 async function loadData(){
-
 const { data } = await supabaseClient
 .from("incidencias")
 .select("*")
 
 allData = data || []
-
 render()
-
 }
 
 /* ===================== */
-/* PREGUNTA SEMANAL */
+/* CONTROL DE PREGUNTA SEMANAL */
 /* ===================== */
-
 async function sendAnswer(value){
-
+try {
 await supabaseClient
 .from("weekly_engagement")
 .insert([{
@@ -163,14 +289,11 @@ question: "¿Qué importancia das a las actividades culturales infantiles?",
 area: "Cultura",
 answer: value
 }])
-
-alert("Gracias por participar 🙂")
-
+alert("¡Muchas gracias por aportar tu voto al ecosistema urbano! 🙂")
+} catch (e) {
+alert("No se pudo registrar en este momento.")
 }
-
-/* ===================== */
-/* WEEK NUMBER */
-/* ===================== */
+}
 
 function getWeekNumber(date){
 const firstJan = new Date(date.getFullYear(),0,1)
@@ -178,71 +301,49 @@ const diff = (date - firstJan) / 86400000
 return Math.ceil((diff + firstJan.getDay()+1)/7)
 }
 
-/* ===================== */
-/* DAYS */
-/* ===================== */
-
 function daysAgo(date){
-
 if(!date) return 0
-
-return Math.floor(
-(new Date() - new Date(date)) / (1000*60*60*24)
-)
-
+return Math.floor((new Date() - new Date(date)) / (1000*60*60*24))
 }
 
 /* ===================== */
-/* RENDER */
+/* RENDERIZADOR GENERAL DE INTERFAZ */
 /* ===================== */
-
 function render(){
 
-/* KPI TOTAL */
+/* KPIs */
 document.getElementById("totalIncidencias").innerText = allData.length
 
-/* KPI MEDIA TIEMPO */
 const resolved = allData.filter(i => i.estado === "resuelto")
-
 let avg = 0
-
 if(resolved.length){
 avg = resolved.reduce((a,b)=>a+daysAgo(b.created_at),0)/resolved.length
 }
+document.getElementById("avgTime").innerText = Math.round(avg) + " días"
 
-document.getElementById("avgTime").innerText = Math.round(avg)+" días"
-
-/* ===================== */
-/* RATINGS */
-/* ===================== */
-
+/* RATING DINÁMICO POR ÁREAS */
 const areas = ["Movilidad","Limpieza","Urbanismo","Cultura","Seguridad"]
-
-const ratings = document.getElementById("ratings")
-ratings.innerHTML = ""
+const ratingsContainer = document.getElementById("ratings")
+ratingsContainer.innerHTML = ""
 
 areas.forEach(area=>{
-
 const n = allData.filter(i=>i.area===area).length
-const score = Math.max(1,5 - Math.floor(n/10))
+const score = Math.max(1, 5 - Math.floor(n/10)) // Algoritmo nativo mantenido
 
-ratings.innerHTML += `
-<div class="bg-white p-3 rounded-2xl shadow mb-2">
-<div class="flex justify-between">
-<b>${area}</b>
-<span>${score}/5</span>
+ratingsContainer.innerHTML += `
+<div class="glass-card p-3 rounded-xl flex flex-col gap-1.5">
+<div class="flex justify-between items-center text-xs">
+<span class="text-white font-medium">${area}</span>
+<span class="text-emerald-400 font-semibold">${score} / 5</span>
 </div>
-<div class="h-2 bg-slate-200 rounded-full mt-2">
-<div class="h-2 bg-gradient-to-r from-blue-400 to-emerald-400 rounded-full" style="width:${score*20}%"></div>
+<div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style="width:${score*20}%"></div>
 </div>
 </div>
 `
 })
 
-/* ===================== */
-/* MAPA */
-/* ===================== */
-
+/* REDIBUJAR MAPA CON DISEÑO UNIFICADO COHERENTE */
 map.eachLayer(layer=>{
 if(layer instanceof L.CircleMarker){
 map.removeLayer(layer)
@@ -251,37 +352,40 @@ map.removeLayer(layer)
 
 allData.forEach(i=>{
 if(i.lat && i.lng){
+// Marcador esmeralda brillante a juego con la interfaz
 L.circleMarker([i.lat,i.lng],{
 radius:6,
-color:"#3b82f6",
-fillOpacity:0.7
+color:"#10b981",
+fillColor:"#34d399",
+fillOpacity:0.8,
+weight: 2
 }).addTo(map)
 }
 })
 
-/* ===================== */
-/* LATEST */
-/* ===================== */
-
-const latest = document.getElementById("latest")
-latest.innerHTML = ""
+/* RENDER DE ÚLTIMAS INCIDENCIAS */
+const latestContainer = document.getElementById("latest")
+latestContainer.innerHTML = ""
 
 allData.slice(0,5).forEach(i=>{
+const tiempo = daysAgo(i.created_at)
+const textTiempo = tiempo === 0 ? "Hoy mismo" : `Hace ${tiempo} días`
 
-latest.innerHTML += `
-<div class="bg-slate-100 p-3 rounded-2xl mb-2">
-<b>${i.area}</b><br>
-${i.resumen}<br>
-<small>${daysAgo(i.created_at)} días</small>
+latestContainer.innerHTML += `
+<div class="glass-card p-3 rounded-xl flex flex-col gap-1">
+<div class="flex justify-between items-center text-[11px]">
+<span class="text-emerald-400 font-bold tracking-wide uppercase">${i.area || "General"}</span>
+<span class="text-white/40">${textTiempo}</span>
+</div>
+<p class="text-white/90 text-xs leading-relaxed font-normal">
+${i.resumen || i.descripcion || "Sin descripción proporcionada."}
+</p>
 </div>
 `
-
 })
 
 }
 
 </script>
-
 </body>
-
 </html>
