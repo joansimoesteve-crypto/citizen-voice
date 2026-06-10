@@ -19,9 +19,9 @@ body{
 background:
 linear-gradient(
 180deg,
-#02120d 0%,
-#05231c 45%,
-#020f0b 100%
+#030f26 0%,
+#08214d 45%,
+#020714 100
 );
 font-family:sans-serif;
 }
@@ -34,7 +34,7 @@ scroll-behavior: smooth;
 width: 4px;
 }
 .main-container::-webkit-scrollbar-thumb {
-background: #10b981;
+background: #3b82f6;
 border-radius: 20px;
 }
 
@@ -44,14 +44,14 @@ position:relative;
 height:150px;
 overflow:hidden;
 background:
-radial-gradient(circle at top,#0f766e 0%,#064e3b 60%,#02120d 100%);
+radial-gradient(circle at top,#1e40af 0%,#1e3a8a 60%,#030f26 100%);
 }
 
 .glow{
 position:absolute;
 width:180px;
 height:180px;
-background:rgba(20,184,166,.25);
+background:rgba(59,130,246,.25);
 filter:blur(50px);
 border-radius:9999px;
 top:-40px;
@@ -71,8 +71,8 @@ z-index:10;
 position:absolute;
 inset:-5px;
 border-radius:9999px;
-border:2px solid rgba(20,184,166,1);
-box-shadow: 0 0 15px rgba(20,184,166,.6);
+border:2px solid rgba(59,130,246,1);
+box-shadow: 0 0 15px rgba(59,130,246,.6);
 }
 
 .avatar{
@@ -82,7 +82,7 @@ border-radius:9999px;
 overflow:hidden;
 border:2px solid rgba(255,255,255,.15);
 box-shadow:0 10px 25px rgba(0,0,0,.4);
-background: #111827;
+background: #0f172a;
 }
 
 .avatar img {
@@ -93,7 +93,7 @@ object-fit: cover;
 
 /* CRISTAL TRANSLÚCIDO (GLASSMORPHISM) */
 .glass-card {
-background: rgba(255, 255, 255, 0.05);
+background: rgba(255, 255, 255, 0.04);
 backdrop-filter: blur(16px);
 -webkit-backdrop-filter: blur(16px);
 border: 1px solid rgba(255, 255, 255, 0.07);
@@ -108,7 +108,7 @@ outline: none;
 cursor: pointer;
 }
 .glass-select option {
-background: #091e19;
+background: #0b1528;
 color: white;
 }
 
@@ -125,9 +125,11 @@ background: #0f172a;
 
 <div class="w-full max-w-md h-[96dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
+<!-- HERO / HEADER -->
 <div class="hero flex-shrink-0 border-b border-white/5">
 <div class="glow"></div>
 
+<!-- BOTÓN DE PANTALLA COMPLETA -->
 <button id="fullscreen-btn" class="absolute top-4 right-4 z-30 bg-black/30 p-2.5 rounded-xl border border-white/10 text-white backdrop-blur-md transition-all hover:bg-black/50" title="Alternar pantalla completa">
   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="fullscreen-icon">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4" />
@@ -142,12 +144,13 @@ background: #0f172a;
 </div>
 <div class="absolute bottom-2 left-0 right-0 text-center z-20">
 <div class="text-white text-lg font-bold tracking-wide">Citizen Voice</div>
-<div class="text-teal-300 text-[11px] font-mono uppercase tracking-widest opacity-90 mt-0.5">Módulo Técnico Operativo</div>
+<div class="text-sky-400 text-[11px] font-mono uppercase tracking-widest opacity-90 mt-0.5">Módulo Técnico Operativo</div>
 </div>
 </div>
 
+<!-- SELECTOR DE VISTA (TABS DE DISEÑO DE CRISTAL) -->
 <div class="px-4 pt-3 flex gap-2 flex-shrink-0">
-<button id="cardsBtn" class="flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-emerald-400 border-emerald-500/30 bg-white/10">
+<button id="cardsBtn" class="flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-blue-400 border-blue-500/30 bg-white/10">
 📋 Lista de Reportes
 </button>
 <button id="mapBtn" class="flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-white/60 hover:text-white">
@@ -155,6 +158,7 @@ background: #0f172a;
 </button>
 </div>
 
+<!-- SECCIÓN DE FILTROS AVANZADOS -->
 <div class="px-4 pt-3 flex flex-col gap-2 flex-shrink-0">
 <div class="grid grid-cols-2 gap-2">
 <select id="areaSelect" class="glass-select rounded-xl p-2 text-xs">
@@ -183,21 +187,25 @@ background: #0f172a;
 <option value="7">Últimos 7 días</option>
 <option value="30">Últimos 30 días</option>
 </select>
-<div id="stats" class="text-[11px] font-mono text-emerald-400/80 text-right pr-1">
+<div id="stats" class="text-[11px] font-mono text-blue-400/80 text-right pr-1">
 Cargando registros...
 </div>
 </div>
 </div>
 
+<!-- CONTENEDOR DINÁMICO INTERCAMBIABLE -->
 <div class="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3 main-container">
 
+<!-- LISTADO DE TARJETAS ACCIONES -->
 <div id="list" class="flex flex-col gap-3"></div>
 
+<!-- CONTENEDOR DEL MAPA (OCULTO POR DEFECTO) -->
 <div id="mapContainer" class="hidden w-full h-full min-h-[300px] rounded-[26px] overflow-hidden relative">
 <div id="map" class="w-full h-full"></div>
 </div>
 </div>
 
+<!-- PIE DE PANEL DE CONTROL -->
 <div class="p-3 bg-black/40 border-t border-white/5 text-center text-[10px] text-white/30 font-mono tracking-wider flex-shrink-0">
 SISTEMA DE AUDITORÍA MUNICIPAL EN TIEMPO REAL
 </div>
@@ -243,20 +251,17 @@ const mapContainerEl = document.getElementById("mapContainer")
 cardsBtn.onclick = () => {
 listEl.classList.remove("hidden")
 mapContainerEl.classList.add("hidden")
-cardsBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-emerald-400 border-emerald-500/30 bg-white/10"
+cardsBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-blue-400 border-blue-500/30 bg-white/10"
 mapBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-white/60 hover:text-white"
 }
 
 mapBtn.onclick = () => {
 listEl.classList.add("hidden")
 mapContainerEl.classList.remove("hidden")
-mapBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-emerald-400 border-emerald-500/30 bg-white/10"
+mapBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-blue-400 border-blue-500/30 bg-white/10"
 cardsBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-white/60 hover:text-white"
 setTimeout(initMap, 250)
 }
-
-// Carga Inicial
-loadData()
 
 /* ===================== */
 /* FETCH DATOS */
@@ -306,7 +311,7 @@ const { data, error } = await supabaseClient
 .update({
 estado: estado,
 comentario_tecnico: comentario,
-fecha_cambio_estado: new Date().toISOString() // Grabación exacta del cambio de estado solicitado
+fecha_cambio_estado: new Date().toISOString()
 })
 .eq("id", id)
 .select()
@@ -318,10 +323,9 @@ btn.disabled = false
 return
 }
 
-// Feedback visual premium rápido
 btn.innerText = "✓ Sincronizado"
-btn.classList.remove("from-teal-600","to-emerald-500")
-btn.classList.add("from-emerald-600","to-green-500")
+btn.classList.remove("from-blue-600","to-indigo-500")
+btn.classList.add("from-blue-700","to-sky-500")
 
 setTimeout(async () => {
 await loadData()
@@ -341,14 +345,14 @@ if(!i.created_at) return false
 return daysAgo(i.created_at) <= parseInt(fechaFilter)
 })
 
-// Actualizar KPI superior
 document.getElementById("stats").innerHTML = `Filtrados: <b>${data.length}</b>`
 
-// Limpieza previa del Listado e Iconos de Mapa
 const list = document.getElementById("list")
 list.innerHTML = ""
 
-markers.forEach(m => map?.removeLayer(m))
+if (map && markers) {
+  markers.forEach(m => map.removeLayer(m))
+}
 markers = []
 
 if(data.length === 0){
@@ -358,7 +362,6 @@ list.innerHTML = `<div class="text-xs text-white/40 p-8 text-center glass-card r
 data.forEach(i => {
 const days = daysAgo(i.created_at)
 
-// Mapeo e indicadores visuales de criticidad / Priorización temporal
 let estadoClase = "bg-slate-500/20 text-slate-400 border-slate-500/30"
 let priorityLabel = "Prioridad Normal"
 let priorityClass = "text-white/40"
@@ -368,17 +371,15 @@ estadoClase = "bg-amber-500/20 text-amber-400 border-amber-500/30"
 if(days >= 5) { priorityLabel = "🚨 REVISIÓN URGENTE"; priorityClass = "text-red-400 font-bold"; }
 else if(days >= 2) { priorityLabel = "⏳ ATENCIÓN MEDIA"; priorityClass = "text-amber-400 font-semibold"; }
 }
-else if(i.estado === "en_curso") estadoClase = "bg-blue-500/20 text-blue-400 border-blue-500/30"
-else if(i.estado === "resuelto") { estadoClase = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"; priorityLabel = "Finalizado"; }
+else if(i.estado === "en_curso") estadoClase = "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
+else if(i.estado === "resuelto") { estadoClase = "bg-sky-500/20 text-sky-400 border-sky-500/30"; priorityLabel = "Finalizado"; }
 else if(i.estado === "desestimado") { estadoClase = "bg-red-500/20 text-red-400 border-red-500/30"; priorityLabel = "Descartado"; }
 
-// Parsear matriz de acciones asignadas
 let accionesTexto = "Sin acciones de campo planificadas."
 if(i.acciones) {
 accionesTexto = Array.isArray(i.acciones) ? i.acciones.join(" · ") : i.acciones
 }
 
-// Fecha Formateada local
 const fechaTexto = i.created_at ? new Date(i.created_at).toLocaleDateString("es-ES") : "-"
 
 const card = document.createElement("div")
@@ -387,7 +388,7 @@ card.innerHTML = `
 <div class="flex justify-between items-center text-[10px]">
 <div class="flex items-center gap-1.5">
 <span class="text-white/40 font-mono uppercase">${i.tipo || '⚠️ INCIDENCIA'}</span>
-<span class="text-teal-400 font-bold uppercase">${i.area || "General"}</span>
+<span class="text-sky-400 font-bold uppercase">${i.area || "General"}</span>
 </div>
 <span class="px-2 py-0.5 rounded text-[9px] font-bold border ${estadoClase} uppercase">${i.estado || "pendiente"}</span>
 </div>
@@ -405,8 +406,8 @@ card.innerHTML = `
 </div>
 
 <div class="flex flex-col gap-2 mt-1 pt-1 border-t border-white/5">
-<label class="text-[9px] text-teal-400 uppercase font-mono tracking-wider">Historial / Bitácora Técnica</label>
-<textarea id="comment_${i.id}" placeholder="Escribe el reporte técnico interno..." class="w-full bg-black/30 border border-white/10 rounded-xl p-2.5 text-xs text-white outline-none placeholder:text-white/20 focus:border-teal-500 min-h-[50px]">${i.comentario_tecnico || ""}</textarea>
+<label class="text-[9px] text-sky-400 uppercase font-mono tracking-wider">Historial / Bitácora Técnica</label>
+<textarea id="comment_${i.id}" placeholder="Escribe el reporte técnico interno..." class="w-full bg-black/30 border border-white/10 rounded-xl p-2.5 text-xs text-white outline-none placeholder:text-white/20 focus:border-blue-500 min-h-[50px]">${i.comentario_tecnico || ""}</textarea>
 
 <div class="grid grid-cols-2 gap-2">
 <select id="estado_${i.id}" class="glass-select rounded-xl p-2 text-xs">
@@ -416,4 +417,93 @@ card.innerHTML = `
 <option value="desestimado" ${i.estado === "desestimado" ? "selected" : ""}>Desestimado</option>
 </select>
 
-<button id="btn_${i.id}" onclick="updateEstado('${i.id}')" class="bg-gradient-
+<button id="btn_${i.id}" onclick="updateEstado('${i.id}')" class="bg-gradient-to-r from-blue-600 to-indigo-500 hover:opacity-90 text-white font-bold py-2 px-3 rounded-xl text-xs transition shadow-md">
+Actualizar
+</button>
+</div>
+</div>
+`
+list.appendChild(card)
+
+if(i.lat && i.lng && map){
+const marker = L.marker([i.lat, i.lng]).addTo(map)
+marker.bindPopup(`
+<div style="color:#111; font-family:sans-serif; font-size:12px;">
+<b style="color:#1e3a8a; text-transform:uppercase;">${i.area}</b><br>
+<p style="margin:4px 0 0 0; font-weight:500;">${i.resumen}</p>
+<p style="margin:2px 0 0 0; color:#666; font-size:10px;">Estado: <b>${i.estado || 'pendiente'}</b></p>
+</div>
+`)
+markers.push(marker)
+}
+})
+}
+
+/* ===================== */
+/* INICIALIZADOR MAPA BASE */
+/* ===================== */
+function initMap(){
+if(map){
+map.invalidateSize()
+return
+}
+
+map = L.map('map', { zoomControl: false }).setView([39.47, -0.37], 12)
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+attribution: '© OpenStreetMap'
+}).addTo(map)
+
+render()
+}
+
+/* ===================== */
+/* LÓGICA DE PANTALLA COMPLETA */
+/* ===================== */
+const fullscreenBtn = document.getElementById("fullscreen-btn");
+
+if (fullscreenBtn) {
+  fullscreenBtn.onclick = () => {
+    const docEl = document.documentElement;
+    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+
+    if (!isFullscreen) {
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(err => {
+          console.log("Acceso de pantalla completa limitado:", err);
+        });
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      } else {
+        alert("Este navegador no soporta la API de pantalla completa.");
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  }
+
+  document.addEventListener("fullscreenchange", handleFullscreenChange);
+  document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+}
+
+function handleFullscreenChange() {
+  const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+  const icon = document.getElementById("fullscreen-icon");
+
+  if (isFullscreen && icon) {
+    icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`;
+  } else if (icon) {
+    icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4" />`;
+  }
+}
+
+// EJECUCIÓN AL FINAL
+loadData();
+
+</script>
+</body>
+</html>
