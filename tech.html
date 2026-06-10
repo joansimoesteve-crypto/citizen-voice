@@ -34,11 +34,11 @@ scroll-behavior: smooth;
 width: 4px;
 }
 .main-container::-webkit-scrollbar-thumb {
-background: #1e3a8a;
+background: #3b82f6;
 border-radius: 20px;
 }
 
-/* HERO OPERATIVO COMPACTO - CONFIGURADO EN AZUL OSCURO */
+/* HERO OPERATIVO COMPACTO - MODIFICADO A AZUL OSCURO */
 .hero{
 position:relative;
 height:150px;
@@ -51,7 +51,7 @@ radial-gradient(circle at top,#1e3a8a 0%,#0f172a 60%,#02120d 100%);
 position:absolute;
 width:180px;
 height:180px;
-background:rgba(30,58,138,.35);
+background:rgba(59,130,246,.25);
 filter:blur(50px);
 border-radius:9999px;
 top:-40px;
@@ -71,8 +71,8 @@ z-index:10;
 position:absolute;
 inset:-5px;
 border-radius:9999px;
-border:2px solid rgba(30,58,138,1);
-box-shadow: 0 0 15px rgba(30,58,138,.6);
+border:2px solid rgba(59,130,246,1);
+box-shadow: 0 0 15px rgba(59,130,246,.6);
 }
 
 .avatar{
@@ -125,9 +125,390 @@ background: #0f172a;
 
 <div class="w-full max-w-md h-[96dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
+<!-- HERO / HEADER -->
 <div class="hero flex-shrink-0 border-b border-white/5">
 <div class="glow"></div>
 
+<!-- BOTÓN DE PANTALLA COMPLETA -->
 <button id="fullscreen-btn" class="absolute top-4 right-4 z-30 bg-black/30 p-2.5 rounded-xl border border-white/10 text-white backdrop-blur-md transition-all hover:bg-black/50" title="Alternar pantalla completa">
   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="fullscreen-icon">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4" />
+  </svg>
+</button>
+
+<div class="avatar-wrapper">
+<div class="avatar-ring"></div>
+<div class="avatar">
+<img src="avatar.png" alt="Citizen Voice Tech Avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/7902/7902187.png'">
+</div>
+</div>
+<div class="absolute bottom-2 left-0 right-0 text-center z-20">
+<div class="text-white text-lg font-bold tracking-wide">Citizen Voice</div>
+<div class="text-blue-400 text-[11px] font-mono uppercase tracking-widest opacity-90 mt-0.5 font-bold">Módulo Técnico Operativo</div>
+</div>
+</div>
+
+<!-- SELECTOR DE VISTA (TABS DE DISEÑO DE CRISTAL) -->
+<div class="px-4 pt-3 flex gap-2 flex-shrink-0">
+<button id="cardsBtn" class="flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-blue-400 border-blue-500/30 bg-white/10">
+📋 Lista de Reportes
+</button>
+<button id="mapBtn" class="flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-white/60 hover:text-white">
+🗺️ Vista en Mapa
+</button>
+</div>
+
+<!-- SECCIÓN DE FILTROS AVANZADOS -->
+<div class="px-4 pt-3 flex flex-col gap-2 flex-shrink-0">
+<div class="grid grid-cols-2 gap-2">
+<select id="areaSelect" class="glass-select rounded-xl p-2 text-xs">
+<option value="">Todas las áreas</option>
+<option>Movilidad</option>
+<option>Limpieza</option>
+<option>Urbanismo</option>
+<option>Cultura</option>
+<option>Seguridad</option>
+<option>Otros</option>
+</select>
+
+<select id="estadoSelect" class="glass-select rounded-xl p-2 text-xs">
+<option value="">Todos los estados</option>
+<option value="pendiente">Pendiente</option>
+<option value="en_curso">En curso</option>
+<option value="resuelto">Resuelto</option>
+<option value="desestimado">Desestimado</option>
+</select>
+</div>
+
+<div class="grid grid-cols-2 gap-2 items-center">
+<select id="fechaSelect" class="glass-select rounded-xl p-2 text-xs">
+<option value="">Todas las fechas</option>
+<option value="1">Últimas 24 horas</option>
+<option value="7">Últimos 7 días</option>
+<option value="30">Últimos 30 días</option>
+</select>
+<div id="stats" class="text-[11px] font-mono text-blue-400/80 text-right pr-1 font-bold">
+Cargando registros...
+</div>
+</div>
+</div>
+
+<!-- CONTENEDOR DINÁMICO INTERCAMBIABLE -->
+<div class="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3 main-container">
+
+<!-- LISTADO DE TARJETAS ACCIONES -->
+<div id="list" class="flex flex-col gap-3"></div>
+
+<!-- CONTENEDOR DEL MAPA (OCULTO POR DEFECTO) -->
+<div id="mapContainer" class="hidden w-full h-full min-h-[300px] rounded-[26px] overflow-hidden relative">
+<div id="map" class="w-full h-full"></div>
+</div>
+</div>
+
+<!-- PIE DE PANEL DE CONTROL -->
+<div class="p-3 bg-black/40 border-t border-white/5 text-center text-[10px] text-white/30 font-mono tracking-wider flex-shrink-0">
+SISTEMA DE AUDITORÍA MUNICIPAL EN TIEMPO REAL
+</div>
+
+</div>
+
+<script>
+
+/* ===================== */
+/* CONFIGURACIÓN SUPABASE */
+/* ===================== */
+const { createClient } = supabase
+
+const supabaseClient = createClient(
+"https://saiclsejxsycmeefuhvs.supabase.co",
+"sb_publishable_47xYI_TzRSCVKyule8JK4g_mDx3t0VI"
+)
+
+/* ===================== */
+/* ESTADO GLOBAL */
+/* ===================== */
+let allData = []
+let areaFilter = ""
+let estadoFilter = ""
+let fechaFilter = ""
+
+let map
+let markers = []
+
+/* ===================== */
+/* EVENTOS INTERFAZ */
+/* ===================== */
+document.getElementById("areaSelect").addEventListener("change", e => { areaFilter = e.target.value; render(); })
+document.getElementById("estadoSelect").addEventListener("change", e => { estadoFilter = e.target.value; render(); })
+document.getElementById("fechaSelect").addEventListener("change", e => { fechaFilter = e.target.value; render(); })
+
+// Conmutadores estéticos de pestañas
+const cardsBtn = document.getElementById("cardsBtn")
+const mapBtn = document.getElementById("mapBtn")
+const listEl = document.getElementById("list")
+const mapContainerEl = document.getElementById("mapContainer")
+
+cardsBtn.onclick = () => {
+listEl.classList.remove("hidden")
+mapContainerEl.classList.add("hidden")
+cardsBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-blue-400 border-blue-500/30 bg-white/10"
+mapBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-white/60 hover:text-white"
+}
+
+mapBtn.onclick = () => {
+listEl.classList.add("hidden")
+mapContainerEl.classList.remove("hidden")
+mapBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-blue-400 border-blue-500/30 bg-white/10"
+cardsBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold transition glass-card text-white/60 hover:text-white"
+setTimeout(initMap, 250)
+}
+
+// Carga Inicial
+loadData()
+
+/* ===================== */
+/* FETCH DATOS */
+/* ===================== */
+async function loadData(){
+const { data, error } = await supabaseClient
+.from("incidencias")
+.select("*")
+.order("created_at", { ascending: false })
+
+if(error){
+console.error(error)
+alert("Error al sincronizar datos con Supabase.")
+return
+}
+
+allData = data || []
+render()
+}
+
+/* ===================== */
+/* CÁLCULO DE PRIORIDAD POR DÍAS TRANSURRIDOS */
+/* ===================== */
+function daysAgo(dateStr){
+if(!dateStr) return 0
+const created = new Date(dateStr)
+const today = new Date()
+created.setHours(0,0,0,0)
+today.setHours(0,0,0,0)
+const diffTime = Math.abs(today - created)
+return Math.floor(diffTime / (1000 * 60 * 60 * 24))
+}
+
+/* ===================== */
+/* REESCRITURA Y TRAZABILIDAD EN SUPABASE */
+/* ===================== */
+async function updateEstado(id){
+const estado = document.getElementById("estado_" + id).value
+const comentario = document.getElementById("comment_" + id).value
+const btn = document.getElementById("btn_" + id)
+
+btn.innerText = "Guardando..."
+btn.disabled = true
+
+const { data, error } = await supabaseClient
+.from("incidencias")
+.update({
+estado: estado,
+comentario_tecnico: comentario,
+fecha_cambio_estado: new Date().toISOString()
+})
+.eq("id", id)
+.select()
+
+if(error){
+alert("Error al actualizar registro técnico.")
+btn.innerText = "Actualizar estado"
+btn.disabled = false
+return
+}
+
+// Feedback visual premium rápido
+btn.innerText = "✓ Sincronizado"
+btn.classList.remove("from-blue-600","to-indigo-500")
+btn.classList.add("from-emerald-600","to-green-500")
+
+setTimeout(async () => {
+await loadData()
+}, 800)
+}
+
+/* ===================== */
+/* RENDERIZADOR COMPONENTES */
+/* ===================== */
+function render(){
+let data = [...allData]
+
+if(areaFilter) data = data.filter(i => i.area === areaFilter)
+if(estadoFilter) data = data.filter(i => i.estado === estadoFilter)
+if(fechaFilter) data = data.filter(i => {
+if(!i.created_at) return false
+return daysAgo(i.created_at) <= parseInt(fechaFilter)
+})
+
+// Actualizar KPI superior
+document.getElementById("stats").innerHTML = `Filtrados: <b>${data.length}</b>`
+
+// Limpieza previa del Listado e Iconos de Mapa
+const list = document.getElementById("list")
+list.innerHTML = ""
+
+markers.forEach(m => map?.removeLayer(m))
+markers = []
+
+if(data.length === 0){
+list.innerHTML = `<div class="text-xs text-white/40 p-8 text-center glass-card rounded-2xl">Sin incidencias asignadas para este filtro.</div>`
+}
+
+data.forEach(i => {
+const days = daysAgo(i.created_at)
+
+// Mapeo e indicadores visuales de criticidad
+let estadoClase = "bg-slate-500/20 text-slate-400 border-slate-500/30"
+let priorityLabel = "Prioridad Normal"
+let priorityClass = "text-white/40"
+
+if(i.estado === "pendiente") {
+estadoClase = "bg-amber-500/20 text-amber-400 border-amber-500/30"
+if(days >= 5) { priorityLabel = "🚨 REVISIÓN URGENTE"; priorityClass = "text-red-400 font-bold"; }
+else if(days >= 2) { priorityLabel = "⏳ ATENCIÓN MEDIA"; priorityClass = "text-amber-400 font-semibold"; }
+}
+else if(i.estado === "en_curso") estadoClase = "bg-blue-500/20 text-blue-400 border-blue-500/30"
+else if(i.estado === "resuelto") { estadoClase = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"; priorityLabel = "Finalizado"; }
+else if(i.estado === "desestimado") { estadoClase = "bg-red-500/20 text-red-400 border-red-500/30"; priorityLabel = "Descartado"; }
+
+// Parsear matriz de acciones asignadas
+let accionesTexto = "Sin acciones de campo planificadas."
+if(i.acciones) {
+accionesTexto = Array.isArray(i.acciones) ? i.acciones.join(" · ") : i.acciones
+}
+
+// Fecha Formateada local
+const fechaTexto = i.created_at ? new Date(i.created_at).toLocaleDateString("es-ES") : "-"
+
+const card = document.createElement("div")
+card.className = "glass-card p-4 rounded-[26px] flex flex-col gap-3"
+card.innerHTML = `
+<div class="flex justify-between items-center text-[10px]">
+<div class="flex items-center gap-1.5">
+<span class="text-white/40 font-mono uppercase">${i.tipo || '⚠️ INCIDENCIA'}</span>
+<span class="text-blue-400 font-bold uppercase font-sans">${i.area || "General"}</span>
+</div>
+<span class="px-2 py-0.5 rounded text-[9px] font-bold border ${estadoClase} uppercase">${i.estado || "pendiente"}</span>
+</div>
+
+<div>
+<div class="text-white font-semibold text-xs leading-snug">${i.resumen || "Sin descripción corta."}</div>
+<div class="text-[11px] text-white/60 mt-1 italic font-mono bg-black/20 p-2 rounded-lg border border-white/5">
+🔧 Tareas: ${accionesTexto}
+</div>
+</div>
+
+<div class="flex justify-between items-center border-t border-white/5 pt-2 text-[10px]">
+<span class="text-white/40">${fechaTexto} · Hace ${days} días</span>
+<span class="${priorityClass}">${priorityLabel}</span>
+</div>
+
+<!-- FORMULARIO DIRECTO DE EDICIÓN EN SUPABASE -->
+<div class="flex flex-col gap-2 mt-1 pt-1 border-t border-white/5">
+<label class="text-[9px] text-blue-400 uppercase font-mono tracking-wider font-bold">Historial / Bitácora Técnica</label>
+<textarea id="comment_${i.id}" placeholder="Escribe el reporte técnico interno..." class="w-full bg-black/30 border border-white/10 rounded-xl p-2.5 text-xs text-white outline-none placeholder:text-white/20 focus:border-blue-500 min-h-[50px]">${i.comentario_tecnico || ""}</textarea>
+
+<div class="grid grid-cols-2 gap-2">
+<select id="estado_${i.id}" class="glass-select rounded-xl p-2 text-xs">
+<option value="pendiente" ${i.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
+<option value="en_curso" ${i.estado === "en_curso" ? "selected" : ""}>En curso</option>
+<option value="resuelto" ${i.estado === "resuelto" ? "selected" : ""}>Resuelto</option>
+<option value="desestimado" ${i.estado === "desestimado" ? "selected" : ""}>Desestimado</option>
+</select>
+
+<button id="btn_${i.id}" onclick="updateEstado('${i.id}')" class="bg-gradient-to-r from-blue-600 to-indigo-500 hover:opacity-90 text-white font-bold py-2 px-3 rounded-xl text-xs transition shadow-md">
+Actualizar
+</button>
+</div>
+</div>
+`
+list.appendChild(card)
+
+/* ===================== */
+/* RENDER MAPA MARCADORES */
+/* ===================== */
+if(i.lat && i.lng && map){
+const marker = L.marker([i.lat, i.lng]).addTo(map)
+marker.bindPopup(`
+<div style="color:#111; font-family:sans-serif; font-size:12px;">
+<b style="color:#1e3a8a; text-transform:uppercase;">${i.area}</b><br>
+<p style="margin:4px 0 0 0; font-weight:500;">${i.resumen}</p>
+<p style="margin:2px 0 0 0; color:#666; font-size:10px;">Estado: <b>${i.estado || 'pendiente'}</b></p>
+</div>
+`)
+markers.push(marker)
+}
+})
+}
+
+/* ===================== */
+/* INICIALIZADOR MAPA BASE */
+/* ===================== */
+function initMap(){
+if(map){
+map.invalidateSize()
+return
+}
+
+map = L.map('map', { zoomControl: false }).setView([39.47, -0.37], 12)
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+attribution: '© OpenStreetMap'
+}).addTo(map)
+
+render()
+}
+
+/* ===================== */
+/* LÓGICA DE PANTALLA COMPLETA */
+/* ===================== */
+const fullscreenBtn = document.getElementById("fullscreen-btn");
+
+if (fullscreenBtn) {
+  fullscreenBtn.onclick = () => {
+    const docEl = document.documentElement;
+    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+
+    if (!isFullscreen) {
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(err => console.log("Bloqueado por sandbox/iframe:", err));
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  }
+
+  const handleFS = () => {
+    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+    const icon = document.getElementById("fullscreen-icon");
+    if (icon) {
+      if (isFullscreen) {
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`;
+      } else {
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4" />`;
+      }
+    }
+  };
+
+  document.addEventListener("fullscreenchange", handleFS);
+  document.addEventListener("webkitfullscreenchange", handleFS);
+}
+
+</script>
+</body>
+</html>
