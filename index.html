@@ -27,7 +27,7 @@ overflow:hidden;
 font-family:sans-serif;
 }
 
-/* HERO CON EFECTOS BRUTALES DETRÁS DEL AVATAR */
+/* HERO CON EFECTOS AVANZADOS DUALES */
 
 .hero{
 position:relative;
@@ -52,29 +52,39 @@ transform:translateX(-50%);
 .avatar-wrapper{
 position:absolute;
 left:50%;
-top:50%;
+top:46%;
 transform:translate(-50%,-50%);
 z-index:10;
 }
 
-/* CÍRCULO EN MOVIMIENTO ORGÁNICO DETRÁS DEL AVATAR (EFECTO UPV TOP) */
+/* AURA MUTANTE MEJORADA */
 .avatar-aura {
 position: absolute;
 inset: -15px;
 background: linear-gradient(45deg, #10b981, #34d399, #059669);
 border-radius: 40% 60% 65% 35% / 40% 45% 55% 60%;
-filter: blur(25px);
+filter: blur(22px);
 opacity: 0.45;
 animation: morphAura 7s infinite linear;
 z-index: 1;
-transition: all 0.4s ease;
+transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Aura en Modo Hablar (Verde Intenso) */
 .avatar-aura.active {
 opacity: 0.9;
-inset: -30px;
+inset: -25px;
 filter: blur(15px);
 animation: morphAuraActive 1.2s infinite linear;
+}
+
+/* Aura en Modo Escuchar (Azul Cian Eléctrico) */
+.avatar-aura.listening {
+background: linear-gradient(45deg, #06b6d4, #22d3ee, #0891b2);
+opacity: 0.9;
+inset: -28px;
+filter: blur(12px);
+animation: morphAuraActive 0.7s infinite linear;
 }
 
 .avatar-ring{
@@ -94,6 +104,12 @@ border-color: rgba(52,211,153,1);
 box-shadow: 0 0 25px rgba(52,211,153,.8);
 }
 
+.avatar-ring.listening {
+animation: pulse-intense 0.5s infinite ease-in-out;
+border-color: #22d3ee;
+box-shadow: 0 0 30px rgba(34, 211, 238, 0.9);
+}
+
 .avatar{
 width:120px;
 height:120px;
@@ -104,6 +120,7 @@ box-shadow:0 25px 60px rgba(0,0,0,.45);
 position:relative;
 z-index:3;
 background: #0f172a;
+transition: all 0.3s ease;
 }
 
 .avatar img {
@@ -123,7 +140,48 @@ background:#22c55e;
 border:3px solid white;
 border-radius:9999px;
 z-index:20;
+transition: all 0.3s ease;
 }
+
+.status.listening {
+background: #06b6d4;
+box-shadow: 0 0 12px #06b6d4;
+}
+
+/* ECUALIZADOR DIGITAL DE VOZ */
+.equalizer {
+display: flex;
+justify-content: center;
+align-items: flex-end;
+gap: 3px;
+width: 60px;
+height: 20px;
+position: absolute;
+bottom: -32px;
+left: 50%;
+transform: translateX(-50%);
+opacity: 0;
+transition: opacity 0.3s ease;
+z-index: 20;
+}
+
+.equalizer.active {
+opacity: 1;
+}
+
+.equalizer .bar {
+width: 4px;
+height: 4px;
+background: #34d399;
+border-radius: 2px;
+transition: background 0.3s ease;
+}
+
+.equalizer.active .bar:nth-child(1) { animation: equalizerGo 0.6s infinite ease-in-out alternate; }
+.equalizer.active .bar:nth-child(2) { animation: equalizerGo 0.4s infinite ease-in-out alternate 0.1s; }
+.equalizer.active .bar:nth-child(3) { animation: equalizerGo 0.7s infinite ease-in-out alternate 0.2s; }
+.equalizer.active .bar:nth-child(4) { animation: equalizerGo 0.5s infinite ease-in-out alternate 0.15s; }
+.equalizer.active .bar:nth-child(5) { animation: equalizerGo 0.6s infinite ease-in-out alternate 0.3s; }
 
 /* CHAT */
 
@@ -264,8 +322,13 @@ box-shadow:0 15px 40px rgba(0,0,0,.35);
 
 @keyframes morphAuraActive {
 0% { transform: rotate(0deg) scale(1); }
-50% { transform: rotate(180deg) scale(1.12); filter: blur(12px); }
+50% { transform: rotate(180deg) scale(1.1); filter: blur(14px); }
 100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes equalizerGo {
+0% { height: 4px; }
+100% { height: 20px; }
 }
 
 @keyframes pulse{
@@ -319,13 +382,10 @@ transform:translateY(0);
 
 <div class="w-full max-w-md h-[96dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
-<!-- HERO -->
-
 <div class="hero">
 
 <div class="glow"></div>
 
-<!-- BOTÓN PANTALLA COMPLETA -->
 <button id="fullscreen-btn" class="absolute top-4 right-4 z-30 bg-white/10 hover:bg-white/20 text-white p-2 rounded-xl backdrop-blur-md transition-all duration-200" title="Pantalla completa">
   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4" />
@@ -334,7 +394,6 @@ transform:translateY(0);
 
 <div class="avatar-wrapper">
 
-<!-- EFECTO DINÁMICO DE FONDO -->
 <div id="aura" class="avatar-aura"></div>
 
 <div id="ring" class="avatar-ring"></div>
@@ -343,7 +402,15 @@ transform:translateY(0);
 <img src="avatar.png" alt="Citizen Voice Avatar">
 </div>
 
-<div class="status"></div>
+<div id="status" class="status"></div>
+
+<div id="equalizer" class="equalizer">
+  <span class="bar"></span>
+  <span class="bar"></span>
+  <span class="bar"></span>
+  <span class="bar"></span>
+  <span class="bar"></span>
+</div>
 
 </div>
 
@@ -361,14 +428,10 @@ Asistente virtual para participación ciudadana
 
 </div>
 
-<!-- CHAT -->
-
 <div
 id="chat"
 class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"
 ></div>
-
-<!-- CONTROLES -->
 
 <div
 id="controls"
@@ -390,6 +453,8 @@ const chat = document.getElementById("chat")
 const controls = document.getElementById("controls")
 const ring = document.getElementById("ring")
 const aura = document.getElementById("aura")
+const statusDot = document.getElementById("status")
+const equalizer = document.getElementById("equalizer")
 const fullscreenBtn = document.getElementById("fullscreen-btn")
 
 fullscreenBtn.onclick = () => {
@@ -422,20 +487,25 @@ const offsetMins = pad(Math.abs(offset) % 60);
 return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${sign}${offsetHours}:${offsetMins}`;
 }
 
-function pulseRing(activate, duration = 0) {
-if(activate) {
-ring.classList.add("active");
-aura.classList.add("active");
-if(duration > 0) {
-setTimeout(() => {
-ring.classList.remove("active");
-aura.classList.remove("active");
-}, duration);
-}
-} else {
-ring.classList.remove("active");
-aura.classList.remove("active");
-}
+// CONTROL DE ESTADOS DEL AVATAR (speaking / listening / false)
+function pulseRing(state, duration = 0) {
+  ring.classList.remove("active", "listening");
+  aura.classList.remove("active", "listening");
+  statusDot.classList.remove("listening");
+  equalizer.classList.remove("active");
+
+  if(state === "speaking") {
+    ring.classList.add("active");
+    aura.classList.add("active");
+    equalizer.classList.add("active");
+    if(duration > 0) {
+      setTimeout(() => pulseRing(false), duration);
+    }
+  } else if(state === "listening") {
+    ring.classList.add("listening");
+    aura.classList.add("listening");
+    statusDot.classList.add("listening");
+  }
 }
 
 function scrollToBottom() {
@@ -459,7 +529,7 @@ speechSynthesis.speak(msg)
 
 function bot(text){
 
-pulseRing(true, 1800);
+pulseRing("speaking", 2000);
 
 const row = document.createElement("div")
 
@@ -537,10 +607,10 @@ scrollToBottom()
 
 }
 
-/* TEXTOS CORTOS Y CONFIGURACIÓN SOLICITADA */
+/* TEXTOS CORTOS CX CON IDENTIFICACIÓN DE CONSULTA SEMANAL */
 function weeklyQuestion(){
 
-bot("Para empezar, una consulta semanal: ¿Qué importancia das a mejorar los parques, jardines y espacios culturales?")
+bot("Para empezar, una consulta semanal: ¿Qué importancia das a mejorar los parques, jardines o espacios culturales?")
 
 buttons([
 "😡 1",
@@ -685,7 +755,7 @@ marker = L.marker([lat, lon]).addTo(currentMap)
 formData.lat = lat
 formData.lng = lon
 
-pulseRing(true, 1200)
+pulseRing("speaking", 1200)
 
 setTimeout(() => {
 wrapper.style.display = "none"
@@ -712,7 +782,7 @@ marker = L.marker(e.latlng).addTo(currentMap)
 formData.lat = e.latlng.lat
 formData.lng = e.latlng.lng
 
-pulseRing(true, 1000)
+pulseRing("speaking", 1000)
 
 setTimeout(() => {
 wrapper.style.display = "none"
@@ -754,12 +824,22 @@ const r = new webkitSpeechRecognition()
 
 r.lang = "es-ES"
 
+// ENTRAR EN MODO ESCUCHA ACTIVA (CAMBIO VISUAL EN EL AVATAR)
 r.start()
+pulseRing("listening");
 
 r.onresult = e=>{
-
 input.value = e.results[0][0].transcript
+pulseRing(false); // Volver al estado normal
+}
 
+r.onerror = e=>{
+pulseRing(false);
+}
+
+r.onend = e=>{
+// Evitar que se quede pillado el estado si el usuario se calla
+setTimeout(() => { if(ring.classList.contains("listening")) pulseRing(false); }, 1000);
 }
 
 }
@@ -827,7 +907,7 @@ resumen: ai.resumen || "",
 acciones: ai.acciones || []
 }])
 
-pulseRing(true);
+pulseRing("speaking");
 
 bot("Registro completado.")
 
