@@ -14,83 +14,96 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-body {
-background: linear-gradient(180deg, #02110c 0%, #052c22 50%, #010a07 100%);
-overflow: hidden;
-font-family: 'Inter', sans-serif;
+body{
+background:
+linear-gradient(
+180deg,
+#02120d 0%,
+#06281f 45%,
+#03140f 100%
+);
+overflow:hidden;
+font-family:sans-serif;
 }
 
-/* HERO PREMIUM COHESIVO */
-.hero {
-position: relative;
-height: 250px;
-overflow: hidden;
-background: radial-gradient(circle at top, #10b981 0%, #064e3b 60%, #02110c 100%);
-border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+/* HERO CON EFECTOS BRUTALES DETRÁS DEL AVATAR */
+
+.hero{
+position:relative;
+height:240px;
+overflow:hidden;
+background:
+radial-gradient(circle at top,#1dd1a1 0%,#065f46 45%,#02120d 100%);
 }
 
-.glow {
+.glow{
+position:absolute;
+width:260px;
+height:260px;
+background:rgba(16,185,129,.35);
+filter:blur(70px);
+border-radius:9999px;
+top:-60px;
+left:50%;
+transform:translateX(-50%);
+}
+
+.avatar-wrapper{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+z-index:10;
+}
+
+/* CÍRCULO EN MOVIMIENTO ORGÁNICO DETRÁS DEL AVATAR (EFECTO UPV TOP) */
+.avatar-aura {
 position: absolute;
-width: 300px;
-height: 300px;
-background: rgba(16, 185, 129, 0.4);
-filter: blur(80px);
-border-radius: 9999px;
-top: -80px;
-left: 50%;
-transform: translateX(-50%);
-pointer-events: none;
+inset: -15px;
+background: linear-gradient(45deg, #10b981, #34d399, #059669);
+border-radius: 40% 60% 65% 35% / 40% 45% 55% 60%;
+filter: blur(25px);
+opacity: 0.45;
+animation: morphAura 7s infinite linear;
+z-index: 1;
+transition: all 0.4s ease;
 }
 
-/* AVATAR INTERACTIVO TIPO UPV */
-.avatar-wrapper {
-position: absolute;
-left: 50%;
-top: 48%;
-transform: translate(-50%, -50%);
-z-index: 10;
+.avatar-aura.active {
+opacity: 0.9;
+inset: -30px;
+filter: blur(15px);
+animation: morphAuraActive 1.2s infinite linear;
 }
 
-.avatar-ring {
-position: absolute;
-inset: -8px;
-border-radius: 9999px;
-border: 2px solid rgba(16, 185, 129, 0.4);
-box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-animation: pulseAmbient 4s infinite ease-in-out;
-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Efecto Onda de Voz cuando habla */
-.avatar-ring.active {
-animation: pulseVoice 1.2s infinite ease-in-out;
-border-color: rgba(52, 211, 153, 0.9);
-background: rgba(16, 185, 129, 0.05);
-}
-
-.avatar-ring.active::after {
-content: '';
-position: absolute;
-inset: -20px;
-border-radius: 9999px;
-border: 2px solid rgba(52, 211, 153, 0.4);
-opacity: 0;
-animation: ripple 1.2s infinite cubic-bezier(0.1, 0.8, 0.3, 1);
-}
-
-.avatar {
-width: 125px;
-height: 125px;
-border-radius: 9999px;
-overflow: hidden;
-border: 4px solid rgba(255, 255, 255, 0.2);
-box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-position: relative;
+.avatar-ring{
+position:absolute;
+inset:-10px;
+border-radius:9999px;
+border:3px solid rgba(16,185,129,.5);
+box-shadow: 0 0 15px rgba(16,185,129,.3);
+animation:pulse 3s infinite ease-in-out;
+transition: all 0.3s ease;
 z-index: 2;
-background: #0b1511;
-transition: transform 0.3s ease;
+}
+
+.avatar-ring.active {
+animation: pulse-intense 0.8s infinite ease-in-out;
+border-color: rgba(52,211,153,1);
+box-shadow: 0 0 25px rgba(52,211,153,.8);
+}
+
+.avatar{
+width:120px;
+height:120px;
+border-radius:9999px;
+overflow:hidden;
+border:4px solid rgba(255,255,255,.15);
+box-shadow:0 25px 60px rgba(0,0,0,.45);
+position:relative;
+z-index:3;
+background: #0f172a;
 }
 
 .avatar img {
@@ -100,91 +113,96 @@ object-fit: cover;
 object-position: center;
 }
 
-.status {
-position: absolute;
-bottom: 8px;
-right: 8px;
-width: 16px;
-height: 16px;
-background: #10b981;
-border: 2px solid #052c22;
-border-radius: 9999px;
-z-index: 20;
-box-shadow: 0 0 10px #10b981;
+.status{
+position:absolute;
+bottom:6px;
+right:6px;
+width:18px;
+height:18px;
+background:#22c55e;
+border:3px solid white;
+border-radius:9999px;
+z-index:20;
 }
 
-/* PANEL DE CHAT */
-#chat {
-scroll-behavior: smooth;
+/* CHAT */
+
+#chat{
+scroll-behavior:smooth;
 }
 
-#chat::-webkit-scrollbar {
-width: 4px;
+#chat::-webkit-scrollbar{
+width:4px;
 }
 
-#chat::-webkit-scrollbar-thumb {
-background: rgba(16, 185, 129, 0.5);
-border-radius: 20px;
+#chat::-webkit-scrollbar-thumb{
+background:#10b981;
+border-radius:20px;
 }
 
-/* BURBUJAS DE DIÁLOGO */
-.bot-row {
-display: flex;
-gap: 12px;
-align-items: flex-end;
-animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* BURBUJAS */
+
+.bot-row{
+display:flex;
+gap:10px;
+align-items:flex-end;
+animation:fade .25s ease;
 }
 
-.bot-mini {
-width: 34px;
-height: 34px;
-border-radius: 9999px;
-overflow: hidden;
-flex-shrink: 0;
-border: 1.5px solid rgba(255, 255, 255, 0.2);
-background: #0b1511;
+.bot-mini{
+width:36px;
+height:36px;
+border-radius:9999px;
+overflow:hidden;
+flex-shrink:0;
+border:2px solid rgba(255,255,255,.15);
+background: #0f172a;
 }
 
 .bot-mini img {
 width: 100%;
 height: 100%;
 object-fit: cover;
+object-position: center;
 }
 
-.bot-bubble {
-background: rgba(255, 255, 255, 0.08);
-backdrop-filter: blur(16px);
--webkit-backdrop-filter: blur(16px);
-border: 1px solid rgba(255, 255, 255, 0.08);
-padding: 14px 16px;
-border-radius: 20px 20px 20px 4px;
-color: rgba(255, 255, 255, 0.95);
-font-size: 14px;
-line-height: 1.5;
-max-width: 82%;
-box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+.bot-bubble{
+background:rgba(255,255,255,.11);
+backdrop-filter:blur(12px);
+border:1px solid rgba(255,255,255,.08);
+padding:14px;
+border-radius:22px;
+color:white;
+font-size:14px;
+line-height:1.5;
+max-width:80%;
+box-shadow:0 10px 35px rgba(0,0,0,.18);
 }
 
-.user-bubble {
-background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-padding: 14px 16px;
-border-radius: 20px 20px 4px 20px;
-color: white;
-font-size: 14px;
-line-height: 1.5;
-max-width: 82%;
-margin-left: auto;
-box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
-animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-font-weight: 500;
+.user-bubble{
+background:
+linear-gradient(
+135deg,
+#10b981,
+#059669
+);
+
+padding:14px;
+border-radius:22px;
+color:white;
+font-size:14px;
+max-width:80%;
+margin-left:auto;
+box-shadow:0 10px 35px rgba(16,185,129,.25);
+animation:fade .25s ease;
 }
 
-/* CONTROLES Y BOTONES */
-.controls {
-background: rgba(2, 12, 9, 0.6);
-backdrop-filter: blur(25px);
--webkit-backdrop-filter: blur(25px);
-border-top: 1px solid rgba(255, 255, 255, 0.06);
+/* CONTROLES */
+
+.controls{
+background:rgba(0,0,0,.22);
+backdrop-filter:blur(20px);
+border-top:1px solid rgba(255,255,255,.08);
 flex-shrink: 0 !important;
 }
 
@@ -196,128 +214,171 @@ display: none;
 scrollbar-width: none;
 }
 
-.option-btn {
-background: rgba(255, 255, 255, 0.07);
-border: 1px solid rgba(255, 255, 255, 0.08);
-color: #e2e8f0;
-padding: 8px 16px;
-border-radius: 14px;
-font-size: 13px;
-font-weight: 500;
-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-backdrop-filter: blur(8px);
+.option-btn{
+background:rgba(255,255,255,.10);
+border:1px solid rgba(255,255,255,.08);
+color:white;
+padding:6px 12px;
+border-radius:12px;
+font-size:12px;
+transition:.2s;
+backdrop-filter:blur(10px);
 flex-shrink: 0;
-animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.option-btn:hover {
-transform: translateY(-2px);
-background: rgba(16, 185, 129, 0.2);
-border-color: rgba(16, 185, 129, 0.4);
-color: white;
-box-shadow: 0 5px 15px rgba(16, 185, 129, 0.2);
+.option-btn:hover{
+transform:translateY(-2px);
+background:rgba(255,255,255,.16);
 }
 
-.input {
-background: rgba(255, 255, 255, 0.06);
-border: 1px solid rgba(255, 255, 255, 0.08);
-padding: 12px 16px;
-border-radius: 16px;
-color: white;
-width: 100%;
-outline: none;
-font-size: 14px;
-transition: all 0.3s ease;
+.input{
+background:rgba(255,255,255,.10);
+border:1px solid rgba(255,255,255,.08);
+padding:10px;
+border-radius:14px;
+color:white;
+width:100%;
+outline:none;
+font-size:13px;
 }
 
-.input:focus {
-border-color: rgba(16, 185, 129, 0.5);
-background: rgba(255, 255, 255, 0.1);
-box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+.input::placeholder{
+color:rgba(255,255,255,.45);
 }
 
-.input::placeholder {
-color: rgba(255, 255, 255, 0.35);
+/* MAP */
+
+#map{
+border-radius:24px;
+overflow:hidden;
+box-shadow:0 15px 40px rgba(0,0,0,.35);
 }
 
-/* MAP COMPONENT */
-#map {
-border-radius: 20px;
-overflow: hidden;
-box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
-border: 1px solid rgba(255, 255, 255, 0.1);
+/* ANIMACIONES */
+
+@keyframes morphAura {
+0% { border-radius: 40% 60% 65% 35% / 40% 45% 55% 60%; transform: rotate(0deg); }
+50% { border-radius: 60% 40% 35% 65% / 50% 60% 40% 50%; }
+100% { border-radius: 40% 60% 65% 35% / 40% 45% 55% 60%; transform: rotate(360deg); }
 }
 
-/* ANIMACIONES COMPLETA DINÁMICA */
-@keyframes pulseAmbient {
-0%, 100% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
-50% { transform: scale(1.04); opacity: 0.3; box-shadow: 0 0 25px rgba(16, 185, 129, 0.1); }
+@keyframes morphAuraActive {
+0% { transform: rotate(0deg) scale(1); }
+50% { transform: rotate(180deg) scale(1.12); filter: blur(12px); }
+100% { transform: rotate(360deg) scale(1); }
 }
 
-@keyframes pulseVoice {
-0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(52, 211, 153, 0.6); }
-50% { transform: scale(1.08); box-shadow: 0 0 35px rgba(52, 211, 153, 0.9); }
+@keyframes pulse{
+0%{
+transform:scale(1);
+opacity:0.8;
+}
+50%{
+transform:scale(1.1);
+opacity:0.4;
+box-shadow: 0 0 25px rgba(16,185,129,.5);
+}
+100%{
+transform:scale(1);
+opacity:0.8;
+}
 }
 
-@keyframes ripple {
-0% { transform: scale(1); opacity: 1; }
-100% { transform: scale(1.25); opacity: 0; }
+@keyframes pulse-intense{
+0%{
+transform:scale(1);
+opacity:1;
+}
+50%{
+transform:scale(1.18);
+opacity:0.6;
+box-shadow: 0 0 40px rgba(52,211,153,1);
+}
+100%{
+transform:scale(1);
+opacity:1;
+}
 }
 
-@keyframes slideInUp {
-from { opacity: 0; transform: translateY(16px); }
-to { opacity: 1; transform: translateY(0); }
+@keyframes fade{
+from{
+opacity:0;
+transform:translateY(10px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
 }
 
-@keyframes popIn {
-from { opacity: 0; transform: scale(0.9); }
-to { opacity: 1; transform: scale(1); }
-}
 </style>
+
 </head>
 
 <body class="flex justify-center items-center min-h-[100dvh] p-2">
 
-<div class="w-full max-w-md h-[96dvh] rounded-[38px] overflow-hidden border border-white/10 bg-black/30 backdrop-blur-2xl shadow-2xl flex flex-col">
+<div class="w-full max-w-md h-[96dvh] rounded-[34px] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl shadow-2xl flex flex-col">
 
 <!-- HERO -->
+
 <div class="hero">
+
 <div class="glow"></div>
 
 <!-- BOTÓN PANTALLA COMPLETA -->
-<button id="fullscreen-btn" class="absolute top-4 right-4 z-30 bg-white/5 hover:bg-white/15 text-white p-2.5 rounded-xl backdrop-blur-md transition-all duration-200 border border-white/10" title="Pantalla completa">
+<button id="fullscreen-btn" class="absolute top-4 right-4 z-30 bg-white/10 hover:bg-white/20 text-white p-2 rounded-xl backdrop-blur-md transition-all duration-200" title="Pantalla completa">
   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4" />
   </svg>
 </button>
 
 <div class="avatar-wrapper">
+
+<!-- EFECTO DINÁMICO DE FONDO -->
+<div id="aura" class="avatar-aura"></div>
+
 <div id="ring" class="avatar-ring"></div>
+
 <div class="avatar">
 <img src="avatar.png" alt="Citizen Voice Avatar">
 </div>
+
 <div class="status"></div>
+
 </div>
 
-<div class="absolute bottom-5 left-0 right-0 text-center z-20 px-4">
+<div class="absolute bottom-5 left-0 right-0 text-center z-20">
+
 <div class="text-white text-2xl font-bold tracking-wide">
 Citizen Voice AI
 </div>
-<div class="text-emerald-300/80 text-xs font-medium uppercase tracking-wider mt-1">
-Participación Ciudadana Continua
+
+<div class="text-emerald-100 text-sm opacity-90 mt-1">
+Asistente virtual para participación ciudadana
 </div>
+
 </div>
+
 </div>
 
 <!-- CHAT -->
-<div id="chat" class="flex-1 overflow-y-auto px-4 py-5 flex flex-col gap-4"></div>
+
+<div
+id="chat"
+class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3"
+></div>
 
 <!-- CONTROLES -->
-<div id="controls" class="controls p-4 flex flex-col gap-3"></div>
+
+<div
+id="controls"
+class="controls p-3 flex flex-col gap-2"
+></div>
 
 </div>
 
 <script>
+
 const { createClient } = supabase
 
 const supabaseClient = createClient(
@@ -328,6 +389,7 @@ const supabaseClient = createClient(
 const chat = document.getElementById("chat")
 const controls = document.getElementById("controls")
 const ring = document.getElementById("ring")
+const aura = document.getElementById("aura")
 const fullscreenBtn = document.getElementById("fullscreen-btn")
 
 fullscreenBtn.onclick = () => {
@@ -363,13 +425,16 @@ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.ge
 function pulseRing(activate, duration = 0) {
 if(activate) {
 ring.classList.add("active");
+aura.classList.add("active");
 if(duration > 0) {
 setTimeout(() => {
 ring.classList.remove("active");
+aura.classList.remove("active");
 }, duration);
 }
 } else {
 ring.classList.remove("active");
+aura.classList.remove("active");
 }
 }
 
@@ -380,71 +445,102 @@ chat.scrollTop = chat.scrollHeight
 }
 
 function speak(text){
+
 speechSynthesis.cancel()
+
 const msg = new SpeechSynthesisUtterance(text)
+
 msg.lang = "es-ES"
 msg.rate = 1
+
 speechSynthesis.speak(msg)
+
 }
 
 function bot(text){
-pulseRing(true, 2500);
+
+pulseRing(true, 1800);
 
 const row = document.createElement("div")
+
 row.className = "bot-row"
 
 const avatar = document.createElement("div")
+
 avatar.className = "bot-mini"
+
 avatar.innerHTML = `<img src="avatar.png" alt="AI">`
 
 const bubble = document.createElement("div")
+
 bubble.className = "bot-bubble"
+
 bubble.innerText = text
 
 row.appendChild(avatar)
 row.appendChild(bubble)
+
 chat.appendChild(row)
 
 scrollToBottom()
+
 speak(text)
+
 }
 
 function user(text){
+
 const d = document.createElement("div")
+
 d.className = "user-bubble"
+
 d.innerText = text
+
 chat.appendChild(d)
+
 scrollToBottom()
+
 }
 
 function buttons(list, callback){
+
 controls.innerHTML = ""
 
 const btnRow = document.createElement("div")
 btnRow.className = "flex flex-row flex-nowrap gap-2 overflow-x-auto w-full no-scrollbar py-1"
 btnRow.style.webkitOverflowScrolling = "touch"
 
-list.forEach((o, index)=>{
+list.forEach(o=>{
+
 const b = document.createElement("button")
+
 b.className = "option-btn flex-shrink-0"
-b.style.animationDelay = `${index * 0.05}s`
+
 b.innerText = o
 
 b.onclick = ()=>{
+
 controls.innerHTML = ""
+
 user(o)
+
 callback(o)
+
 }
+
 btnRow.appendChild(b)
+
 })
 
 controls.appendChild(btnRow)
 scrollToBottom()
+
 }
 
-// REDISEÑO CX: ENCUADRE DE PREGUNTA SEMANAL DE OPINIÓN CONTINUA
+/* TEXTOS CORTOS Y CONFIGURACIÓN SOLICITADA */
 function weeklyQuestion(){
-bot("🗓️ CONSULTA SEMANAL DE OPINIÓN CONTINUA\n\nHola, soy tu asistente virtual de Citizen Voice. Para ayudarnos a mantener una escucha activa y mejorar la ciudad en tiempo real, iniciamos con la pregunta clave de esta semana:\n\n¿Qué importancia das a mejorar los espacios culturales infantiles?")
+
+bot("Para empezar, una consulta semanal: ¿Qué importancia das a mejorar los parques, jardines y espacios culturales?")
 
 buttons([
 "😡 1",
@@ -453,7 +549,9 @@ buttons([
 "🙂 4",
 "😄 5"
 ], async (v)=>{
+
 try{
+
 await supabaseClient
 .from("weekly_engagement")
 .insert([{
@@ -463,28 +561,38 @@ area: "Cultura",
 answer: parseInt(v.charAt(v.length - 1)),
 created_at: getLocalISOString()
 }])
+
 }catch(err){
 console.log(err)
 }
 
-bot("Muchas gracias por tu valoración continua. Ahora, pasemos a tu reporte personalizado. ¿Qué deseas registrar hoy?")
+bot("Perfecto. ¿Qué deseas registrar?")
+
 askType()
+
 })
+
 }
 
 function askType(){
+
 buttons([
-"📍 Incidencia",
-"💡 Propuesta de mejora"
+"Incidencia",
+"Propuesta de mejora"
 ], v=>{
-// Limpieza de emojis para no romper la base de datos si requiere coincidencia exacta de strings cortos
-formData.tipo = v.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]/g, "").trim()
+
+formData.tipo = v
+
 askArea()
+
 })
+
 }
 
 function askArea(){
-bot("¿A qué área de gestión afecta principalmente?")
+
+bot("¿En qué área afecta?")
+
 buttons([
 "Movilidad",
 "Limpieza",
@@ -493,13 +601,19 @@ buttons([
 "Seguridad",
 "Otros"
 ], v=>{
+
 formData.area = v
+
 askRate()
+
 })
+
 }
 
 function askRate(){
-bot("¿Cómo valoras el estado actual de esta área específica?")
+
+bot("¿Cómo valoras esta área actualmente?")
+
 buttons([
 "😡 1",
 "😕 2",
@@ -507,33 +621,42 @@ buttons([
 "🙂 4",
 "😄 5"
 ], v=>{
-formData.valoracion = parseInt(v.charAt(v.length - 1))
+
+formData.valoracion =
+parseInt(v.charAt(v.length - 1))
+
 showMap()
+
 })
+
 }
 
 function showMap(){
-bot("Geolocalización del reporte: Toca directamente sobre el mapa o activa tu ubicación actual mediante el botón superior.")
+
+bot("Indica dónde ocurre en el mapa.")
+
 controls.innerHTML = ""
 
 const wrapper = document.createElement("div")
-wrapper.className = "w-full flex flex-col gap-2.5"
+wrapper.className = "w-full flex flex-col gap-2"
 
 const geoBtn = document.createElement("button")
 geoBtn.type = "button"
-geoBtn.className = "w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
-geoBtn.innerHTML = "📍 Usar mi ubicación en tiempo real"
+geoBtn.className = "w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-90 transition flex items-center justify-center gap-1"
+geoBtn.innerHTML = "📍 Usar mi ubicación actual"
 
 const mapDiv = document.createElement("div")
 mapDiv.id = "map"
-mapDiv.style.height = "210px"
+mapDiv.style.height = "200px"
 
 wrapper.appendChild(geoBtn)
 wrapper.appendChild(mapDiv)
+
 controls.appendChild(wrapper)
 scrollToBottom()
 
 setTimeout(()=>{
+
 if(currentMap){
 currentMap.remove()
 }
@@ -548,13 +671,14 @@ let marker
 
 geoBtn.onclick = () => {
 if (navigator.geolocation) {
-geoBtn.innerText = "Sincronizando señal GPS..."
+geoBtn.innerText = "Buscando GPS..."
 navigator.geolocation.getCurrentPosition(
 (position) => {
 const lat = position.coords.latitude
 const lon = position.coords.longitude
 
 currentMap.setView([lat, lon], 16)
+
 if(marker) currentMap.removeLayer(marker)
 marker = L.marker([lat, lon]).addTo(currentMap)
 
@@ -565,23 +689,24 @@ pulseRing(true, 1200)
 
 setTimeout(() => {
 wrapper.style.display = "none"
-bot("Ubicación guardada con éxito.")
+bot("Ubicación registrada.")
 askDescription()
 }, 1000)
 },
 (err) => {
-geoBtn.innerHTML = "📍 Usar mi ubicación en tiempo real"
-alert("Acceso denegado al GPS. Por favor, marca el punto directamente tocando sobre el mapa.")
+geoBtn.innerHTML = "📍 Usar mi ubicación actual"
+alert("No se ha podido acceder al GPS. Marca en el mapa.")
 },
 { enableHighAccuracy: true, timeout: 8000 }
 )
 } else {
-alert("Este dispositivo no soporta geolocalización nativa.")
+alert("Geolocalización no soportada.")
 }
 }
 
 currentMap.on("click", e=>{
 if(marker) currentMap.removeLayer(marker)
+
 marker = L.marker(e.latlng).addTo(currentMap)
 
 formData.lat = e.latlng.lat
@@ -591,50 +716,71 @@ pulseRing(true, 1000)
 
 setTimeout(() => {
 wrapper.style.display = "none"
-bot("Ubicación fijada correctamente.")
+bot("Ubicación guardada.")
 askDescription()
 }, 800)
 })
 
 },300)
+
 }
 
 function askDescription(){
-bot("Para finalizar, describe brevemente la situación actual (puedes escribir o dictar usando tu voz).")
+
+bot("Describe brevemente la situación.")
+
 controls.innerHTML = ""
 
 const row = document.createElement("div")
 row.className = "flex flex-row w-full gap-2 items-center"
 
 const input = document.createElement("input")
-input.placeholder = "Escribe un mensaje o usa el micrófono..."
-input.className = "input flex-1 min-w-0"
+
+input.placeholder = "Escribe o usa voz"
+
+input.className =
+"input flex-1 min-w-0"
 
 const mic = document.createElement("button")
-mic.innerHTML = "🎤"
-mic.className = "option-btn flex-shrink-0 !py-3"
+
+mic.innerText = "🎤"
+
+mic.className =
+"option-btn flex-shrink-0"
 
 mic.onclick = ()=>{
+
 const r = new webkitSpeechRecognition()
+
 r.lang = "es-ES"
+
 r.start()
-mic.innerText = "⏳"
+
 r.onresult = e=>{
+
 input.value = e.results[0][0].transcript
-mic.innerHTML = "🎤"
+
 }
-r.onerror = () => { mic.innerHTML = "🎤" }
+
 }
 
 const send = document.createElement("button")
+
 send.innerText = "Enviar"
-send.className = "option-btn flex-shrink-0 !bg-emerald-600 hover:!bg-emerald-500 text-white !py-3"
+
+send.className =
+"option-btn flex-shrink-0"
 
 send.onclick = async ()=>{
+
 if(!input.value) return
+
 user(input.value)
+
 formData.descripcion = input.value
+
 saveData()
+
 }
 
 row.appendChild(input)
@@ -642,18 +788,30 @@ row.appendChild(mic)
 row.appendChild(send)
 controls.appendChild(row)
 scrollToBottom()
+
 }
 
 async function saveData(){
+
 try{
-let ai = { resumen:"", acciones:[] }
+
+let ai = {
+resumen:"",
+acciones:[]
+}
+
 try{
+
 const res = await fetch("/api/ai",{
 method:"POST",
 headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({ description: formData.descripcion })
+body: JSON.stringify({
+description: formData.descripcion
 })
+})
+
 ai = await res.json()
+
 }catch(e){}
 
 await supabaseClient
@@ -670,25 +828,38 @@ acciones: ai.acciones || []
 }])
 
 pulseRing(true);
-bot("✨ Registro completado con éxito en el sistema central de gobernanza inteligente.");
+
+bot("Registro completado.")
 
 controls.innerHTML = ""
+
 const row = document.createElement("div")
 row.className = "flex flex-row w-full gap-2"
 
 const close = document.createElement("button")
-close.className = "option-btn flex-1"
-close.innerText = "Finalizar"
+
+close.className =
+"option-btn flex-1"
+
+close.innerText = "Cerrar"
+
 close.onclick = () => {
 pulseRing(false);
 location.reload();
 }
 
 const panel = document.createElement("button")
-panel.className = "option-btn flex-1 !bg-white/10"
-panel.innerText = "Ver Panel Global"
+
+panel.className =
+"option-btn flex-1"
+
+panel.innerText = "Ver datos"
+
 panel.onclick = ()=>{
-window.location.href = "https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
+
+window.location.href =
+"https://citizen-voice-xjcc-24bhfesc1-joansimoesteve-cryptos-projects.vercel.app/citizen.html"
+
 }
 
 row.appendChild(close)
@@ -697,22 +868,31 @@ controls.appendChild(row)
 scrollToBottom()
 
 }catch(err){
-bot("Lo siento, ha ocurrido un contratiempo técnico al sincronizar los datos.");
-}
+
+bot("Error al guardar.")
+
 }
 
-// BOTÓN INICIAL
+}
+
 const startBtn = document.createElement("button")
-startBtn.innerText = "Iniciar Consulta Ciudadana"
-startBtn.className = "w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white py-3.5 rounded-2xl text-sm font-semibold shadow-2xl transition-all transform active:scale-[0.99] flex-shrink-0"
+
+startBtn.innerText = "Empezar"
+
+startBtn.className =
+"w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white py-2.5 rounded-2xl text-sm shadow-2xl flex-shrink-0"
 
 startBtn.onclick = ()=>{
+
 controls.innerHTML = ""
+
 weeklyQuestion()
+
 }
 
 controls.appendChild(startBtn)
 scrollToBottom()
+
 </script>
 
 </body>
